@@ -1,0 +1,18 @@
+{
+  "matchPredictions": [
+    {
+      "playerId": "janek",
+      "matchId": "match-001",
+      "predictedHomeScore": 2,
+      "predictedAwayScore": 1,
+      "updatedAt": "2026-06-01T12:00:00.000Z"
+    }
+  ],
+  "championPredictions": [
+    {
+      "playerId": "janek",
+      "championTeamId": "team-001",
+      "updatedAt": "2026-06-01T12:00:00.000Z"
+    }
+  ]
+}

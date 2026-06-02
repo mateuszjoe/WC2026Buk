@@ -1,0 +1,10 @@
+{
+  "tournamentName": "Mistrzostwa Świata 2026",
+  "points": {
+    "correctResult": 1,
+    "exactScore": 3,
+    "tournamentWinner": 10
+  },
+  "lockPredictionsAtKickoff": true,
+  "championTeamId": null
+}
