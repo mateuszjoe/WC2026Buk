@@ -608,16 +608,17 @@ function adminHtml() {
       </div>
 
       <div class="card info-card">
-        Wpisujesz tutaj prawdziwe wyniki meczów oraz mistrza turnieju. Zapisuje się
-        automatycznie i od razu przelicza ranking u wszystkich. Żadnych commitów do GitHuba.
+        ⚙️ Bezpiecznik — na co dzień nie musisz tu nic robić. Wyniki meczów i mistrz
+        turnieju (zwycięzca finału) liczą się automatycznie z API. Tu wejdziesz tylko,
+        gdy API się spóźni lub poda zły wynik — wtedy ręczna wartość nadpisze automat.
       </div>
 
       <div class="card champion-card">
         <div class="champion-left">
           <div class="champ-icon">👑</div>
           <div>
-            <div class="champ-title">Mistrz turnieju (wynik końcowy)</div>
-            <div class="muted small">Ustaw dopiero po finale — wtedy dolicza się ${state.settings.points.tournamentWinner} pkt.</div>
+            <div class="champ-title">Mistrz turnieju (ręczne nadpisanie)</div>
+            <div class="muted small">Zwykle zostaw puste — liczy się automatycznie ze zwycięzcy finału (${state.settings.points.tournamentWinner} pkt). Ustaw tylko, gdy chcesz wymusić inną drużynę.</div>
           </div>
         </div>
         <select id="admin-champion">
