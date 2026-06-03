@@ -19,10 +19,11 @@
 // =============================================================================
 
 export const firebaseConfig = {
-  apiKey: "WKLEJ_TUTAJ",
-  authDomain: "WKLEJ_TUTAJ.firebaseapp.com",
-  projectId: "WKLEJ_TUTAJ",
-  storageBucket: "WKLEJ_TUTAJ.appspot.com",
-  messagingSenderId: "WKLEJ_TUTAJ",
-  appId: "WKLEJ_TUTAJ"
+  apiKey: "AIzaSyACNOMlHz7HtuvgeRlV6HdrHLy6ByyuLys",
+  authDomain: "typer2026-93c0a.firebaseapp.com",
+  projectId: "typer2026-93c0a",
+  storageBucket: "typer2026-93c0a.firebasestorage.app",
+  messagingSenderId: "1091440643541",
+  appId: "1:1091440643541:web:8fe397593bae73a15e415c",
+  measurementId: "G-LWRXX0DGE3"
 };
