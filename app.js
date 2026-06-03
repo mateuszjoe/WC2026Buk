@@ -177,11 +177,17 @@ function matchFinished(match) {
   return Boolean(getResult(match));
 }
 
+// Drużyny do wyboru "mistrza" — tylko realne reprezentacje. Pomijamy
+// miejsca "TBD" z meczów pucharowych (jeszcze nieznane pary).
+function isRealTeam(team) {
+  return team && team.id && !String(team.id).startsWith("tbd-") && team.name !== "TBD";
+}
+
 function getTeams() {
   const map = new Map();
   for (const m of state.matches) {
-    map.set(m.homeTeam.id, m.homeTeam);
-    map.set(m.awayTeam.id, m.awayTeam);
+    if (isRealTeam(m.homeTeam)) map.set(m.homeTeam.id, m.homeTeam);
+    if (isRealTeam(m.awayTeam)) map.set(m.awayTeam.id, m.awayTeam);
   }
   return [...map.values()].sort((a, b) => a.name.localeCompare(b.name, "pl"));
 }
