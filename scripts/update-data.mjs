@@ -71,9 +71,6 @@ if (!res.ok) {
 }
 
 const data = await res.json();
-// DEBUG: podejrzyj strukturę meczu pucharowego (drużyny nieznane)
-const koSample = data.matches.find((m) => m.stage && m.stage !== "GROUP_STAGE");
-if (koSample) console.log("KO_SAMPLE " + JSON.stringify(koSample));
 if (!Array.isArray(data.matches)) {
   console.error("Niespodziewana odpowiedź API (brak pola matches).");
   process.exit(1);
