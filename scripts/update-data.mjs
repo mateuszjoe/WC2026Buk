@@ -32,10 +32,14 @@ const PL_NAMES = {
   "Costa Rica": "Kostaryka", Panama: "Panama", Honduras: "Honduras", Jamaica: "Jamajka",
   Egypt: "Egipt", Nigeria: "Nigeria", Ghana: "Ghana", Cameroon: "Kamerun",
   "Ivory Coast": "Wybrzeże Kości Słoniowej", "Côte d'Ivoire": "Wybrzeże Kości Słoniowej",
-  Algeria: "Algieria", Tunisia: "Tunezja", "South Africa": "RPA", "Cape Verde": "Republika Zielonego Przylądka",
+  Algeria: "Algieria", Tunisia: "Tunezja", "South Africa": "RPA",
+  "Cape Verde": "Republika Zielonego Przylądka", "Cape Verde Islands": "Republika Zielonego Przylądka",
   Australia: "Australia", "New Zealand": "Nowa Zelandia", "Saudi Arabia": "Arabia Saudyjska",
   Iran: "Iran", "IR Iran": "Iran", Qatar: "Katar", Iraq: "Irak", Jordan: "Jordania",
-  "United Arab Emirates": "ZEA", Uzbekistan: "Uzbekistan"
+  "United Arab Emirates": "ZEA", Uzbekistan: "Uzbekistan",
+  "Bosnia-Herzegovina": "Bośnia i Hercegowina", "Bosnia and Herzegovina": "Bośnia i Hercegowina",
+  "Congo DR": "DR Konga", "DR Congo": "DR Konga", "Curaçao": "Curaçao", Haiti: "Haiti",
+  "New Caledonia": "Nowa Kaledonia", Panama: "Panama"
 };
 
 function plName(name) {
