@@ -10,7 +10,14 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css" />
+    <!-- styles.css z parametrem czasu (cache-busting), żeby przeglądarka nie
+         trzymała starej wersji stylów po wgraniu zmian. -->
+    <script>
+      document.write(
+        '<link rel="stylesheet" href="./styles.css?ts=' + Date.now() + '">'
+      );
+    </script>
+    <noscript><link rel="stylesheet" href="./styles.css" /></noscript>
   </head>
   <body>
     <div id="app">
