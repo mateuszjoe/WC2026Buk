@@ -86,11 +86,13 @@ const matches = data.matches
       kickoffAt: m.utcDate,
       homeTeam: {
         id: m.homeTeam?.id ? "t" + m.homeTeam.id : "tbd-" + m.id + "-h",
-        name: plName(m.homeTeam?.name)
+        name: plName(m.homeTeam?.name),
+        crest: m.homeTeam?.crest || null
       },
       awayTeam: {
         id: m.awayTeam?.id ? "t" + m.awayTeam.id : "tbd-" + m.id + "-a",
-        name: plName(m.awayTeam?.name)
+        name: plName(m.awayTeam?.name),
+        crest: m.awayTeam?.crest || null
       },
       status: m.status,
       // Wynik dopisywany automatycznie, gdy mecz ma rezultat:
