@@ -6,11 +6,13 @@
     "kickoffAt": "2026-06-11T19:00:00Z",
     "homeTeam": {
       "id": "t769",
-      "name": "Meksyk"
+      "name": "Meksyk",
+      "crest": "https://crests.football-data.org/769.svg"
     },
     "awayTeam": {
       "id": "t774",
-      "name": "RPA"
+      "name": "RPA",
+      "crest": "https://crests.football-data.org/9396.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -23,11 +25,13 @@
     "kickoffAt": "2026-06-12T02:00:00Z",
     "homeTeam": {
       "id": "t772",
-      "name": "Korea Płd."
+      "name": "Korea Płd.",
+      "crest": "https://crests.football-data.org/772.png"
     },
     "awayTeam": {
       "id": "t798",
-      "name": "Czechy"
+      "name": "Czechy",
+      "crest": "https://crests.football-data.org/798.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -40,11 +44,13 @@
     "kickoffAt": "2026-06-12T19:00:00Z",
     "homeTeam": {
       "id": "t828",
-      "name": "Kanada"
+      "name": "Kanada",
+      "crest": "https://crests.football-data.org/canada.svg"
     },
     "awayTeam": {
       "id": "t1060",
-      "name": "Bośnia i Hercegowina"
+      "name": "Bośnia i Hercegowina",
+      "crest": "https://crests.football-data.org/bosnia.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -57,11 +63,13 @@
     "kickoffAt": "2026-06-13T01:00:00Z",
     "homeTeam": {
       "id": "t771",
-      "name": "USA"
+      "name": "USA",
+      "crest": "https://crests.football-data.org/usa.svg"
     },
     "awayTeam": {
       "id": "t761",
-      "name": "Paragwaj"
+      "name": "Paragwaj",
+      "crest": "https://crests.football-data.org/761.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -74,11 +82,13 @@
     "kickoffAt": "2026-06-13T19:00:00Z",
     "homeTeam": {
       "id": "t8030",
-      "name": "Katar"
+      "name": "Katar",
+      "crest": "https://crests.football-data.org/8030.svg"
     },
     "awayTeam": {
       "id": "t788",
-      "name": "Szwajcaria"
+      "name": "Szwajcaria",
+      "crest": "https://crests.football-data.org/788.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -91,11 +101,13 @@
     "kickoffAt": "2026-06-13T22:00:00Z",
     "homeTeam": {
       "id": "t764",
-      "name": "Brazylia"
+      "name": "Brazylia",
+      "crest": "https://crests.football-data.org/764.svg"
     },
     "awayTeam": {
       "id": "t815",
-      "name": "Maroko"
+      "name": "Maroko",
+      "crest": "https://crests.football-data.org/morocco.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -108,11 +120,13 @@
     "kickoffAt": "2026-06-14T01:00:00Z",
     "homeTeam": {
       "id": "t836",
-      "name": "Haiti"
+      "name": "Haiti",
+      "crest": "https://crests.football-data.org/haiti.svg"
     },
     "awayTeam": {
       "id": "t8873",
-      "name": "Szkocja"
+      "name": "Szkocja",
+      "crest": "https://crests.football-data.org/814.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -125,11 +139,13 @@
     "kickoffAt": "2026-06-14T04:00:00Z",
     "homeTeam": {
       "id": "t779",
-      "name": "Australia"
+      "name": "Australia",
+      "crest": "https://crests.football-data.org/779.svg"
     },
     "awayTeam": {
       "id": "t803",
-      "name": "Turcja"
+      "name": "Turcja",
+      "crest": "https://crests.football-data.org/803.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -142,11 +158,13 @@
     "kickoffAt": "2026-06-14T17:00:00Z",
     "homeTeam": {
       "id": "t759",
-      "name": "Niemcy"
+      "name": "Niemcy",
+      "crest": "https://crests.football-data.org/759.svg"
     },
     "awayTeam": {
       "id": "t9460",
-      "name": "Curaçao"
+      "name": "Curaçao",
+      "crest": "https://crests.football-data.org/curacao.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -159,11 +177,13 @@
     "kickoffAt": "2026-06-14T20:00:00Z",
     "homeTeam": {
       "id": "t8601",
-      "name": "Holandia"
+      "name": "Holandia",
+      "crest": "https://crests.football-data.org/8601.svg"
     },
     "awayTeam": {
       "id": "t766",
-      "name": "Japonia"
+      "name": "Japonia",
+      "crest": "https://crests.football-data.org/766.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -176,11 +196,13 @@
     "kickoffAt": "2026-06-14T23:00:00Z",
     "homeTeam": {
       "id": "t1935",
-      "name": "Wybrzeże Kości Słoniowej"
+      "name": "Wybrzeże Kości Słoniowej",
+      "crest": "https://crests.football-data.org/787.svg"
     },
     "awayTeam": {
       "id": "t791",
-      "name": "Ekwador"
+      "name": "Ekwador",
+      "crest": "https://crests.football-data.org/791.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -193,11 +215,13 @@
     "kickoffAt": "2026-06-15T02:00:00Z",
     "homeTeam": {
       "id": "t792",
-      "name": "Szwecja"
+      "name": "Szwecja",
+      "crest": "https://crests.football-data.org/792.svg"
     },
     "awayTeam": {
       "id": "t802",
-      "name": "Tunezja"
+      "name": "Tunezja",
+      "crest": "https://crests.football-data.org/tunisia.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -210,11 +234,13 @@
     "kickoffAt": "2026-06-15T16:00:00Z",
     "homeTeam": {
       "id": "t760",
-      "name": "Hiszpania"
+      "name": "Hiszpania",
+      "crest": "https://crests.football-data.org/760.svg"
     },
     "awayTeam": {
       "id": "t1930",
-      "name": "Republika Zielonego Przylądka"
+      "name": "Republika Zielonego Przylądka",
+      "crest": "https://crests.football-data.org/cape_verde.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -227,11 +253,13 @@
     "kickoffAt": "2026-06-15T19:00:00Z",
     "homeTeam": {
       "id": "t805",
-      "name": "Belgia"
+      "name": "Belgia",
+      "crest": "https://crests.football-data.org/805.svg"
     },
     "awayTeam": {
       "id": "t825",
-      "name": "Egipt"
+      "name": "Egipt",
+      "crest": "https://crests.football-data.org/825.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -244,11 +272,13 @@
     "kickoffAt": "2026-06-15T22:00:00Z",
     "homeTeam": {
       "id": "t801",
-      "name": "Arabia Saudyjska"
+      "name": "Arabia Saudyjska",
+      "crest": "https://crests.football-data.org/saudi_arabia.svg"
     },
     "awayTeam": {
       "id": "t758",
-      "name": "Urugwaj"
+      "name": "Urugwaj",
+      "crest": "https://crests.football-data.org/758.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -261,11 +291,13 @@
     "kickoffAt": "2026-06-16T01:00:00Z",
     "homeTeam": {
       "id": "t840",
-      "name": "Iran"
+      "name": "Iran",
+      "crest": "https://crests.football-data.org/iran.svg"
     },
     "awayTeam": {
       "id": "t783",
-      "name": "Nowa Zelandia"
+      "name": "Nowa Zelandia",
+      "crest": "https://crests.football-data.org/783.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -278,11 +310,13 @@
     "kickoffAt": "2026-06-16T19:00:00Z",
     "homeTeam": {
       "id": "t773",
-      "name": "Francja"
+      "name": "Francja",
+      "crest": "https://crests.football-data.org/773.svg"
     },
     "awayTeam": {
       "id": "t804",
-      "name": "Senegal"
+      "name": "Senegal",
+      "crest": "https://crests.football-data.org/senegal.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -295,11 +329,13 @@
     "kickoffAt": "2026-06-16T22:00:00Z",
     "homeTeam": {
       "id": "t8062",
-      "name": "Irak"
+      "name": "Irak",
+      "crest": "https://crests.football-data.org/iraq.svg"
     },
     "awayTeam": {
       "id": "t8872",
-      "name": "Norwegia"
+      "name": "Norwegia",
+      "crest": "https://crests.football-data.org/813.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -312,11 +348,13 @@
     "kickoffAt": "2026-06-17T01:00:00Z",
     "homeTeam": {
       "id": "t762",
-      "name": "Argentyna"
+      "name": "Argentyna",
+      "crest": "https://crests.football-data.org/762.png"
     },
     "awayTeam": {
       "id": "t778",
-      "name": "Algieria"
+      "name": "Algieria",
+      "crest": "https://crests.football-data.org/algeria.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -329,11 +367,13 @@
     "kickoffAt": "2026-06-17T04:00:00Z",
     "homeTeam": {
       "id": "t816",
-      "name": "Austria"
+      "name": "Austria",
+      "crest": "https://crests.football-data.org/816.svg"
     },
     "awayTeam": {
       "id": "t8049",
-      "name": "Jordania"
+      "name": "Jordania",
+      "crest": "https://crests.football-data.org/8049.png"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -346,11 +386,13 @@
     "kickoffAt": "2026-06-17T17:00:00Z",
     "homeTeam": {
       "id": "t765",
-      "name": "Portugalia"
+      "name": "Portugalia",
+      "crest": "https://crests.football-data.org/765.svg"
     },
     "awayTeam": {
       "id": "t1934",
-      "name": "DR Konga"
+      "name": "DR Konga",
+      "crest": "https://crests.football-data.org/congo_dr.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -363,11 +405,13 @@
     "kickoffAt": "2026-06-17T20:00:00Z",
     "homeTeam": {
       "id": "t770",
-      "name": "Anglia"
+      "name": "Anglia",
+      "crest": "https://crests.football-data.org/770.svg"
     },
     "awayTeam": {
       "id": "t799",
-      "name": "Chorwacja"
+      "name": "Chorwacja",
+      "crest": "https://crests.football-data.org/799.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -380,11 +424,13 @@
     "kickoffAt": "2026-06-17T23:00:00Z",
     "homeTeam": {
       "id": "t763",
-      "name": "Ghana"
+      "name": "Ghana",
+      "crest": "https://crests.football-data.org/ghana.svg"
     },
     "awayTeam": {
       "id": "t1836",
-      "name": "Panama"
+      "name": "Panama",
+      "crest": "https://crests.football-data.org/panama.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -397,11 +443,13 @@
     "kickoffAt": "2026-06-18T02:00:00Z",
     "homeTeam": {
       "id": "t8070",
-      "name": "Uzbekistan"
+      "name": "Uzbekistan",
+      "crest": "https://crests.football-data.org/8070.png"
     },
     "awayTeam": {
       "id": "t818",
-      "name": "Kolumbia"
+      "name": "Kolumbia",
+      "crest": "https://crests.football-data.org/818.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -414,11 +462,13 @@
     "kickoffAt": "2026-06-18T16:00:00Z",
     "homeTeam": {
       "id": "t798",
-      "name": "Czechy"
+      "name": "Czechy",
+      "crest": "https://crests.football-data.org/798.svg"
     },
     "awayTeam": {
       "id": "t774",
-      "name": "RPA"
+      "name": "RPA",
+      "crest": "https://crests.football-data.org/9396.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -431,11 +481,13 @@
     "kickoffAt": "2026-06-18T19:00:00Z",
     "homeTeam": {
       "id": "t788",
-      "name": "Szwajcaria"
+      "name": "Szwajcaria",
+      "crest": "https://crests.football-data.org/788.svg"
     },
     "awayTeam": {
       "id": "t1060",
-      "name": "Bośnia i Hercegowina"
+      "name": "Bośnia i Hercegowina",
+      "crest": "https://crests.football-data.org/bosnia.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -448,11 +500,13 @@
     "kickoffAt": "2026-06-18T22:00:00Z",
     "homeTeam": {
       "id": "t828",
-      "name": "Kanada"
+      "name": "Kanada",
+      "crest": "https://crests.football-data.org/canada.svg"
     },
     "awayTeam": {
       "id": "t8030",
-      "name": "Katar"
+      "name": "Katar",
+      "crest": "https://crests.football-data.org/8030.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -465,11 +519,13 @@
     "kickoffAt": "2026-06-19T01:00:00Z",
     "homeTeam": {
       "id": "t769",
-      "name": "Meksyk"
+      "name": "Meksyk",
+      "crest": "https://crests.football-data.org/769.svg"
     },
     "awayTeam": {
       "id": "t772",
-      "name": "Korea Płd."
+      "name": "Korea Płd.",
+      "crest": "https://crests.football-data.org/772.png"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -482,11 +538,13 @@
     "kickoffAt": "2026-06-19T19:00:00Z",
     "homeTeam": {
       "id": "t771",
-      "name": "USA"
+      "name": "USA",
+      "crest": "https://crests.football-data.org/usa.svg"
     },
     "awayTeam": {
       "id": "t779",
-      "name": "Australia"
+      "name": "Australia",
+      "crest": "https://crests.football-data.org/779.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -499,11 +557,13 @@
     "kickoffAt": "2026-06-19T22:00:00Z",
     "homeTeam": {
       "id": "t8873",
-      "name": "Szkocja"
+      "name": "Szkocja",
+      "crest": "https://crests.football-data.org/814.svg"
     },
     "awayTeam": {
       "id": "t815",
-      "name": "Maroko"
+      "name": "Maroko",
+      "crest": "https://crests.football-data.org/morocco.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -516,11 +576,13 @@
     "kickoffAt": "2026-06-20T00:30:00Z",
     "homeTeam": {
       "id": "t764",
-      "name": "Brazylia"
+      "name": "Brazylia",
+      "crest": "https://crests.football-data.org/764.svg"
     },
     "awayTeam": {
       "id": "t836",
-      "name": "Haiti"
+      "name": "Haiti",
+      "crest": "https://crests.football-data.org/haiti.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -533,11 +595,13 @@
     "kickoffAt": "2026-06-20T03:00:00Z",
     "homeTeam": {
       "id": "t803",
-      "name": "Turcja"
+      "name": "Turcja",
+      "crest": "https://crests.football-data.org/803.svg"
     },
     "awayTeam": {
       "id": "t761",
-      "name": "Paragwaj"
+      "name": "Paragwaj",
+      "crest": "https://crests.football-data.org/761.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -550,11 +614,13 @@
     "kickoffAt": "2026-06-20T17:00:00Z",
     "homeTeam": {
       "id": "t8601",
-      "name": "Holandia"
+      "name": "Holandia",
+      "crest": "https://crests.football-data.org/8601.svg"
     },
     "awayTeam": {
       "id": "t792",
-      "name": "Szwecja"
+      "name": "Szwecja",
+      "crest": "https://crests.football-data.org/792.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -567,11 +633,13 @@
     "kickoffAt": "2026-06-20T20:00:00Z",
     "homeTeam": {
       "id": "t759",
-      "name": "Niemcy"
+      "name": "Niemcy",
+      "crest": "https://crests.football-data.org/759.svg"
     },
     "awayTeam": {
       "id": "t1935",
-      "name": "Wybrzeże Kości Słoniowej"
+      "name": "Wybrzeże Kości Słoniowej",
+      "crest": "https://crests.football-data.org/787.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -584,11 +652,13 @@
     "kickoffAt": "2026-06-21T00:00:00Z",
     "homeTeam": {
       "id": "t791",
-      "name": "Ekwador"
+      "name": "Ekwador",
+      "crest": "https://crests.football-data.org/791.svg"
     },
     "awayTeam": {
       "id": "t9460",
-      "name": "Curaçao"
+      "name": "Curaçao",
+      "crest": "https://crests.football-data.org/curacao.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -601,11 +671,13 @@
     "kickoffAt": "2026-06-21T04:00:00Z",
     "homeTeam": {
       "id": "t802",
-      "name": "Tunezja"
+      "name": "Tunezja",
+      "crest": "https://crests.football-data.org/tunisia.svg"
     },
     "awayTeam": {
       "id": "t766",
-      "name": "Japonia"
+      "name": "Japonia",
+      "crest": "https://crests.football-data.org/766.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -618,11 +690,13 @@
     "kickoffAt": "2026-06-21T16:00:00Z",
     "homeTeam": {
       "id": "t760",
-      "name": "Hiszpania"
+      "name": "Hiszpania",
+      "crest": "https://crests.football-data.org/760.svg"
     },
     "awayTeam": {
       "id": "t801",
-      "name": "Arabia Saudyjska"
+      "name": "Arabia Saudyjska",
+      "crest": "https://crests.football-data.org/saudi_arabia.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -635,11 +709,13 @@
     "kickoffAt": "2026-06-21T19:00:00Z",
     "homeTeam": {
       "id": "t805",
-      "name": "Belgia"
+      "name": "Belgia",
+      "crest": "https://crests.football-data.org/805.svg"
     },
     "awayTeam": {
       "id": "t840",
-      "name": "Iran"
+      "name": "Iran",
+      "crest": "https://crests.football-data.org/iran.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -652,11 +728,13 @@
     "kickoffAt": "2026-06-21T22:00:00Z",
     "homeTeam": {
       "id": "t758",
-      "name": "Urugwaj"
+      "name": "Urugwaj",
+      "crest": "https://crests.football-data.org/758.svg"
     },
     "awayTeam": {
       "id": "t1930",
-      "name": "Republika Zielonego Przylądka"
+      "name": "Republika Zielonego Przylądka",
+      "crest": "https://crests.football-data.org/cape_verde.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -669,11 +747,13 @@
     "kickoffAt": "2026-06-22T01:00:00Z",
     "homeTeam": {
       "id": "t783",
-      "name": "Nowa Zelandia"
+      "name": "Nowa Zelandia",
+      "crest": "https://crests.football-data.org/783.svg"
     },
     "awayTeam": {
       "id": "t825",
-      "name": "Egipt"
+      "name": "Egipt",
+      "crest": "https://crests.football-data.org/825.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -686,11 +766,13 @@
     "kickoffAt": "2026-06-22T17:00:00Z",
     "homeTeam": {
       "id": "t762",
-      "name": "Argentyna"
+      "name": "Argentyna",
+      "crest": "https://crests.football-data.org/762.png"
     },
     "awayTeam": {
       "id": "t816",
-      "name": "Austria"
+      "name": "Austria",
+      "crest": "https://crests.football-data.org/816.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -703,11 +785,13 @@
     "kickoffAt": "2026-06-22T21:00:00Z",
     "homeTeam": {
       "id": "t773",
-      "name": "Francja"
+      "name": "Francja",
+      "crest": "https://crests.football-data.org/773.svg"
     },
     "awayTeam": {
       "id": "t8062",
-      "name": "Irak"
+      "name": "Irak",
+      "crest": "https://crests.football-data.org/iraq.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -720,11 +804,13 @@
     "kickoffAt": "2026-06-23T00:00:00Z",
     "homeTeam": {
       "id": "t8872",
-      "name": "Norwegia"
+      "name": "Norwegia",
+      "crest": "https://crests.football-data.org/813.svg"
     },
     "awayTeam": {
       "id": "t804",
-      "name": "Senegal"
+      "name": "Senegal",
+      "crest": "https://crests.football-data.org/senegal.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -737,11 +823,13 @@
     "kickoffAt": "2026-06-23T03:00:00Z",
     "homeTeam": {
       "id": "t8049",
-      "name": "Jordania"
+      "name": "Jordania",
+      "crest": "https://crests.football-data.org/8049.png"
     },
     "awayTeam": {
       "id": "t778",
-      "name": "Algieria"
+      "name": "Algieria",
+      "crest": "https://crests.football-data.org/algeria.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -754,11 +842,13 @@
     "kickoffAt": "2026-06-23T17:00:00Z",
     "homeTeam": {
       "id": "t765",
-      "name": "Portugalia"
+      "name": "Portugalia",
+      "crest": "https://crests.football-data.org/765.svg"
     },
     "awayTeam": {
       "id": "t8070",
-      "name": "Uzbekistan"
+      "name": "Uzbekistan",
+      "crest": "https://crests.football-data.org/8070.png"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -771,11 +861,13 @@
     "kickoffAt": "2026-06-23T20:00:00Z",
     "homeTeam": {
       "id": "t770",
-      "name": "Anglia"
+      "name": "Anglia",
+      "crest": "https://crests.football-data.org/770.svg"
     },
     "awayTeam": {
       "id": "t763",
-      "name": "Ghana"
+      "name": "Ghana",
+      "crest": "https://crests.football-data.org/ghana.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -788,11 +880,13 @@
     "kickoffAt": "2026-06-23T23:00:00Z",
     "homeTeam": {
       "id": "t1836",
-      "name": "Panama"
+      "name": "Panama",
+      "crest": "https://crests.football-data.org/panama.svg"
     },
     "awayTeam": {
       "id": "t799",
-      "name": "Chorwacja"
+      "name": "Chorwacja",
+      "crest": "https://crests.football-data.org/799.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -805,11 +899,13 @@
     "kickoffAt": "2026-06-24T02:00:00Z",
     "homeTeam": {
       "id": "t818",
-      "name": "Kolumbia"
+      "name": "Kolumbia",
+      "crest": "https://crests.football-data.org/818.svg"
     },
     "awayTeam": {
       "id": "t1934",
-      "name": "DR Konga"
+      "name": "DR Konga",
+      "crest": "https://crests.football-data.org/congo_dr.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -822,11 +918,13 @@
     "kickoffAt": "2026-06-24T19:00:00Z",
     "homeTeam": {
       "id": "t788",
-      "name": "Szwajcaria"
+      "name": "Szwajcaria",
+      "crest": "https://crests.football-data.org/788.svg"
     },
     "awayTeam": {
       "id": "t828",
-      "name": "Kanada"
+      "name": "Kanada",
+      "crest": "https://crests.football-data.org/canada.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -839,11 +937,13 @@
     "kickoffAt": "2026-06-24T19:00:00Z",
     "homeTeam": {
       "id": "t1060",
-      "name": "Bośnia i Hercegowina"
+      "name": "Bośnia i Hercegowina",
+      "crest": "https://crests.football-data.org/bosnia.svg"
     },
     "awayTeam": {
       "id": "t8030",
-      "name": "Katar"
+      "name": "Katar",
+      "crest": "https://crests.football-data.org/8030.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -856,11 +956,13 @@
     "kickoffAt": "2026-06-24T22:00:00Z",
     "homeTeam": {
       "id": "t815",
-      "name": "Maroko"
+      "name": "Maroko",
+      "crest": "https://crests.football-data.org/morocco.svg"
     },
     "awayTeam": {
       "id": "t836",
-      "name": "Haiti"
+      "name": "Haiti",
+      "crest": "https://crests.football-data.org/haiti.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -873,11 +975,13 @@
     "kickoffAt": "2026-06-24T22:00:00Z",
     "homeTeam": {
       "id": "t8873",
-      "name": "Szkocja"
+      "name": "Szkocja",
+      "crest": "https://crests.football-data.org/814.svg"
     },
     "awayTeam": {
       "id": "t764",
-      "name": "Brazylia"
+      "name": "Brazylia",
+      "crest": "https://crests.football-data.org/764.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -890,11 +994,13 @@
     "kickoffAt": "2026-06-25T01:00:00Z",
     "homeTeam": {
       "id": "t798",
-      "name": "Czechy"
+      "name": "Czechy",
+      "crest": "https://crests.football-data.org/798.svg"
     },
     "awayTeam": {
       "id": "t769",
-      "name": "Meksyk"
+      "name": "Meksyk",
+      "crest": "https://crests.football-data.org/769.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -907,11 +1013,13 @@
     "kickoffAt": "2026-06-25T01:00:00Z",
     "homeTeam": {
       "id": "t774",
-      "name": "RPA"
+      "name": "RPA",
+      "crest": "https://crests.football-data.org/9396.svg"
     },
     "awayTeam": {
       "id": "t772",
-      "name": "Korea Płd."
+      "name": "Korea Płd.",
+      "crest": "https://crests.football-data.org/772.png"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -924,11 +1032,13 @@
     "kickoffAt": "2026-06-25T20:00:00Z",
     "homeTeam": {
       "id": "t791",
-      "name": "Ekwador"
+      "name": "Ekwador",
+      "crest": "https://crests.football-data.org/791.svg"
     },
     "awayTeam": {
       "id": "t759",
-      "name": "Niemcy"
+      "name": "Niemcy",
+      "crest": "https://crests.football-data.org/759.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -941,11 +1051,13 @@
     "kickoffAt": "2026-06-25T20:00:00Z",
     "homeTeam": {
       "id": "t9460",
-      "name": "Curaçao"
+      "name": "Curaçao",
+      "crest": "https://crests.football-data.org/curacao.svg"
     },
     "awayTeam": {
       "id": "t1935",
-      "name": "Wybrzeże Kości Słoniowej"
+      "name": "Wybrzeże Kości Słoniowej",
+      "crest": "https://crests.football-data.org/787.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -958,11 +1070,13 @@
     "kickoffAt": "2026-06-25T23:00:00Z",
     "homeTeam": {
       "id": "t802",
-      "name": "Tunezja"
+      "name": "Tunezja",
+      "crest": "https://crests.football-data.org/tunisia.svg"
     },
     "awayTeam": {
       "id": "t8601",
-      "name": "Holandia"
+      "name": "Holandia",
+      "crest": "https://crests.football-data.org/8601.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -975,11 +1089,13 @@
     "kickoffAt": "2026-06-25T23:00:00Z",
     "homeTeam": {
       "id": "t766",
-      "name": "Japonia"
+      "name": "Japonia",
+      "crest": "https://crests.football-data.org/766.svg"
     },
     "awayTeam": {
       "id": "t792",
-      "name": "Szwecja"
+      "name": "Szwecja",
+      "crest": "https://crests.football-data.org/792.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -992,11 +1108,13 @@
     "kickoffAt": "2026-06-26T02:00:00Z",
     "homeTeam": {
       "id": "t803",
-      "name": "Turcja"
+      "name": "Turcja",
+      "crest": "https://crests.football-data.org/803.svg"
     },
     "awayTeam": {
       "id": "t771",
-      "name": "USA"
+      "name": "USA",
+      "crest": "https://crests.football-data.org/usa.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1009,11 +1127,13 @@
     "kickoffAt": "2026-06-26T02:00:00Z",
     "homeTeam": {
       "id": "t761",
-      "name": "Paragwaj"
+      "name": "Paragwaj",
+      "crest": "https://crests.football-data.org/761.svg"
     },
     "awayTeam": {
       "id": "t779",
-      "name": "Australia"
+      "name": "Australia",
+      "crest": "https://crests.football-data.org/779.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1026,11 +1146,13 @@
     "kickoffAt": "2026-06-26T19:00:00Z",
     "homeTeam": {
       "id": "t8872",
-      "name": "Norwegia"
+      "name": "Norwegia",
+      "crest": "https://crests.football-data.org/813.svg"
     },
     "awayTeam": {
       "id": "t773",
-      "name": "Francja"
+      "name": "Francja",
+      "crest": "https://crests.football-data.org/773.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1043,11 +1165,13 @@
     "kickoffAt": "2026-06-26T19:00:00Z",
     "homeTeam": {
       "id": "t804",
-      "name": "Senegal"
+      "name": "Senegal",
+      "crest": "https://crests.football-data.org/senegal.svg"
     },
     "awayTeam": {
       "id": "t8062",
-      "name": "Irak"
+      "name": "Irak",
+      "crest": "https://crests.football-data.org/iraq.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1060,11 +1184,13 @@
     "kickoffAt": "2026-06-27T00:00:00Z",
     "homeTeam": {
       "id": "t758",
-      "name": "Urugwaj"
+      "name": "Urugwaj",
+      "crest": "https://crests.football-data.org/758.svg"
     },
     "awayTeam": {
       "id": "t760",
-      "name": "Hiszpania"
+      "name": "Hiszpania",
+      "crest": "https://crests.football-data.org/760.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1077,11 +1203,13 @@
     "kickoffAt": "2026-06-27T00:00:00Z",
     "homeTeam": {
       "id": "t1930",
-      "name": "Republika Zielonego Przylądka"
+      "name": "Republika Zielonego Przylądka",
+      "crest": "https://crests.football-data.org/cape_verde.svg"
     },
     "awayTeam": {
       "id": "t801",
-      "name": "Arabia Saudyjska"
+      "name": "Arabia Saudyjska",
+      "crest": "https://crests.football-data.org/saudi_arabia.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1094,11 +1222,13 @@
     "kickoffAt": "2026-06-27T03:00:00Z",
     "homeTeam": {
       "id": "t783",
-      "name": "Nowa Zelandia"
+      "name": "Nowa Zelandia",
+      "crest": "https://crests.football-data.org/783.svg"
     },
     "awayTeam": {
       "id": "t805",
-      "name": "Belgia"
+      "name": "Belgia",
+      "crest": "https://crests.football-data.org/805.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1111,11 +1241,13 @@
     "kickoffAt": "2026-06-27T03:00:00Z",
     "homeTeam": {
       "id": "t825",
-      "name": "Egipt"
+      "name": "Egipt",
+      "crest": "https://crests.football-data.org/825.svg"
     },
     "awayTeam": {
       "id": "t840",
-      "name": "Iran"
+      "name": "Iran",
+      "crest": "https://crests.football-data.org/iran.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1128,11 +1260,13 @@
     "kickoffAt": "2026-06-27T21:00:00Z",
     "homeTeam": {
       "id": "t1836",
-      "name": "Panama"
+      "name": "Panama",
+      "crest": "https://crests.football-data.org/panama.svg"
     },
     "awayTeam": {
       "id": "t770",
-      "name": "Anglia"
+      "name": "Anglia",
+      "crest": "https://crests.football-data.org/770.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1145,11 +1279,13 @@
     "kickoffAt": "2026-06-27T21:00:00Z",
     "homeTeam": {
       "id": "t799",
-      "name": "Chorwacja"
+      "name": "Chorwacja",
+      "crest": "https://crests.football-data.org/799.svg"
     },
     "awayTeam": {
       "id": "t763",
-      "name": "Ghana"
+      "name": "Ghana",
+      "crest": "https://crests.football-data.org/ghana.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1162,11 +1298,13 @@
     "kickoffAt": "2026-06-27T23:30:00Z",
     "homeTeam": {
       "id": "t818",
-      "name": "Kolumbia"
+      "name": "Kolumbia",
+      "crest": "https://crests.football-data.org/818.svg"
     },
     "awayTeam": {
       "id": "t765",
-      "name": "Portugalia"
+      "name": "Portugalia",
+      "crest": "https://crests.football-data.org/765.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1179,11 +1317,13 @@
     "kickoffAt": "2026-06-27T23:30:00Z",
     "homeTeam": {
       "id": "t1934",
-      "name": "DR Konga"
+      "name": "DR Konga",
+      "crest": "https://crests.football-data.org/congo_dr.svg"
     },
     "awayTeam": {
       "id": "t8070",
-      "name": "Uzbekistan"
+      "name": "Uzbekistan",
+      "crest": "https://crests.football-data.org/8070.png"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1196,11 +1336,13 @@
     "kickoffAt": "2026-06-28T02:00:00Z",
     "homeTeam": {
       "id": "t8049",
-      "name": "Jordania"
+      "name": "Jordania",
+      "crest": "https://crests.football-data.org/8049.png"
     },
     "awayTeam": {
       "id": "t762",
-      "name": "Argentyna"
+      "name": "Argentyna",
+      "crest": "https://crests.football-data.org/762.png"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1213,11 +1355,13 @@
     "kickoffAt": "2026-06-28T02:00:00Z",
     "homeTeam": {
       "id": "t778",
-      "name": "Algieria"
+      "name": "Algieria",
+      "crest": "https://crests.football-data.org/algeria.svg"
     },
     "awayTeam": {
       "id": "t816",
-      "name": "Austria"
+      "name": "Austria",
+      "crest": "https://crests.football-data.org/816.svg"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1230,11 +1374,13 @@
     "kickoffAt": "2026-06-28T19:00:00Z",
     "homeTeam": {
       "id": "tbd-537417-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537417-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1247,11 +1393,13 @@
     "kickoffAt": "2026-06-29T17:00:00Z",
     "homeTeam": {
       "id": "tbd-537423-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537423-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1264,11 +1412,13 @@
     "kickoffAt": "2026-06-29T20:30:00Z",
     "homeTeam": {
       "id": "tbd-537415-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537415-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1281,11 +1431,13 @@
     "kickoffAt": "2026-06-30T01:00:00Z",
     "homeTeam": {
       "id": "tbd-537418-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537418-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1298,11 +1450,13 @@
     "kickoffAt": "2026-06-30T17:00:00Z",
     "homeTeam": {
       "id": "tbd-537424-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537424-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1315,11 +1469,13 @@
     "kickoffAt": "2026-06-30T21:00:00Z",
     "homeTeam": {
       "id": "tbd-537416-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537416-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1332,11 +1488,13 @@
     "kickoffAt": "2026-07-01T01:00:00Z",
     "homeTeam": {
       "id": "tbd-537425-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537425-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1349,11 +1507,13 @@
     "kickoffAt": "2026-07-01T16:00:00Z",
     "homeTeam": {
       "id": "tbd-537426-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537426-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1366,11 +1526,13 @@
     "kickoffAt": "2026-07-01T20:00:00Z",
     "homeTeam": {
       "id": "tbd-537422-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537422-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1383,11 +1545,13 @@
     "kickoffAt": "2026-07-02T00:00:00Z",
     "homeTeam": {
       "id": "tbd-537421-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537421-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1400,11 +1564,13 @@
     "kickoffAt": "2026-07-02T19:00:00Z",
     "homeTeam": {
       "id": "tbd-537420-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537420-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1417,11 +1583,13 @@
     "kickoffAt": "2026-07-02T23:00:00Z",
     "homeTeam": {
       "id": "tbd-537419-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537419-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1434,11 +1602,13 @@
     "kickoffAt": "2026-07-03T03:00:00Z",
     "homeTeam": {
       "id": "tbd-537429-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537429-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1451,11 +1621,13 @@
     "kickoffAt": "2026-07-03T18:00:00Z",
     "homeTeam": {
       "id": "tbd-537428-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537428-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1468,11 +1640,13 @@
     "kickoffAt": "2026-07-03T22:00:00Z",
     "homeTeam": {
       "id": "tbd-537427-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537427-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1485,11 +1659,13 @@
     "kickoffAt": "2026-07-04T01:30:00Z",
     "homeTeam": {
       "id": "tbd-537430-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537430-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1502,11 +1678,13 @@
     "kickoffAt": "2026-07-04T17:00:00Z",
     "homeTeam": {
       "id": "tbd-537376-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537376-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1519,11 +1697,13 @@
     "kickoffAt": "2026-07-04T21:00:00Z",
     "homeTeam": {
       "id": "tbd-537375-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537375-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1536,11 +1716,13 @@
     "kickoffAt": "2026-07-05T20:00:00Z",
     "homeTeam": {
       "id": "tbd-537377-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537377-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1553,11 +1735,13 @@
     "kickoffAt": "2026-07-06T00:00:00Z",
     "homeTeam": {
       "id": "tbd-537378-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537378-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1570,11 +1754,13 @@
     "kickoffAt": "2026-07-06T19:00:00Z",
     "homeTeam": {
       "id": "tbd-537379-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537379-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1587,11 +1773,13 @@
     "kickoffAt": "2026-07-07T00:00:00Z",
     "homeTeam": {
       "id": "tbd-537380-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537380-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1604,11 +1792,13 @@
     "kickoffAt": "2026-07-07T16:00:00Z",
     "homeTeam": {
       "id": "tbd-537381-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537381-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1621,11 +1811,13 @@
     "kickoffAt": "2026-07-07T20:00:00Z",
     "homeTeam": {
       "id": "tbd-537382-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537382-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1638,11 +1830,13 @@
     "kickoffAt": "2026-07-09T20:00:00Z",
     "homeTeam": {
       "id": "tbd-537383-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537383-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1655,11 +1849,13 @@
     "kickoffAt": "2026-07-10T19:00:00Z",
     "homeTeam": {
       "id": "tbd-537384-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537384-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1672,11 +1868,13 @@
     "kickoffAt": "2026-07-11T21:00:00Z",
     "homeTeam": {
       "id": "tbd-537385-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537385-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1689,11 +1887,13 @@
     "kickoffAt": "2026-07-12T01:00:00Z",
     "homeTeam": {
       "id": "tbd-537386-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537386-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1706,11 +1906,13 @@
     "kickoffAt": "2026-07-14T19:00:00Z",
     "homeTeam": {
       "id": "tbd-537387-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537387-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1723,11 +1925,13 @@
     "kickoffAt": "2026-07-15T19:00:00Z",
     "homeTeam": {
       "id": "tbd-537388-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537388-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1740,11 +1944,13 @@
     "kickoffAt": "2026-07-18T21:00:00Z",
     "homeTeam": {
       "id": "tbd-537389-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537389-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
@@ -1757,11 +1963,13 @@
     "kickoffAt": "2026-07-19T19:00:00Z",
     "homeTeam": {
       "id": "tbd-537390-h",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "awayTeam": {
       "id": "tbd-537390-a",
-      "name": "TBD"
+      "name": "TBD",
+      "crest": null
     },
     "status": "TIMED",
     "homeScore": null,
