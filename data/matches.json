@@ -1,66 +1,1770 @@
 [
   {
-    "id": "match-001",
+    "id": "wc-537327",
     "stage": "group",
     "group": "A",
-    "kickoffAt": "2026-06-11T19:00:00.000Z",
-    "homeTeam": { "id": "mex", "name": "Meksyk" },
-    "awayTeam": { "id": "pol", "name": "Polska" }
+    "kickoffAt": "2026-06-11T19:00:00Z",
+    "homeTeam": {
+      "id": "t769",
+      "name": "Meksyk"
+    },
+    "awayTeam": {
+      "id": "t774",
+      "name": "RPA"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
   },
   {
-    "id": "match-002",
+    "id": "wc-537328",
     "stage": "group",
     "group": "A",
-    "kickoffAt": "2026-06-12T22:00:00.000Z",
-    "homeTeam": { "id": "can", "name": "Kanada" },
-    "awayTeam": { "id": "mar", "name": "Maroko" }
+    "kickoffAt": "2026-06-12T02:00:00Z",
+    "homeTeam": {
+      "id": "t772",
+      "name": "Korea Płd."
+    },
+    "awayTeam": {
+      "id": "t798",
+      "name": "Czechy"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
   },
   {
-    "id": "match-003",
+    "id": "wc-537333",
     "stage": "group",
     "group": "B",
-    "kickoffAt": "2026-06-13T18:00:00.000Z",
-    "homeTeam": { "id": "usa", "name": "USA" },
-    "awayTeam": { "id": "jpn", "name": "Japonia" }
+    "kickoffAt": "2026-06-12T19:00:00Z",
+    "homeTeam": {
+      "id": "t828",
+      "name": "Kanada"
+    },
+    "awayTeam": {
+      "id": "t1060",
+      "name": "Bosnia-Herzegovina"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
   },
   {
-    "id": "match-004",
+    "id": "wc-537345",
+    "stage": "group",
+    "group": "D",
+    "kickoffAt": "2026-06-13T01:00:00Z",
+    "homeTeam": {
+      "id": "t771",
+      "name": "USA"
+    },
+    "awayTeam": {
+      "id": "t761",
+      "name": "Paragwaj"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537334",
     "stage": "group",
     "group": "B",
-    "kickoffAt": "2026-06-13T21:00:00.000Z",
-    "homeTeam": { "id": "arg", "name": "Argentyna" },
-    "awayTeam": { "id": "kor", "name": "Korea Płd." }
+    "kickoffAt": "2026-06-13T19:00:00Z",
+    "homeTeam": {
+      "id": "t8030",
+      "name": "Katar"
+    },
+    "awayTeam": {
+      "id": "t788",
+      "name": "Szwajcaria"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
   },
   {
-    "id": "match-005",
+    "id": "wc-537339",
     "stage": "group",
     "group": "C",
-    "kickoffAt": "2026-06-14T19:00:00.000Z",
-    "homeTeam": { "id": "fra", "name": "Francja" },
-    "awayTeam": { "id": "cro", "name": "Chorwacja" }
+    "kickoffAt": "2026-06-13T22:00:00Z",
+    "homeTeam": {
+      "id": "t764",
+      "name": "Brazylia"
+    },
+    "awayTeam": {
+      "id": "t815",
+      "name": "Maroko"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
   },
   {
-    "id": "match-006",
+    "id": "wc-537340",
     "stage": "group",
     "group": "C",
-    "kickoffAt": "2026-06-14T22:00:00.000Z",
-    "homeTeam": { "id": "bra", "name": "Brazylia" },
-    "awayTeam": { "id": "ned", "name": "Holandia" }
+    "kickoffAt": "2026-06-14T01:00:00Z",
+    "homeTeam": {
+      "id": "t836",
+      "name": "Haiti"
+    },
+    "awayTeam": {
+      "id": "t8873",
+      "name": "Szkocja"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
   },
   {
-    "id": "match-007",
+    "id": "wc-537346",
     "stage": "group",
     "group": "D",
-    "kickoffAt": "2026-06-15T19:00:00.000Z",
-    "homeTeam": { "id": "eng", "name": "Anglia" },
-    "awayTeam": { "id": "sen", "name": "Senegal" }
+    "kickoffAt": "2026-06-14T04:00:00Z",
+    "homeTeam": {
+      "id": "t779",
+      "name": "Australia"
+    },
+    "awayTeam": {
+      "id": "t803",
+      "name": "Turcja"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
   },
   {
-    "id": "match-008",
+    "id": "wc-537351",
+    "stage": "group",
+    "group": "E",
+    "kickoffAt": "2026-06-14T17:00:00Z",
+    "homeTeam": {
+      "id": "t759",
+      "name": "Niemcy"
+    },
+    "awayTeam": {
+      "id": "t9460",
+      "name": "Curaçao"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537357",
+    "stage": "group",
+    "group": "F",
+    "kickoffAt": "2026-06-14T20:00:00Z",
+    "homeTeam": {
+      "id": "t8601",
+      "name": "Holandia"
+    },
+    "awayTeam": {
+      "id": "t766",
+      "name": "Japonia"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537352",
+    "stage": "group",
+    "group": "E",
+    "kickoffAt": "2026-06-14T23:00:00Z",
+    "homeTeam": {
+      "id": "t1935",
+      "name": "Wybrzeże Kości Słoniowej"
+    },
+    "awayTeam": {
+      "id": "t791",
+      "name": "Ekwador"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537358",
+    "stage": "group",
+    "group": "F",
+    "kickoffAt": "2026-06-15T02:00:00Z",
+    "homeTeam": {
+      "id": "t792",
+      "name": "Szwecja"
+    },
+    "awayTeam": {
+      "id": "t802",
+      "name": "Tunezja"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537369",
+    "stage": "group",
+    "group": "H",
+    "kickoffAt": "2026-06-15T16:00:00Z",
+    "homeTeam": {
+      "id": "t760",
+      "name": "Hiszpania"
+    },
+    "awayTeam": {
+      "id": "t1930",
+      "name": "Cape Verde Islands"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537363",
+    "stage": "group",
+    "group": "G",
+    "kickoffAt": "2026-06-15T19:00:00Z",
+    "homeTeam": {
+      "id": "t805",
+      "name": "Belgia"
+    },
+    "awayTeam": {
+      "id": "t825",
+      "name": "Egipt"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537370",
+    "stage": "group",
+    "group": "H",
+    "kickoffAt": "2026-06-15T22:00:00Z",
+    "homeTeam": {
+      "id": "t801",
+      "name": "Arabia Saudyjska"
+    },
+    "awayTeam": {
+      "id": "t758",
+      "name": "Urugwaj"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537364",
+    "stage": "group",
+    "group": "G",
+    "kickoffAt": "2026-06-16T01:00:00Z",
+    "homeTeam": {
+      "id": "t840",
+      "name": "Iran"
+    },
+    "awayTeam": {
+      "id": "t783",
+      "name": "Nowa Zelandia"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537391",
+    "stage": "group",
+    "group": "I",
+    "kickoffAt": "2026-06-16T19:00:00Z",
+    "homeTeam": {
+      "id": "t773",
+      "name": "Francja"
+    },
+    "awayTeam": {
+      "id": "t804",
+      "name": "Senegal"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537392",
+    "stage": "group",
+    "group": "I",
+    "kickoffAt": "2026-06-16T22:00:00Z",
+    "homeTeam": {
+      "id": "t8062",
+      "name": "Irak"
+    },
+    "awayTeam": {
+      "id": "t8872",
+      "name": "Norwegia"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537397",
+    "stage": "group",
+    "group": "J",
+    "kickoffAt": "2026-06-17T01:00:00Z",
+    "homeTeam": {
+      "id": "t762",
+      "name": "Argentyna"
+    },
+    "awayTeam": {
+      "id": "t778",
+      "name": "Algieria"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537398",
+    "stage": "group",
+    "group": "J",
+    "kickoffAt": "2026-06-17T04:00:00Z",
+    "homeTeam": {
+      "id": "t816",
+      "name": "Austria"
+    },
+    "awayTeam": {
+      "id": "t8049",
+      "name": "Jordania"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537403",
+    "stage": "group",
+    "group": "K",
+    "kickoffAt": "2026-06-17T17:00:00Z",
+    "homeTeam": {
+      "id": "t765",
+      "name": "Portugalia"
+    },
+    "awayTeam": {
+      "id": "t1934",
+      "name": "Congo DR"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537409",
+    "stage": "group",
+    "group": "L",
+    "kickoffAt": "2026-06-17T20:00:00Z",
+    "homeTeam": {
+      "id": "t770",
+      "name": "Anglia"
+    },
+    "awayTeam": {
+      "id": "t799",
+      "name": "Chorwacja"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537410",
+    "stage": "group",
+    "group": "L",
+    "kickoffAt": "2026-06-17T23:00:00Z",
+    "homeTeam": {
+      "id": "t763",
+      "name": "Ghana"
+    },
+    "awayTeam": {
+      "id": "t1836",
+      "name": "Panama"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537404",
+    "stage": "group",
+    "group": "K",
+    "kickoffAt": "2026-06-18T02:00:00Z",
+    "homeTeam": {
+      "id": "t8070",
+      "name": "Uzbekistan"
+    },
+    "awayTeam": {
+      "id": "t818",
+      "name": "Kolumbia"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537329",
+    "stage": "group",
+    "group": "A",
+    "kickoffAt": "2026-06-18T16:00:00Z",
+    "homeTeam": {
+      "id": "t798",
+      "name": "Czechy"
+    },
+    "awayTeam": {
+      "id": "t774",
+      "name": "RPA"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537335",
+    "stage": "group",
+    "group": "B",
+    "kickoffAt": "2026-06-18T19:00:00Z",
+    "homeTeam": {
+      "id": "t788",
+      "name": "Szwajcaria"
+    },
+    "awayTeam": {
+      "id": "t1060",
+      "name": "Bosnia-Herzegovina"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537336",
+    "stage": "group",
+    "group": "B",
+    "kickoffAt": "2026-06-18T22:00:00Z",
+    "homeTeam": {
+      "id": "t828",
+      "name": "Kanada"
+    },
+    "awayTeam": {
+      "id": "t8030",
+      "name": "Katar"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537330",
+    "stage": "group",
+    "group": "A",
+    "kickoffAt": "2026-06-19T01:00:00Z",
+    "homeTeam": {
+      "id": "t769",
+      "name": "Meksyk"
+    },
+    "awayTeam": {
+      "id": "t772",
+      "name": "Korea Płd."
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537348",
     "stage": "group",
     "group": "D",
-    "kickoffAt": "2026-06-15T22:00:00.000Z",
-    "homeTeam": { "id": "esp", "name": "Hiszpania" },
-    "awayTeam": { "id": "por", "name": "Portugalia" }
+    "kickoffAt": "2026-06-19T19:00:00Z",
+    "homeTeam": {
+      "id": "t771",
+      "name": "USA"
+    },
+    "awayTeam": {
+      "id": "t779",
+      "name": "Australia"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537342",
+    "stage": "group",
+    "group": "C",
+    "kickoffAt": "2026-06-19T22:00:00Z",
+    "homeTeam": {
+      "id": "t8873",
+      "name": "Szkocja"
+    },
+    "awayTeam": {
+      "id": "t815",
+      "name": "Maroko"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537341",
+    "stage": "group",
+    "group": "C",
+    "kickoffAt": "2026-06-20T00:30:00Z",
+    "homeTeam": {
+      "id": "t764",
+      "name": "Brazylia"
+    },
+    "awayTeam": {
+      "id": "t836",
+      "name": "Haiti"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537347",
+    "stage": "group",
+    "group": "D",
+    "kickoffAt": "2026-06-20T03:00:00Z",
+    "homeTeam": {
+      "id": "t803",
+      "name": "Turcja"
+    },
+    "awayTeam": {
+      "id": "t761",
+      "name": "Paragwaj"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537359",
+    "stage": "group",
+    "group": "F",
+    "kickoffAt": "2026-06-20T17:00:00Z",
+    "homeTeam": {
+      "id": "t8601",
+      "name": "Holandia"
+    },
+    "awayTeam": {
+      "id": "t792",
+      "name": "Szwecja"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537353",
+    "stage": "group",
+    "group": "E",
+    "kickoffAt": "2026-06-20T20:00:00Z",
+    "homeTeam": {
+      "id": "t759",
+      "name": "Niemcy"
+    },
+    "awayTeam": {
+      "id": "t1935",
+      "name": "Wybrzeże Kości Słoniowej"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537354",
+    "stage": "group",
+    "group": "E",
+    "kickoffAt": "2026-06-21T00:00:00Z",
+    "homeTeam": {
+      "id": "t791",
+      "name": "Ekwador"
+    },
+    "awayTeam": {
+      "id": "t9460",
+      "name": "Curaçao"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537360",
+    "stage": "group",
+    "group": "F",
+    "kickoffAt": "2026-06-21T04:00:00Z",
+    "homeTeam": {
+      "id": "t802",
+      "name": "Tunezja"
+    },
+    "awayTeam": {
+      "id": "t766",
+      "name": "Japonia"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537371",
+    "stage": "group",
+    "group": "H",
+    "kickoffAt": "2026-06-21T16:00:00Z",
+    "homeTeam": {
+      "id": "t760",
+      "name": "Hiszpania"
+    },
+    "awayTeam": {
+      "id": "t801",
+      "name": "Arabia Saudyjska"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537365",
+    "stage": "group",
+    "group": "G",
+    "kickoffAt": "2026-06-21T19:00:00Z",
+    "homeTeam": {
+      "id": "t805",
+      "name": "Belgia"
+    },
+    "awayTeam": {
+      "id": "t840",
+      "name": "Iran"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537372",
+    "stage": "group",
+    "group": "H",
+    "kickoffAt": "2026-06-21T22:00:00Z",
+    "homeTeam": {
+      "id": "t758",
+      "name": "Urugwaj"
+    },
+    "awayTeam": {
+      "id": "t1930",
+      "name": "Cape Verde Islands"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537366",
+    "stage": "group",
+    "group": "G",
+    "kickoffAt": "2026-06-22T01:00:00Z",
+    "homeTeam": {
+      "id": "t783",
+      "name": "Nowa Zelandia"
+    },
+    "awayTeam": {
+      "id": "t825",
+      "name": "Egipt"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537399",
+    "stage": "group",
+    "group": "J",
+    "kickoffAt": "2026-06-22T17:00:00Z",
+    "homeTeam": {
+      "id": "t762",
+      "name": "Argentyna"
+    },
+    "awayTeam": {
+      "id": "t816",
+      "name": "Austria"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537393",
+    "stage": "group",
+    "group": "I",
+    "kickoffAt": "2026-06-22T21:00:00Z",
+    "homeTeam": {
+      "id": "t773",
+      "name": "Francja"
+    },
+    "awayTeam": {
+      "id": "t8062",
+      "name": "Irak"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537394",
+    "stage": "group",
+    "group": "I",
+    "kickoffAt": "2026-06-23T00:00:00Z",
+    "homeTeam": {
+      "id": "t8872",
+      "name": "Norwegia"
+    },
+    "awayTeam": {
+      "id": "t804",
+      "name": "Senegal"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537400",
+    "stage": "group",
+    "group": "J",
+    "kickoffAt": "2026-06-23T03:00:00Z",
+    "homeTeam": {
+      "id": "t8049",
+      "name": "Jordania"
+    },
+    "awayTeam": {
+      "id": "t778",
+      "name": "Algieria"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537405",
+    "stage": "group",
+    "group": "K",
+    "kickoffAt": "2026-06-23T17:00:00Z",
+    "homeTeam": {
+      "id": "t765",
+      "name": "Portugalia"
+    },
+    "awayTeam": {
+      "id": "t8070",
+      "name": "Uzbekistan"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537411",
+    "stage": "group",
+    "group": "L",
+    "kickoffAt": "2026-06-23T20:00:00Z",
+    "homeTeam": {
+      "id": "t770",
+      "name": "Anglia"
+    },
+    "awayTeam": {
+      "id": "t763",
+      "name": "Ghana"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537412",
+    "stage": "group",
+    "group": "L",
+    "kickoffAt": "2026-06-23T23:00:00Z",
+    "homeTeam": {
+      "id": "t1836",
+      "name": "Panama"
+    },
+    "awayTeam": {
+      "id": "t799",
+      "name": "Chorwacja"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537406",
+    "stage": "group",
+    "group": "K",
+    "kickoffAt": "2026-06-24T02:00:00Z",
+    "homeTeam": {
+      "id": "t818",
+      "name": "Kolumbia"
+    },
+    "awayTeam": {
+      "id": "t1934",
+      "name": "Congo DR"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537337",
+    "stage": "group",
+    "group": "B",
+    "kickoffAt": "2026-06-24T19:00:00Z",
+    "homeTeam": {
+      "id": "t788",
+      "name": "Szwajcaria"
+    },
+    "awayTeam": {
+      "id": "t828",
+      "name": "Kanada"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537338",
+    "stage": "group",
+    "group": "B",
+    "kickoffAt": "2026-06-24T19:00:00Z",
+    "homeTeam": {
+      "id": "t1060",
+      "name": "Bosnia-Herzegovina"
+    },
+    "awayTeam": {
+      "id": "t8030",
+      "name": "Katar"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537344",
+    "stage": "group",
+    "group": "C",
+    "kickoffAt": "2026-06-24T22:00:00Z",
+    "homeTeam": {
+      "id": "t815",
+      "name": "Maroko"
+    },
+    "awayTeam": {
+      "id": "t836",
+      "name": "Haiti"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537343",
+    "stage": "group",
+    "group": "C",
+    "kickoffAt": "2026-06-24T22:00:00Z",
+    "homeTeam": {
+      "id": "t8873",
+      "name": "Szkocja"
+    },
+    "awayTeam": {
+      "id": "t764",
+      "name": "Brazylia"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537331",
+    "stage": "group",
+    "group": "A",
+    "kickoffAt": "2026-06-25T01:00:00Z",
+    "homeTeam": {
+      "id": "t798",
+      "name": "Czechy"
+    },
+    "awayTeam": {
+      "id": "t769",
+      "name": "Meksyk"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537332",
+    "stage": "group",
+    "group": "A",
+    "kickoffAt": "2026-06-25T01:00:00Z",
+    "homeTeam": {
+      "id": "t774",
+      "name": "RPA"
+    },
+    "awayTeam": {
+      "id": "t772",
+      "name": "Korea Płd."
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537355",
+    "stage": "group",
+    "group": "E",
+    "kickoffAt": "2026-06-25T20:00:00Z",
+    "homeTeam": {
+      "id": "t791",
+      "name": "Ekwador"
+    },
+    "awayTeam": {
+      "id": "t759",
+      "name": "Niemcy"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537356",
+    "stage": "group",
+    "group": "E",
+    "kickoffAt": "2026-06-25T20:00:00Z",
+    "homeTeam": {
+      "id": "t9460",
+      "name": "Curaçao"
+    },
+    "awayTeam": {
+      "id": "t1935",
+      "name": "Wybrzeże Kości Słoniowej"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537361",
+    "stage": "group",
+    "group": "F",
+    "kickoffAt": "2026-06-25T23:00:00Z",
+    "homeTeam": {
+      "id": "t802",
+      "name": "Tunezja"
+    },
+    "awayTeam": {
+      "id": "t8601",
+      "name": "Holandia"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537362",
+    "stage": "group",
+    "group": "F",
+    "kickoffAt": "2026-06-25T23:00:00Z",
+    "homeTeam": {
+      "id": "t766",
+      "name": "Japonia"
+    },
+    "awayTeam": {
+      "id": "t792",
+      "name": "Szwecja"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537349",
+    "stage": "group",
+    "group": "D",
+    "kickoffAt": "2026-06-26T02:00:00Z",
+    "homeTeam": {
+      "id": "t803",
+      "name": "Turcja"
+    },
+    "awayTeam": {
+      "id": "t771",
+      "name": "USA"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537350",
+    "stage": "group",
+    "group": "D",
+    "kickoffAt": "2026-06-26T02:00:00Z",
+    "homeTeam": {
+      "id": "t761",
+      "name": "Paragwaj"
+    },
+    "awayTeam": {
+      "id": "t779",
+      "name": "Australia"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537395",
+    "stage": "group",
+    "group": "I",
+    "kickoffAt": "2026-06-26T19:00:00Z",
+    "homeTeam": {
+      "id": "t8872",
+      "name": "Norwegia"
+    },
+    "awayTeam": {
+      "id": "t773",
+      "name": "Francja"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537396",
+    "stage": "group",
+    "group": "I",
+    "kickoffAt": "2026-06-26T19:00:00Z",
+    "homeTeam": {
+      "id": "t804",
+      "name": "Senegal"
+    },
+    "awayTeam": {
+      "id": "t8062",
+      "name": "Irak"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537373",
+    "stage": "group",
+    "group": "H",
+    "kickoffAt": "2026-06-27T00:00:00Z",
+    "homeTeam": {
+      "id": "t758",
+      "name": "Urugwaj"
+    },
+    "awayTeam": {
+      "id": "t760",
+      "name": "Hiszpania"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537374",
+    "stage": "group",
+    "group": "H",
+    "kickoffAt": "2026-06-27T00:00:00Z",
+    "homeTeam": {
+      "id": "t1930",
+      "name": "Cape Verde Islands"
+    },
+    "awayTeam": {
+      "id": "t801",
+      "name": "Arabia Saudyjska"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537367",
+    "stage": "group",
+    "group": "G",
+    "kickoffAt": "2026-06-27T03:00:00Z",
+    "homeTeam": {
+      "id": "t783",
+      "name": "Nowa Zelandia"
+    },
+    "awayTeam": {
+      "id": "t805",
+      "name": "Belgia"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537368",
+    "stage": "group",
+    "group": "G",
+    "kickoffAt": "2026-06-27T03:00:00Z",
+    "homeTeam": {
+      "id": "t825",
+      "name": "Egipt"
+    },
+    "awayTeam": {
+      "id": "t840",
+      "name": "Iran"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537413",
+    "stage": "group",
+    "group": "L",
+    "kickoffAt": "2026-06-27T21:00:00Z",
+    "homeTeam": {
+      "id": "t1836",
+      "name": "Panama"
+    },
+    "awayTeam": {
+      "id": "t770",
+      "name": "Anglia"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537414",
+    "stage": "group",
+    "group": "L",
+    "kickoffAt": "2026-06-27T21:00:00Z",
+    "homeTeam": {
+      "id": "t799",
+      "name": "Chorwacja"
+    },
+    "awayTeam": {
+      "id": "t763",
+      "name": "Ghana"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537407",
+    "stage": "group",
+    "group": "K",
+    "kickoffAt": "2026-06-27T23:30:00Z",
+    "homeTeam": {
+      "id": "t818",
+      "name": "Kolumbia"
+    },
+    "awayTeam": {
+      "id": "t765",
+      "name": "Portugalia"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537408",
+    "stage": "group",
+    "group": "K",
+    "kickoffAt": "2026-06-27T23:30:00Z",
+    "homeTeam": {
+      "id": "t1934",
+      "name": "Congo DR"
+    },
+    "awayTeam": {
+      "id": "t8070",
+      "name": "Uzbekistan"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537401",
+    "stage": "group",
+    "group": "J",
+    "kickoffAt": "2026-06-28T02:00:00Z",
+    "homeTeam": {
+      "id": "t8049",
+      "name": "Jordania"
+    },
+    "awayTeam": {
+      "id": "t762",
+      "name": "Argentyna"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537402",
+    "stage": "group",
+    "group": "J",
+    "kickoffAt": "2026-06-28T02:00:00Z",
+    "homeTeam": {
+      "id": "t778",
+      "name": "Algieria"
+    },
+    "awayTeam": {
+      "id": "t816",
+      "name": "Austria"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537417",
+    "stage": "1/16 finału",
+    "group": null,
+    "kickoffAt": "2026-06-28T19:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537417-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537417-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537423",
+    "stage": "1/16 finału",
+    "group": null,
+    "kickoffAt": "2026-06-29T17:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537423-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537423-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537415",
+    "stage": "1/16 finału",
+    "group": null,
+    "kickoffAt": "2026-06-29T20:30:00Z",
+    "homeTeam": {
+      "id": "tbd-537415-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537415-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537418",
+    "stage": "1/16 finału",
+    "group": null,
+    "kickoffAt": "2026-06-30T01:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537418-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537418-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537424",
+    "stage": "1/16 finału",
+    "group": null,
+    "kickoffAt": "2026-06-30T17:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537424-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537424-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537416",
+    "stage": "1/16 finału",
+    "group": null,
+    "kickoffAt": "2026-06-30T21:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537416-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537416-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537425",
+    "stage": "1/16 finału",
+    "group": null,
+    "kickoffAt": "2026-07-01T01:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537425-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537425-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537426",
+    "stage": "1/16 finału",
+    "group": null,
+    "kickoffAt": "2026-07-01T16:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537426-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537426-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537422",
+    "stage": "1/16 finału",
+    "group": null,
+    "kickoffAt": "2026-07-01T20:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537422-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537422-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537421",
+    "stage": "1/16 finału",
+    "group": null,
+    "kickoffAt": "2026-07-02T00:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537421-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537421-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537420",
+    "stage": "1/16 finału",
+    "group": null,
+    "kickoffAt": "2026-07-02T19:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537420-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537420-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537419",
+    "stage": "1/16 finału",
+    "group": null,
+    "kickoffAt": "2026-07-02T23:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537419-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537419-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537429",
+    "stage": "1/16 finału",
+    "group": null,
+    "kickoffAt": "2026-07-03T03:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537429-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537429-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537428",
+    "stage": "1/16 finału",
+    "group": null,
+    "kickoffAt": "2026-07-03T18:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537428-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537428-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537427",
+    "stage": "1/16 finału",
+    "group": null,
+    "kickoffAt": "2026-07-03T22:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537427-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537427-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537430",
+    "stage": "1/16 finału",
+    "group": null,
+    "kickoffAt": "2026-07-04T01:30:00Z",
+    "homeTeam": {
+      "id": "tbd-537430-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537430-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537376",
+    "stage": "1/8 finału",
+    "group": null,
+    "kickoffAt": "2026-07-04T17:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537376-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537376-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537375",
+    "stage": "1/8 finału",
+    "group": null,
+    "kickoffAt": "2026-07-04T21:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537375-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537375-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537377",
+    "stage": "1/8 finału",
+    "group": null,
+    "kickoffAt": "2026-07-05T20:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537377-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537377-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537378",
+    "stage": "1/8 finału",
+    "group": null,
+    "kickoffAt": "2026-07-06T00:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537378-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537378-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537379",
+    "stage": "1/8 finału",
+    "group": null,
+    "kickoffAt": "2026-07-06T19:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537379-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537379-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537380",
+    "stage": "1/8 finału",
+    "group": null,
+    "kickoffAt": "2026-07-07T00:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537380-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537380-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537381",
+    "stage": "1/8 finału",
+    "group": null,
+    "kickoffAt": "2026-07-07T16:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537381-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537381-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537382",
+    "stage": "1/8 finału",
+    "group": null,
+    "kickoffAt": "2026-07-07T20:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537382-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537382-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537383",
+    "stage": "ćwierćfinał",
+    "group": null,
+    "kickoffAt": "2026-07-09T20:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537383-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537383-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537384",
+    "stage": "ćwierćfinał",
+    "group": null,
+    "kickoffAt": "2026-07-10T19:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537384-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537384-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537385",
+    "stage": "ćwierćfinał",
+    "group": null,
+    "kickoffAt": "2026-07-11T21:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537385-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537385-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537386",
+    "stage": "ćwierćfinał",
+    "group": null,
+    "kickoffAt": "2026-07-12T01:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537386-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537386-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537387",
+    "stage": "półfinał",
+    "group": null,
+    "kickoffAt": "2026-07-14T19:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537387-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537387-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537388",
+    "stage": "półfinał",
+    "group": null,
+    "kickoffAt": "2026-07-15T19:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537388-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537388-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537389",
+    "stage": "mecz o 3. miejsce",
+    "group": null,
+    "kickoffAt": "2026-07-18T21:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537389-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537389-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
+  },
+  {
+    "id": "wc-537390",
+    "stage": "finał",
+    "group": null,
+    "kickoffAt": "2026-07-19T19:00:00Z",
+    "homeTeam": {
+      "id": "tbd-537390-h",
+      "name": "TBD"
+    },
+    "awayTeam": {
+      "id": "tbd-537390-a",
+      "name": "TBD"
+    },
+    "status": "TIMED",
+    "homeScore": null,
+    "awayScore": null
   }
 ]
