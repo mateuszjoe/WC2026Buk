@@ -26,6 +26,9 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Zależności robota
+        run: npm install --no-audit --no-fund
+
       - name: Pobierz dane z API
         env:
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
@@ -42,3 +45,10 @@ jobs:
             git commit -m "Auto: aktualizacja terminarza i wyników MŚ 2026"
             git push
           fi
+
+      - name: Wyślij powiadomienia push
+        if: always()
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+        run: node scripts/send-push.mjs

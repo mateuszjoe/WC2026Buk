@@ -33,5 +33,17 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow write: if isAdmin();
     }
+
+    // Subskrypcje push: gracz zapisuje tylko własną; czyta je wyłącznie robot
+    // (konto serwisowe pomija reguły), więc klientom czytania zabraniamy.
+    match /pushSubs/{uid} {
+      allow read: if false;
+      allow write: if isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Stan wysyłki powiadomień — tylko serwer (konto serwisowe).
+    match /push/{docId} {
+      allow read, write: if false;
+    }
   }
 }

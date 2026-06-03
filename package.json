@@ -1,0 +1,10 @@
+{
+  "name": "wc2026-buk-tools",
+  "private": true,
+  "type": "module",
+  "description": "Narzędzia robota (GitHub Actions): pobieranie wyników + wysyłka powiadomień push. Sama strona jest statyczna i nie wymaga builda.",
+  "dependencies": {
+    "firebase-admin": "^12.7.0",
+    "web-push": "^3.6.7"
+  }
+}

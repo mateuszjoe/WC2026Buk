@@ -47,6 +47,10 @@ const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
 const googleProvider = new GoogleAuthProvider();
 
+// Klucz publiczny VAPID do prawdziwego push (wysyłką zajmuje się robot na GitHubie).
+const VAPID_PUBLIC =
+  "BAQl5Gb6pj34iL4XK6NAtjsmNDhYJB7gkOLB5KFE93taOpMLVtFMlhShRBqQjjNekXn5eRC3TT9ysggxZyVXgJM";
+
 // --- Stan aplikacji -----------------------------------------------------------
 const state = {
   settings: null, // data/settings.json
@@ -1325,6 +1329,46 @@ async function requestNotifyPermission() {
   render();
   if (Notification.permission === "granted") {
     notify("🔔 Powiadomienia włączone", "Teraz nie ucieknie Ci żadna akcja. Powodzenia, typerze!");
+    subscribePush();
+  }
+}
+
+// Subskrypcja prawdziwego push (Web Push / VAPID) — zapisuje subskrypcję w bazie,
+// żeby robot mógł wysłać powiadomienie nawet przy zamkniętej aplikacji.
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(base64);
+  const arr = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+  return arr;
+}
+
+async function subscribePush() {
+  try {
+    if (!state.user) return;
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+    if (Notification.permission !== "granted") return;
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC)
+      });
+    }
+    await setDoc(
+      doc(db, "pushSubs", state.user.uid),
+      {
+        sub: JSON.parse(JSON.stringify(sub)),
+        name: myProfile().name,
+        email: state.user.email,
+        updatedAt: serverTimestamp()
+      },
+      { merge: true }
+    );
+  } catch (e) {
+    console.warn("push subscribe:", e);
   }
 }
 
@@ -1472,6 +1516,7 @@ onAuthStateChanged(auth, (user) => {
 
   if (user) {
     listenToFirestore();
+    if ("Notification" in window && Notification.permission === "granted") subscribePush();
   } else {
     stopListening();
     state.predictions = {};
