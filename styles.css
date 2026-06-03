@@ -606,6 +606,37 @@ details.mini-standings[open] summary { color: var(--text); }
 
 .section-head.compact { align-items: center; margin-bottom: 0.4rem; }
 
+/* ---------- Regulamin / nagrody ---------- */
+.rules-list { margin: 0.2rem 0 0.6rem; padding-left: 0; list-style: none; }
+.rules-list li {
+  display: flex; align-items: baseline; gap: 0.6rem;
+  padding: 0.4rem 0; border-bottom: 1px solid rgba(42, 54, 102, 0.4); line-height: 1.5;
+}
+.rules-list li:last-child { border-bottom: 0; }
+.rules-list .pts { flex-shrink: 0; align-self: center; }
+
+.prizes-card { background: linear-gradient(180deg, rgba(255, 209, 102, 0.08), var(--bg-2)); }
+.podium {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.8rem;
+  margin: 0.4rem 0 0.8rem;
+}
+.prize {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1rem 0.9rem;
+  text-align: center;
+  background: var(--panel);
+}
+.prize.gold { border-color: rgba(255, 209, 102, 0.5); box-shadow: 0 8px 24px rgba(255, 209, 102, 0.12); }
+.prize.silver { border-color: rgba(180, 197, 228, 0.4); }
+.prize.bronze { border-color: rgba(205, 127, 50, 0.4); }
+.prize-place { font-weight: 700; font-size: 0.92rem; color: var(--muted); }
+.prize-amount { font-weight: 800; font-size: 1.25rem; margin-top: 0.3rem; }
+.prize.gold .prize-amount { color: var(--gold); }
+.prize-note { font-size: 0.74rem; color: var(--muted); margin-top: 0.3rem; }
+
 /* ---------- Tablet ---------- */
 @media (max-width: 760px) {
   .group-grid { grid-template-columns: 1fr; }

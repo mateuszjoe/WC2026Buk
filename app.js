@@ -65,6 +65,7 @@ const VIEWS = [
   { id: "matches", label: "Mecze" },
   { id: "mine", label: "Moje typy" },
   { id: "profile", label: "Profil", authOnly: true },
+  { id: "rules", label: "Regulamin" },
   { id: "admin", label: "Panel admina", adminOnly: true }
 ];
 
@@ -624,6 +625,8 @@ function viewHtml() {
       return mineHtml();
     case "profile":
       return profileHtml();
+    case "rules":
+      return rulesHtml();
     case "admin":
       return isAdmin() ? adminHtml() : `<p class="muted">Brak dostępu.</p>`;
     default:
@@ -970,6 +973,59 @@ function profileHtml() {
           ${state.user.photoURL ? '<button class="btn" id="avatar-google">Użyj zdjęcia z Google</button>' : ""}
           <button class="btn ghost" id="avatar-clear">Domyślny (inicjały)</button>
         </div>
+      </div>
+    </section>`;
+}
+
+// --- Widok: Regulamin ---------------------------------------------------------
+function rulesHtml() {
+  const p = state.settings.points;
+  return `
+    <section class="stack">
+      <div class="section-head">
+        <div><div class="eyebrow">Zasady gry</div><h2>Regulamin</h2></div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">⚽ Punktacja</h3>
+        <ul class="rules-list">
+          <li><span class="pts ok">${p.exactScore} pkt</span> za <strong>dokładny wynik</strong> meczu (np. typujesz 2:1 i pada 2:1).</li>
+          <li><span class="pts ok">${p.correctResult} pkt</span> za trafiony <strong>rezultat</strong> (wygrana gospodarzy / remis / wygrana gości), jeśli wynik nie jest dokładny.</li>
+          <li><span class="pts miss">0 pkt</span> za nietrafiony rezultat.</li>
+          <li><span class="pts exact">${p.tournamentWinner} pkt</span> za trafienie <strong>zwycięzcy całego turnieju</strong>.</li>
+        </ul>
+        <p class="muted small">Przy remisie w punktach decyduje kolejno: więcej dokładnych wyników →
+        trafiony mistrz → więcej trafionych rezultatów → jak daleko zaszedł typowany mistrz.</p>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">⏱️ Zasady typowania</h3>
+        <ul class="rules-list">
+          <li>Typ meczu można wpisać/zmienić najpóźniej <strong>5 minut przed</strong> pierwszym gwizdkiem.</li>
+          <li>Typ na <strong>zwycięzcę turnieju</strong> można zmieniać tylko do <strong>końca 1. kolejki</strong> fazy grupowej.</li>
+          <li>Wyniki zaciągają się automatycznie, ranking liczy się na bieżąco.</li>
+        </ul>
+      </div>
+
+      <div class="card prizes-card">
+        <h3 class="card-title">🏆 Nagrody — podział puli</h3>
+        <div class="podium">
+          <div class="prize gold">
+            <div class="prize-place">🥇 I miejsce</div>
+            <div class="prize-amount">70% puli</div>
+          </div>
+          <div class="prize silver">
+            <div class="prize-place">🥈 II miejsce</div>
+            <div class="prize-amount">30% puli</div>
+            <div class="prize-note">minus koszt Harnasia zakapslowanego</div>
+          </div>
+          <div class="prize bronze">
+            <div class="prize-place">🥉 III miejsce</div>
+            <div class="prize-amount">🍺 Harnaś zakapslowany</div>
+          </div>
+        </div>
+        <p class="muted small">Gra toczy się o punkty i pulę ustaloną w grupie — bez prawdziwego bukmachera,
+        kursów i płatności w aplikacji. Rozliczenie puli odbywa się między uczestnikami poza serwisem.</p>
       </div>
     </section>`;
 }
