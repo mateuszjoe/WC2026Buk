@@ -163,14 +163,31 @@ function isAdmin() {
   );
 }
 
+// Mecz zamyka się 5 minut PRZED rozpoczęciem.
+const LOCK_BEFORE_MS = 5 * 60 * 1000;
 function matchLocked(match) {
   if (!state.settings?.lockPredictionsAtKickoff) return false;
-  return Date.now() >= Date.parse(match.kickoffAt);
+  return Date.now() >= Date.parse(match.kickoffAt) - LOCK_BEFORE_MS;
 }
 
+// Typ mistrza można zmieniać tylko do końca 1. kolejki fazy grupowej.
+// 1. kolejka = po 2 mecze w każdej grupie (czyli liczba_grup * 2 najwcześniejszych
+// meczów grupowych). Blokujemy, gdy ostatni z tych meczów się rozpoczął.
 function championLocked() {
-  if (!state.settings?.championLockAt) return false;
-  return Date.now() >= Date.parse(state.settings.championLockAt);
+  const groupMatches = state.matches
+    .filter((m) => m.stage === "group" && m.group)
+    .sort((a, b) => a.kickoffAt.localeCompare(b.kickoffAt));
+  const groupCount = new Set(groupMatches.map((m) => m.group)).size;
+  const roundOneCount = groupCount * 2;
+  const lastOfRoundOne = groupMatches[roundOneCount - 1];
+  if (lastOfRoundOne) {
+    return Date.now() >= Date.parse(lastOfRoundOne.kickoffAt) - LOCK_BEFORE_MS;
+  }
+  // Fallback, gdyby brakowało danych grupowych.
+  if (state.settings?.championLockAt) {
+    return Date.now() >= Date.parse(state.settings.championLockAt);
+  }
+  return false;
 }
 
 // Wynik meczu: najpierw ręczna korekta admina (Firestore), a jeśli jej nie ma —
@@ -224,11 +241,22 @@ function flagImg(team, cls = "flag") {
   return `<img class="${cls}" src="${team.crest}" alt="" loading="lazy" />`;
 }
 
-// Lista emoji-avatarów do wyboru w profilu.
-const AVATAR_EMOJIS = [
-  "⚽", "🏆", "🦁", "🐐", "🔥", "👑", "🤡", "🐉", "🦅", "🐺",
-  "🦈", "🍺", "💀", "🎯", "🧨", "👽", "🤖", "🥶", "😎", "🤠"
+// Style generowanych avatarów (DiceBear — darmowe, bez klucza, zwraca SVG).
+const AVATAR_STYLES = [
+  "adventurer", "bottts", "fun-emoji", "lorelei", "notionists",
+  "open-peeps", "pixel-art", "micah", "big-smile", "thumbs",
+  "personas", "miniavs"
 ];
+
+// Generuje zestaw propozycji avatarów (URL-e), zależny od "ziarna" (reroll).
+function avatarOptions() {
+  const base = encodeURIComponent(state.myDraft?.name || state.user?.uid || "gracz");
+  const salt = state.avatarSeed || 0;
+  return AVATAR_STYLES.map(
+    (style, i) =>
+      `https://api.dicebear.com/9.x/${style}/svg?seed=${base}-${salt}-${i}&radius=50&backgroundType=gradientLinear`
+  );
+}
 
 // Inicjały z nazwy (gdy brak avatara i zdjęcia z Google).
 function initials(name) {
@@ -240,11 +268,11 @@ function initials(name) {
 function avatarHtml(p, cls = "") {
   const av = p.avatar;
   let inner;
-  if (av && /^https?:\/\//.test(av)) {
+  if (av && av !== "none" && /^https?:\/\//.test(av)) {
     inner = `<img src="${escapeHtml(av)}" alt="" />`;
-  } else if (av) {
+  } else if (av && av !== "none" && !/^https?:/.test(av)) {
     inner = `<span class="ava-emoji">${escapeHtml(av)}</span>`;
-  } else if (p.photo) {
+  } else if (av !== "none" && p.photo) {
     inner = `<img src="${escapeHtml(p.photo)}" alt="" />`;
   } else {
     inner = `<span class="ava-initials">${escapeHtml(initials(p.name))}</span>`;
@@ -278,6 +306,112 @@ function fmtDate(iso) {
 
 function fmtStage(m) {
   return m.group ? `Grupa ${m.group}` : m.stage;
+}
+
+// Krótka data: "11.06, 21:00"
+function fmtShort(iso) {
+  return new Intl.DateTimeFormat("pl-PL", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(new Date(iso));
+}
+
+// Mecze pogrupowane: { A:[...], B:[...] } (tylko faza grupowa, posortowane wg daty)
+function matchesByGroup() {
+  const groups = {};
+  for (const m of state.matches) {
+    if (m.stage === "group" && m.group) (groups[m.group] ||= []).push(m);
+  }
+  for (const g of Object.values(groups)) {
+    g.sort((a, b) => a.kickoffAt.localeCompare(b.kickoffAt));
+  }
+  return groups;
+}
+
+// Mecze pucharowe pogrupowane wg etapu, w kolejności turniejowej.
+const STAGE_ORDER = ["1/16 finału", "1/8 finału", "ćwierćfinał", "półfinał", "mecz o 3. miejsce", "finał"];
+function knockoutByStage() {
+  const byStage = {};
+  for (const m of state.matches) {
+    if (m.stage !== "group") (byStage[m.stage] ||= []).push(m);
+  }
+  for (const s of Object.values(byStage)) {
+    s.sort((a, b) => a.kickoffAt.localeCompare(b.kickoffAt));
+  }
+  return STAGE_ORDER.filter((s) => byStage[s]).map((s) => [s, byStage[s]]);
+}
+
+// Tabela grupy policzona z rozegranych meczów (wszystkie 4 drużyny, też z 0 pkt).
+function groupTable(matches) {
+  const stats = new Map();
+  const ensure = (t) => {
+    if (!stats.has(t.id))
+      stats.set(t.id, { team: t, pl: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 });
+    return stats.get(t.id);
+  };
+  for (const m of matches) {
+    if (!isRealTeam(m.homeTeam) || !isRealTeam(m.awayTeam)) continue;
+    const home = ensure(m.homeTeam);
+    const away = ensure(m.awayTeam);
+    const r = getResult(m);
+    if (!r) continue;
+    home.pl++; away.pl++;
+    home.gf += r.h; home.ga += r.a;
+    away.gf += r.a; away.ga += r.h;
+    if (r.h > r.a) { home.w++; home.pts += 3; away.l++; }
+    else if (r.h < r.a) { away.w++; away.pts += 3; home.l++; }
+    else { home.d++; away.d++; home.pts++; away.pts++; }
+  }
+  return [...stats.values()].sort(
+    (a, b) =>
+      b.pts - a.pts ||
+      b.gf - b.ga - (a.gf - a.ga) ||
+      b.gf - a.gf ||
+      a.team.name.localeCompare(b.team.name, "pl")
+  );
+}
+
+// HTML tabeli grupy (kompaktowa, w stylu turniejowym).
+function standingsTableHtml(matches) {
+  const table = groupTable(matches);
+  if (!table.length) return "";
+  const rows = table
+    .map((s, i) => {
+      const qual = i < 2 ? "qual" : "";
+      return `<tr class="${qual}">
+        <td class="pos">${i + 1}</td>
+        <td class="t">${flagImg(s.team)} ${escapeHtml(s.team.name)}</td>
+        <td>${s.pl}</td><td>${s.w}</td><td>${s.d}</td><td>${s.l}</td>
+        <td class="gd">${s.gf}:${s.ga}</td>
+        <td class="pts">${s.pts}</td>
+      </tr>`;
+    })
+    .join("");
+  return `
+    <table class="standings">
+      <thead><tr>
+        <th></th><th class="t">Drużyna</th><th>M</th><th>Z</th><th>R</th><th>P</th><th>Bramki</th><th>Pkt</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+// Etykieta punktów dla mojego typu na dany mecz.
+function myPredTag(myPred, result) {
+  if (!myPred) return "";
+  const s = scoreMatch(myPred, result, state.settings);
+  const cls = result ? (s.exact ? "exact" : s.correct ? "ok" : "miss") : "pending";
+  const label = result ? `${s.points} pkt` : "czeka";
+  return `<span class="pts ${cls}">Typ ${myPred.h}:${myPred.a} · ${label}</span>`;
+}
+
+// Status meczu po polsku (na podstawie pola status z API).
+function liveTag(m) {
+  if (m.status === "IN_PLAY" || m.status === "PAUSED") return '<span class="live">● LIVE</span>';
+  if (matchFinished(m)) return '<span class="ft">KONIEC</span>';
+  return "";
 }
 
 function escapeHtml(s) {
@@ -515,37 +649,95 @@ function rankingHtml() {
     </section>`;
 }
 
+// Wiersz meczu w stylu Flashscore (tylko podgląd: wynik + mój typ).
+function fsMatchRow(m) {
+  const r = getResult(m);
+  const finished = Boolean(r);
+  const myPred = state.user ? state.predictions[state.user.uid]?.matches?.[m.id] : null;
+  const hs = r ? r.h : "";
+  const as = r ? r.a : "";
+  const winH = finished && r.h > r.a;
+  const winA = finished && r.a > r.h;
+  return `
+    <div class="fs-row ${finished ? "fin" : ""}">
+      <div class="fs-meta">
+        <span class="fs-time">${fmtShort(m.kickoffAt)}</span>
+        ${liveTag(m)}
+      </div>
+      <div class="fs-teams">
+        <div class="fs-team ${winH ? "win" : ""}">
+          <span class="fs-name"><span class="fs-flag">${flagImg(m.homeTeam)}</span><span class="t">${escapeHtml(m.homeTeam.name)}</span></span>
+          <b class="fs-score">${hs}</b>
+        </div>
+        <div class="fs-team ${winA ? "win" : ""}">
+          <span class="fs-name"><span class="fs-flag">${flagImg(m.awayTeam)}</span><span class="t">${escapeHtml(m.awayTeam.name)}</span></span>
+          <b class="fs-score">${as}</b>
+        </div>
+      </div>
+      <div class="fs-side">${myPredTag(myPred, r)}</div>
+    </div>`;
+}
+
+// Wiersz do OBSTAWIANIA (Moje typy): wynik realny + pola Twojego typu.
+function betRow(m) {
+  const locked = matchLocked(m);
+  const pred = state.myDraft.matches[m.id] || {};
+  const h = pred.h ?? "";
+  const a = pred.a ?? "";
+  const r = getResult(m);
+  const finished = Boolean(r);
+  const myp = pred.h !== undefined && pred.a !== undefined ? pred : null;
+  const tag = finished ? myPredTag(myp, r) : "";
+  const realScore = (v) => (finished ? `<b class="real">${v}</b>` : "");
+  return `
+    <div class="bet-row ${locked ? "locked" : ""} ${finished ? "fin" : ""}">
+      <div class="bet-info">
+        <div class="bet-meta"><span class="fs-time">${fmtShort(m.kickoffAt)}</span>${liveTag(m)}</div>
+        <div class="bet-teams">
+          <span class="bet-team"><span class="fs-flag">${flagImg(m.homeTeam)}</span><span class="bet-name">${escapeHtml(m.homeTeam.name)}</span>${realScore(r?.h)}</span>
+          <span class="bet-team"><span class="fs-flag">${flagImg(m.awayTeam)}</span><span class="bet-name">${escapeHtml(m.awayTeam.name)}</span>${realScore(r?.a)}</span>
+        </div>
+      </div>
+      <div class="bet-controls">
+        <div class="bet-inputs">
+          <input type="number" min="0" inputmode="numeric" class="score-in" data-match="${m.id}" data-side="h" value="${h}" ${locked ? "disabled" : ""} aria-label="Twój typ — gospodarze" />
+          <span class="colon">:</span>
+          <input type="number" min="0" inputmode="numeric" class="score-in" data-match="${m.id}" data-side="a" value="${a}" ${locked ? "disabled" : ""} aria-label="Twój typ — goście" />
+          ${locked ? '<span class="lock-tag">🔒</span>' : ""}
+        </div>
+        ${tag}
+      </div>
+    </div>`;
+}
+
 // --- Widok: Mecze -------------------------------------------------------------
 function matchesHtml() {
-  const cards = state.matches
-    .map((m) => {
-      const result = getResult(m);
-      const finished = Boolean(result);
-      const score = finished ? `${result.h} : ${result.a}` : "–";
-      const myPred = state.user ? state.predictions[state.user.uid]?.matches?.[m.id] : null;
+  const groups = matchesByGroup();
+  const groupBlocks = Object.keys(groups)
+    .sort()
+    .map(
+      (g) => `
+      <div class="card group-block">
+        <div class="group-head"><span class="group-badge">${g}</span><h3>Grupa ${g}</h3></div>
+        ${standingsTableHtml(groups[g])}
+        <div class="fs-list">${groups[g].map(fsMatchRow).join("")}</div>
+      </div>`
+    )
+    .join("");
 
-      let myLine = "";
-      if (myPred) {
-        const s = scoreMatch(myPred, result, state.settings);
-        const tag = finished
-          ? `<span class="pts ${s.exact ? "exact" : s.correct ? "ok" : "miss"}">${s.points} pkt</span>`
-          : `<span class="pts pending">czeka</span>`;
-        myLine = `<div class="my-pred">Twój typ: <strong>${myPred.h} : ${myPred.a}</strong> ${tag}</div>`;
-      }
-
+  const koBlocks = knockoutByStage()
+    .map(([stage, ms]) => {
+      const known = ms.filter((m) => isRealTeam(m.homeTeam) && isRealTeam(m.awayTeam));
+      const unknown = ms.length - known.length;
+      const note = unknown
+        ? `<p class="muted small ko-note">⏳ ${unknown} ${unknown === 1 ? "para" : "par"} do wyłonienia — drużyny pojawią się po wcześniejszych meczach.</p>`
+        : "";
       return `
-        <article class="card match-card ${finished ? "done" : ""}">
-          <div class="match-top">
-            <span class="when">${fmtDate(m.kickoffAt)}</span>
-            <span class="stage">${escapeHtml(fmtStage(m))}</span>
-          </div>
-          <div class="match-body">
-            <span class="team home">${escapeHtml(m.homeTeam.name)} ${flagImg(m.homeTeam)}</span>
-            <span class="score ${finished ? "final" : ""}">${score}</span>
-            <span class="team away">${flagImg(m.awayTeam)} ${escapeHtml(m.awayTeam.name)}</span>
-          </div>
-          ${myLine}
-        </article>`;
+      <div class="card group-block">
+        <div class="group-head"><span class="group-badge ko">★</span><h3>${escapeHtml(capitalize(stage))}</h3><span class="ko-count">${ms.length} mecz.</span></div>
+        ${known.length ? `<div class="fs-list">${known.map(fsMatchRow).join("")}</div>` : ""}
+        ${note}
+      </div>`;
     })
     .join("");
 
@@ -553,12 +745,19 @@ function matchesHtml() {
     <section class="stack">
       <div class="section-head">
         <div>
-          <div class="eyebrow">Terminarz i wyniki</div>
+          <div class="eyebrow">Terminarz · wyniki · tabele</div>
           <h2>Mecze</h2>
         </div>
       </div>
-      <div class="match-grid">${cards}</div>
+      <div class="phase-label">Faza grupowa</div>
+      <div class="group-grid">${groupBlocks}</div>
+      <div class="phase-label">Faza pucharowa</div>
+      <div class="group-grid">${koBlocks}</div>
     </section>`;
+}
+
+function capitalize(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 // --- Widok: Moje typy ---------------------------------------------------------
@@ -585,31 +784,36 @@ function mineHtml() {
     )
     .join("");
 
-  const rows = state.matches
-    .map((m) => {
-      const locked = matchLocked(m);
-      const pred = state.myDraft.matches[m.id] || {};
-      const h = pred.h ?? "";
-      const a = pred.a ?? "";
+  const groups = matchesByGroup();
+  const groupBlocks = Object.keys(groups)
+    .sort()
+    .map((g) => {
+      const standings = standingsTableHtml(groups[g]);
       return `
-        <div class="pred-row ${locked ? "locked" : ""}">
-          <div class="pred-info">
-            <span class="row-date">${fmtDate(m.kickoffAt)} · ${escapeHtml(fmtStage(m))}</span>
-            <span class="row-teams">${flagImg(m.homeTeam)} ${escapeHtml(m.homeTeam.name)} – ${escapeHtml(m.awayTeam.name)} ${flagImg(m.awayTeam)}</span>
-          </div>
-          <div class="pred-inputs">
-            <input type="number" min="0" inputmode="numeric" class="score-in"
-              data-match="${m.id}" data-side="h" value="${h}" ${locked ? "disabled" : ""}
-              aria-label="Gospodarze ${escapeHtml(m.homeTeam.name)}" />
-            <span class="colon">:</span>
-            <input type="number" min="0" inputmode="numeric" class="score-in"
-              data-match="${m.id}" data-side="a" value="${a}" ${locked ? "disabled" : ""}
-              aria-label="Goście ${escapeHtml(m.awayTeam.name)}" />
-            ${locked ? '<span class="lock-tag">🔒</span>' : ""}
-          </div>
-        </div>`;
+      <div class="card group-block">
+        <div class="group-head"><span class="group-badge">${g}</span><h3>Grupa ${g}</h3></div>
+        <details class="mini-standings">
+          <summary>📊 Tabela grupy</summary>
+          ${standings || '<p class="muted small">Brak rozegranych meczów.</p>'}
+        </details>
+        <div class="bet-list">${groups[g].map(betRow).join("")}</div>
+      </div>`;
     })
     .join("");
+
+  const koBlocks = knockoutByStage()
+    .map(([stage, ms]) => {
+      const known = ms.filter((m) => isRealTeam(m.homeTeam) && isRealTeam(m.awayTeam));
+      if (!known.length) return "";
+      return `
+      <div class="card group-block">
+        <div class="group-head"><span class="group-badge ko">★</span><h3>${escapeHtml(capitalize(stage))}</h3></div>
+        <div class="bet-list">${known.map(betRow).join("")}</div>
+      </div>`;
+    })
+    .join("");
+
+  const champTeam = teamById(state.myDraft.champion);
 
   return `
     <section class="stack">
@@ -623,27 +827,28 @@ function mineHtml() {
 
       <div class="card champion-card">
         <div class="champion-left">
-          <div class="champ-icon">👑</div>
+          ${champTeam ? `<span class="champ-flag">${flagImg(champTeam, "flag big")}</span>` : '<div class="champ-icon">👑</div>'}
           <div>
-            <div class="champ-title">Mistrz turnieju ${flagImg(teamById(state.myDraft.champion), "flag big")}</div>
-            <div class="muted small">+${state.settings.points.tournamentWinner} pkt za trafienie</div>
+            <div class="champ-title">Mistrz turnieju${champTeam ? `: ${escapeHtml(champTeam.name)}` : ""}</div>
+            <div class="muted small">+${state.settings.points.tournamentWinner} pkt za trafienie · ${champLocked ? "zablokowane po 1. kolejce" : "można zmieniać do końca 1. kolejki"}</div>
           </div>
         </div>
         <select id="champion-select" ${champLocked ? "disabled" : ""}>
           <option value="">— wybierz —</option>
           ${teamOptions}
         </select>
-        ${champLocked ? '<span class="lock-tag">🔒 zamknięte</span>' : ""}
+        ${champLocked ? '<span class="lock-tag">🔒</span>' : ""}
       </div>
 
-      <div class="card">
-        <h3 class="card-title">Wyniki meczów</h3>
-        <div class="pred-list">${rows}</div>
-        <p class="muted small footnote">
-          Mecze blokują się o godzinie rozpoczęcia. Blokada jest po stronie aplikacji
-          (uczciwa zabawa), nie jest twardym zabezpieczeniem.
-        </p>
-      </div>
+      <div class="phase-label">Faza grupowa</div>
+      <div class="group-grid">${groupBlocks}</div>
+      ${koBlocks ? `<div class="phase-label">Faza pucharowa</div><div class="group-grid">${koBlocks}</div>` : ""}
+
+      <p class="muted small footnote">
+        Mecz zamyka się <strong>5 minut przed</strong> pierwszym gwizdkiem. Pary pucharowe
+        pojawią się do obstawiania, gdy znane będą drużyny. Blokady są po stronie aplikacji
+        (uczciwa zabawa).
+      </p>
     </section>`;
 }
 
@@ -660,10 +865,14 @@ function profileHtml() {
     champion: d.champion
   };
 
-  const emojiBtns = AVATAR_EMOJIS.map(
-    (e) =>
-      `<button type="button" class="emoji-pick ${d.avatar === e ? "sel" : ""}" data-emoji="${e}">${e}</button>`
-  ).join("");
+  const avatarBtns = avatarOptions()
+    .map(
+      (url) =>
+        `<button type="button" class="avatar-pick ${d.avatar === url ? "sel" : ""}" data-url="${url}">
+           <img src="${url}" alt="" loading="lazy" />
+         </button>`
+    )
+    .join("");
 
   const nickBlock = nameLocked
     ? `<p>Twój nick: <strong>${escapeHtml(d.name)}</strong></p>
@@ -697,16 +906,19 @@ function profileHtml() {
       </div>
 
       <div class="card">
-        <h3 class="card-title">Avatar / zdjęcie profilowe</h3>
-        <p class="muted small">Wybierz emoji, użyj zdjęcia z Google albo wklej link do obrazka.</p>
-        <div class="emoji-grid">${emojiBtns}</div>
-        <div class="nick-row" style="margin-top:0.8rem">
-          <input type="text" id="avatar-url" placeholder="https://… link do zdjęcia"
-            value="${d.avatar && /^https?:/.test(d.avatar) ? escapeHtml(d.avatar) : ""}" />
+        <div class="section-head compact">
+          <h3 class="card-title">Avatar / zdjęcie profilowe</h3>
+          <button class="btn ghost tiny" id="avatar-reroll">🎲 Losuj inne</button>
+        </div>
+        <p class="muted small">Wybierz wygenerowaną grafikę, użyj zdjęcia z Google albo wklej własny link.</p>
+        <div class="avatar-grid">${avatarBtns}</div>
+        <div class="nick-row" style="margin-top:0.9rem">
+          <input type="text" id="avatar-url" placeholder="https://… własny link do zdjęcia"
+            value="${d.avatar && /^https?:/.test(d.avatar) && !d.avatar.includes("dicebear") ? escapeHtml(d.avatar) : ""}" />
         </div>
         <div class="button-row" style="margin-top:0.8rem">
           ${state.user.photoURL ? '<button class="btn" id="avatar-google">Użyj zdjęcia z Google</button>' : ""}
-          <button class="btn ghost" id="avatar-clear">Domyślny</button>
+          <button class="btn ghost" id="avatar-clear">Domyślny (inicjały)</button>
         </div>
       </div>
     </section>`;
@@ -823,14 +1035,21 @@ function wireEvents() {
       render();
     });
 
-  // Profil — avatar
-  appRoot.querySelectorAll(".emoji-pick").forEach((b) =>
+  // Profil — avatar (generowane grafiki)
+  appRoot.querySelectorAll(".avatar-pick").forEach((b) =>
     b.addEventListener("click", async () => {
-      state.myDraft.avatar = b.dataset.emoji;
+      state.myDraft.avatar = b.dataset.url;
       await saveProfile();
       render();
     })
   );
+
+  const avatarReroll = document.getElementById("avatar-reroll");
+  if (avatarReroll)
+    avatarReroll.addEventListener("click", () => {
+      state.avatarSeed = (state.avatarSeed || 0) + 1;
+      render();
+    });
 
   const avatarUrl = document.getElementById("avatar-url");
   if (avatarUrl)
@@ -852,7 +1071,7 @@ function wireEvents() {
   const avatarClear = document.getElementById("avatar-clear");
   if (avatarClear)
     avatarClear.addEventListener("click", async () => {
-      state.myDraft.avatar = null;
+      state.myDraft.avatar = "none";
       await saveProfile();
       render();
     });
