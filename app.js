@@ -113,40 +113,68 @@ function getChampionTeamId() {
   return result.h > result.a ? finalMatch.homeTeam.id : finalMatch.awayTeam.id;
 }
 
+// Jak daleko zaszła dana drużyna (do dogrywki remisów na "typ na mistrza").
+const STAGE_RANK = {
+  group: 0,
+  "1/16 finału": 1,
+  "1/8 finału": 2,
+  ćwierćfinał: 3,
+  półfinał: 4,
+  "mecz o 3. miejsce": 5,
+  finał: 6
+};
+function championProgress(teamId) {
+  if (!teamId) return -1;
+  let best = -1;
+  for (const m of state.matches) {
+    if (m.homeTeam.id === teamId || m.awayTeam.id === teamId) {
+      best = Math.max(best, STAGE_RANK[m.stage] ?? 0);
+    }
+  }
+  if (teamId === getChampionTeamId()) best = 100; // został mistrzem
+  return best;
+}
+
 function calculateLeaderboard() {
   const { settings, matches, predictions } = state;
   const championTeamId = getChampionTeamId();
   const rows = Object.entries(predictions).map(([uid, p]) => {
-    let matchPoints = 0;
     let exactCount = 0;
-    let correctCount = 0;
+    let outcomeOnlyCount = 0; // trafiony rezultat, ale nie dokładny wynik
 
     for (const match of matches) {
       const pred = p.matches?.[match.id];
       const result = getResult(match);
       const s = scoreMatch(pred, result, settings);
-      matchPoints += s.points;
       if (s.exact) exactCount += 1;
-      if (s.correct) correctCount += 1;
+      else if (s.correct) outcomeOnlyCount += 1;
     }
 
+    const exactPoints = exactCount * settings.points.exactScore;
+    const outcomePoints = outcomeOnlyCount * settings.points.correctResult;
     const championPoints = scoreChampion(p.champion, settings, championTeamId);
 
     return {
       uid,
       name: p.name || "Gracz",
-      total: matchPoints + championPoints,
-      matchPoints,
+      total: exactPoints + outcomePoints + championPoints,
+      exactPoints,
+      outcomePoints,
       championPoints,
       exactCount,
-      correctCount
+      outcomeOnlyCount,
+      championProgress: championPoints > 0 ? 1000 : championProgress(p.champion)
     };
   });
 
+  // Remis rozstrzyga kolejno: dokładne wyniki → trafiony mistrz →
+  // rezultaty → jak wysoko zaszedł typ na mistrza → nazwa.
   rows.sort((l, r) => {
     if (r.total !== l.total) return r.total - l.total;
     if (r.exactCount !== l.exactCount) return r.exactCount - l.exactCount;
-    if (r.correctCount !== l.correctCount) return r.correctCount - l.correctCount;
+    if (r.championPoints !== l.championPoints) return r.championPoints - l.championPoints;
+    if (r.outcomeOnlyCount !== l.outcomeOnlyCount) return r.outcomeOnlyCount - l.outcomeOnlyCount;
+    if (r.championProgress !== l.championProgress) return r.championProgress - l.championProgress;
     return l.name.localeCompare(r.name, "pl");
   });
 
@@ -610,7 +638,7 @@ function rankingHtml() {
 
   const rows =
     board.length === 0
-      ? `<tr><td colspan="7" class="muted center">Brak typów. Bądź pierwszy — zaloguj się i wpisz typy!</td></tr>`
+      ? `<tr><td colspan="6" class="muted center">Brak typów. Bądź pierwszy — zaloguj się i wpisz typy!</td></tr>`
       : board
           .map((r) => {
             const me = state.user && r.uid === state.user.uid;
@@ -626,10 +654,9 @@ function rankingHtml() {
                 </span>
               </td>
               <td class="total"><strong>${r.total}</strong></td>
-              <td>${r.matchPoints}</td>
+              <td>${r.exactPoints}<span class="cnt">×${r.exactCount}</span></td>
+              <td>${r.outcomePoints}<span class="cnt">×${r.outcomeOnlyCount}</span></td>
               <td>${r.championPoints}</td>
-              <td>${r.exactCount}</td>
-              <td>${r.correctCount}</td>
             </tr>`;
           })
           .join("");
@@ -649,13 +676,19 @@ function rankingHtml() {
         <table class="leaderboard">
           <thead>
             <tr>
-              <th>#</th><th>Gracz</th><th>Suma</th><th>Mecze</th>
-              <th>Mistrz</th><th>Dokł.</th><th>Rez.</th>
+              <th>#</th><th>Gracz</th><th>Suma</th>
+              <th title="Punkty za dokładne wyniki">Dokł.</th>
+              <th title="Punkty za trafione rezultaty (1/X/2)">Rez.</th>
+              <th title="Punkty za zwycięzcę turnieju">Mistrz</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
+      <p class="muted small" style="margin:0 0.2rem">
+        Przy remisie decyduje kolejno: więcej dokładnych wyników → trafiony mistrz →
+        więcej rezultatów → jak daleko zaszedł typowany mistrz.
+      </p>
     </section>`;
 }
 
