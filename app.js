@@ -9,6 +9,7 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
   signOut,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -59,6 +60,7 @@ const state = {
   admin: { results: {}, championTeamId: null }, // dokument admin/state
   user: null, // zalogowany użytkownik lub null
   view: "ranking", // aktywna zakładka
+  matchView: "groups", // układ meczów: "groups" (wg grup) | "dates" (wg dat)
   myDraft: null, // lokalna kopia MOICH typów (edytowana w formularzu)
   myDraftSeededFor: null, // uid, dla którego zasialiśmy myDraft
   saveMsg: "", // komunikat o zapisie w widoku "Moje typy"
@@ -273,18 +275,53 @@ function teamName(id) {
   return teamById(id)?.name || "—";
 }
 
-// Mała flaga/herb drużyny obok nazwy.
-function flagImg(team, cls = "flag") {
-  if (!team || !team.crest) return "";
-  return `<img class="${cls}" src="${team.crest}" alt="" loading="lazy" />`;
+// Kody ISO krajów — żeby wszystkie flagi pochodziły z JEDNEGO źródła (flagcdn.com)
+// i były jednolite stylistycznie. Dane (data/matches.json) mają mieszankę
+// płaskich flag i herbów federacji, więc tutaj nadpisujemy je spójną flagą.
+const TEAM_ISO = {
+  Algieria: "dz", Anglia: "gb-eng", "Arabia Saudyjska": "sa", Argentyna: "ar",
+  Australia: "au", Austria: "at", Belgia: "be", "Bośnia i Hercegowina": "ba",
+  Brazylia: "br", Chorwacja: "hr", "Curaçao": "cw", Czechy: "cz",
+  "DR Konga": "cd", Egipt: "eg", Ekwador: "ec", Francja: "fr",
+  Ghana: "gh", Haiti: "ht", Hiszpania: "es", Holandia: "nl",
+  Irak: "iq", Iran: "ir", Japonia: "jp", Jordania: "jo",
+  Kanada: "ca", Katar: "qa", Kolumbia: "co", "Korea Płd.": "kr",
+  Maroko: "ma", Meksyk: "mx", Niemcy: "de", Norwegia: "no",
+  "Nowa Zelandia": "nz", Panama: "pa", Paragwaj: "py", Portugalia: "pt",
+  RPA: "za", "Republika Zielonego Przylądka": "cv", Senegal: "sn",
+  Szkocja: "gb-sct", Szwajcaria: "ch", Szwecja: "se", Tunezja: "tn",
+  Turcja: "tr", USA: "us", Urugwaj: "uy", Uzbekistan: "uz",
+  "Wybrzeże Kości Słoniowej": "ci"
+};
+
+// Jednolity URL flagi: kod ISO → flagcdn.com; fallback na crest z danych.
+function flagUrl(team) {
+  if (!team) return "";
+  const iso = TEAM_ISO[team.name];
+  if (iso) return `https://flagcdn.com/${iso}.svg`;
+  return team.crest || "";
 }
 
-// Style generowanych avatarów (DiceBear — darmowe, bez klucza, zwraca SVG).
-// Mieszanka wyrazistych postaci, robotów i grafik abstrakcyjnych.
+// Mała flaga drużyny obok nazwy (jednolite źródło).
+function flagImg(team, cls = "flag") {
+  const url = flagUrl(team);
+  if (!url) return "";
+  return `<img class="${cls}" src="${url}" alt="" loading="lazy" />`;
+}
+
+// Mocne emoji do wyboru (szybki, wyrazisty avatar na gradiencie — np. czaszka).
+const AVATAR_EMOJIS = [
+  "💀", "☠️", "🔥", "😈", "👹", "👺", "👽", "🤖", "🥷", "🤡",
+  "👑", "🏆", "🐐", "🦁", "🐉", "🦅", "🐺", "🦈", "🦍", "🐍",
+  "⚽", "🍺", "🍷", "🚬", "💩", "🤙", "🤑", "🥶", "😎", "🤠"
+];
+
+// Style generowanych grafik (DiceBear — darmowe, bez klucza, zwraca SVG).
+// Tylko wyraziste, "charakterne" — bez nudnych abstraktów (rings/identicon/shapes/glass).
 const AVATAR_STYLES = [
-  "avataaars", "bottts", "adventurer", "micah", "big-smile",
-  "fun-emoji", "open-peeps", "personas", "lorelei", "notionists",
-  "croodles", "thumbs", "pixel-art", "miniavs", "dylan", "glass"
+  "bottts", "fun-emoji", "avataaars", "big-smile", "adventurer",
+  "adventurer-neutral", "micah", "lorelei", "notionists", "thumbs",
+  "pixel-art", "croodles", "open-peeps", "personas", "miniavs", "dylan"
 ];
 
 // Wyraziste, "boiskowe" tła avatarów.
@@ -326,10 +363,10 @@ function avatarHtml(p, cls = "") {
     inner = `<span class="ava-initials">${escapeHtml(initials(p.name))}</span>`;
   }
   const champ = teamById(p.champion);
-  const flag =
-    champ && champ.crest
-      ? `<img class="ava-flag" src="${champ.crest}" alt="" title="Typ na mistrza: ${escapeHtml(champ.name)}" />`
-      : "";
+  const champFlag = flagUrl(champ);
+  const flag = champFlag
+    ? `<img class="ava-flag" src="${champFlag}" alt="" title="Typ na mistrza: ${escapeHtml(champ.name)}" />`
+    : "";
   return `<span class="avatar ${cls}">${inner}${flag}</span>`;
 }
 
@@ -389,6 +426,43 @@ function knockoutByStage() {
     s.sort((a, b) => a.kickoffAt.localeCompare(b.kickoffAt));
   }
   return STAGE_ORDER.filter((s) => byStage[s]).map((s) => [s, byStage[s]]);
+}
+
+// Klucz dnia w LOKALNEJ strefie (żeby mecze nocne nie wpadały do złego dnia).
+function dayKey(iso) {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+    d.getDate()
+  ).padStart(2, "0")}`;
+}
+
+// Etykieta dnia: "środa, 11 czerwca".
+function fmtDay(iso) {
+  return new Intl.DateTimeFormat("pl-PL", {
+    weekday: "long",
+    day: "numeric",
+    month: "long"
+  }).format(new Date(iso));
+}
+
+// Wszystkie mecze z ustalonymi drużynami, posortowane chronologicznie.
+function allKnownMatchesSorted() {
+  return state.matches
+    .filter((m) => isRealTeam(m.homeTeam) && isRealTeam(m.awayTeam))
+    .sort((a, b) => a.kickoffAt.localeCompare(b.kickoffAt));
+}
+
+// Mecze pogrupowane wg dnia kalendarzowego: [ [klucz, etykieta, mecze[]], ... ].
+function matchesByDate(list) {
+  const byDay = new Map();
+  for (const m of list) {
+    const key = dayKey(m.kickoffAt);
+    if (!byDay.has(key)) byDay.set(key, []);
+    byDay.get(key).push(m);
+  }
+  return [...byDay.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([key, ms]) => [key, fmtDay(ms[0].kickoffAt), ms]);
 }
 
 // Tabela grupy policzona z rozegranych meczów (wszystkie 4 drużyny, też z 0 pkt).
@@ -557,6 +631,7 @@ function render() {
   }
 
   appRoot.innerHTML = `
+    ${inAppWarningHtml()}
     ${headerHtml()}
     <main class="container">
       ${viewHtml()}
@@ -584,6 +659,23 @@ function maybeRender() {
 function updateSaveIndicator() {
   const el = document.getElementById("save-indicator");
   if (el) el.textContent = state.saveMsg;
+}
+
+// Baner widoczny tylko w przeglądarce wbudowanej (Messenger/FB/IG), gdzie
+// logowanie Google nie działa. Znika po zalogowaniu (gdyby ktoś jednak wszedł).
+function inAppWarningHtml() {
+  if (!isInAppBrowser() || state.user) return "";
+  return `
+    <div class="inapp-warn">
+      <div class="container inapp-warn-inner">
+        <span class="inapp-warn-text">
+          ⚠️ Otwórz w <strong>Chrome / Safari</strong> — logowanie przez Google nie działa
+          w przeglądarce Messengera/Facebooka (dlatego biały ekran).
+          Kliknij <strong>⋮</strong> w rogu → „Otwórz w przeglądarce".
+        </span>
+        <button class="btn primary tiny" id="open-external">Otwórz w przeglądarce</button>
+      </div>
+    </div>`;
 }
 
 function headerHtml() {
@@ -772,8 +864,39 @@ function betRow(m) {
     </div>`;
 }
 
+// Przełącznik układu meczów: Wg grup / Wg dat.
+function matchViewToggle() {
+  const v = state.matchView;
+  return `
+    <div class="view-toggle" role="tablist" aria-label="Układ meczów">
+      <button class="vt ${v === "groups" ? "active" : ""}" data-matchview="groups">🏆 Wg grup</button>
+      <button class="vt ${v === "dates" ? "active" : ""}" data-matchview="dates">📅 Wg dat</button>
+    </div>`;
+}
+
+// Bloki "wg dat" — jeden card na dzień, mecze posortowane chronologicznie.
+function dateBlocksHtml(rowFn, listClass) {
+  const list = allKnownMatchesSorted();
+  if (!list.length) {
+    return `<p class="muted">Brak meczów z ustalonymi drużynami — pojawią się, gdy znane będą pary.</p>`;
+  }
+  return matchesByDate(list)
+    .map(
+      ([key, label, ms]) => `
+      <div class="card group-block">
+        <div class="group-head">
+          <span class="group-badge date">📅</span>
+          <h3>${escapeHtml(capitalize(label))}</h3>
+          <span class="ko-count">${ms.length} ${ms.length === 1 ? "mecz" : "mecz."}</span>
+        </div>
+        <div class="${listClass}">${ms.map(rowFn).join("")}</div>
+      </div>`
+    )
+    .join("");
+}
+
 // --- Widok: Mecze -------------------------------------------------------------
-function matchesHtml() {
+function matchesGroupedHtml() {
   const groups = matchesByGroup();
   const groupBlocks = Object.keys(groups)
     .sort()
@@ -804,6 +927,19 @@ function matchesHtml() {
     .join("");
 
   return `
+    <div class="phase-label">Faza grupowa</div>
+    <div class="group-grid">${groupBlocks}</div>
+    <div class="phase-label">Faza pucharowa</div>
+    <div class="group-grid">${koBlocks}</div>`;
+}
+
+function matchesHtml() {
+  const body =
+    state.matchView === "dates"
+      ? `<div class="stack">${dateBlocksHtml(fsMatchRow, "fs-list")}</div>`
+      : matchesGroupedHtml();
+
+  return `
     <section class="stack">
       <div class="section-head">
         <div>
@@ -811,10 +947,8 @@ function matchesHtml() {
           <h2>Mecze</h2>
         </div>
       </div>
-      <div class="phase-label">Faza grupowa</div>
-      <div class="group-grid">${groupBlocks}</div>
-      <div class="phase-label">Faza pucharowa</div>
-      <div class="group-grid">${koBlocks}</div>
+      ${matchViewToggle()}
+      ${body}
     </section>`;
 }
 
@@ -902,9 +1036,14 @@ function mineHtml() {
         ${champLocked ? '<span class="lock-tag">🔒</span>' : ""}
       </div>
 
-      <div class="phase-label">Faza grupowa</div>
-      <div class="group-grid">${groupBlocks}</div>
-      ${koBlocks ? `<div class="phase-label">Faza pucharowa</div><div class="group-grid">${koBlocks}</div>` : ""}
+      ${matchViewToggle()}
+      ${
+        state.matchView === "dates"
+          ? `<div class="stack">${dateBlocksHtml(betRow, "bet-list")}</div>`
+          : `<div class="phase-label">Faza grupowa</div>
+             <div class="group-grid">${groupBlocks}</div>
+             ${koBlocks ? `<div class="phase-label">Faza pucharowa</div><div class="group-grid">${koBlocks}</div>` : ""}`
+      }
 
       <p class="muted small footnote">
         Mecz zamyka się <strong>5 minut przed</strong> pierwszym gwizdkiem. Pary pucharowe
@@ -935,6 +1074,11 @@ function profileHtml() {
          </button>`
     )
     .join("");
+
+  const emojiBtns = AVATAR_EMOJIS.map(
+    (e) =>
+      `<button type="button" class="emoji-pick ${d.avatar === e ? "sel" : ""}" data-emoji="${e}">${e}</button>`
+  ).join("");
 
   const nickBlock = nameLocked
     ? `<p>Twój nick: <strong>${escapeHtml(d.name)}</strong></p>
@@ -972,7 +1116,9 @@ function profileHtml() {
           <h3 class="card-title">Avatar / zdjęcie profilowe</h3>
           <button class="btn ghost tiny" id="avatar-reroll">🎲 Losuj inne</button>
         </div>
-        <p class="muted small">Wybierz wygenerowaną grafikę, użyj zdjęcia z Google albo wklej własny link.</p>
+        <p class="muted small">Szybki wybór — emoji:</p>
+        <div class="emoji-grid">${emojiBtns}</div>
+        <p class="muted small" style="margin-top:0.9rem">…albo wygenerowana grafika, zdjęcie z Google lub własny link.</p>
         <div class="avatar-grid">${avatarBtns}</div>
         <div class="nick-row" style="margin-top:0.9rem">
           <input type="text" id="avatar-url" placeholder="https://… własny link do zdjęcia"
@@ -1142,6 +1288,14 @@ function wireEvents() {
     })
   );
 
+  // Przełącznik układu meczów: Wg grup / Wg dat
+  appRoot.querySelectorAll("[data-matchview]").forEach((b) =>
+    b.addEventListener("click", () => {
+      state.matchView = b.dataset.matchview;
+      render();
+    })
+  );
+
   const login = document.getElementById("login");
   const login2 = document.getElementById("login-2");
   if (login) login.addEventListener("click", doLogin);
@@ -1149,6 +1303,9 @@ function wireEvents() {
 
   const logout = document.getElementById("logout");
   if (logout) logout.addEventListener("click", () => signOut(auth));
+
+  const openExternal = document.getElementById("open-external");
+  if (openExternal) openExternal.addEventListener("click", openInExternalBrowser);
 
   // Profil — powiadomienia
   const notifyEnable = document.getElementById("notify-enable");
@@ -1180,6 +1337,15 @@ function wireEvents() {
       await saveProfile();
       render();
     });
+
+  // Profil — avatar (emoji)
+  appRoot.querySelectorAll(".emoji-pick").forEach((b) =>
+    b.addEventListener("click", async () => {
+      state.myDraft.avatar = b.dataset.emoji;
+      await saveProfile();
+      render();
+    })
+  );
 
   // Profil — avatar (generowane grafiki)
   appRoot.querySelectorAll(".avatar-pick").forEach((b) =>
@@ -1274,11 +1440,65 @@ function wireEvents() {
     });
 }
 
+// Przeglądarki wbudowane w aplikacje (Messenger, Facebook, Instagram, TikTok…).
+// Google CELOWO blokuje w nich logowanie OAuth ("disallowed_useragent") —
+// objawia się to białym ekranem na firebaseapp.com. Trzeba otworzyć w Chrome/Safari.
+function isInAppBrowser() {
+  const ua = navigator.userAgent || "";
+  return /FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger|MicroMessenger|Line\/|Snapchat|TikTok|musical_ly|Twitter|Pinterest|GSA\//i.test(
+    ua
+  );
+}
+
+// Próba wyrwania się z webview do zewnętrznej przeglądarki.
+function openInExternalBrowser() {
+  const ua = navigator.userAgent || "";
+  if (/Android/i.test(ua)) {
+    // Android: wymuś otwarcie w Chrome przez intent.
+    const noScheme = location.href.replace(/^https?:\/\//, "");
+    location.href =
+      "intent://" + noScheme + "#Intent;scheme=https;package=com.android.chrome;end";
+    return;
+  }
+  // iOS / reszta: nie da się wymusić — kopiujemy link i prosimy o otwarcie ręczne.
+  copyAppLink();
+}
+
+function copyAppLink() {
+  const url = location.href;
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard
+      .writeText(url)
+      .then(() => alert("Skopiowano link 👍\nWklej go w Chrome lub Safari i tam się zaloguj."))
+      .catch(() => alert("Otwórz ten adres w Chrome / Safari:\n" + url));
+  } else {
+    alert("Otwórz ten adres w Chrome / Safari:\n" + url);
+  }
+}
+
 async function doLogin() {
+  // W przeglądarce Messengera/FB/IG logowanie Google nie zadziała — kieruj na zewnątrz.
+  if (isInAppBrowser()) {
+    openInExternalBrowser();
+    return;
+  }
   try {
     await signInWithPopup(auth, googleProvider);
   } catch (e) {
     console.error(e);
+    // Na mobilkach popup bywa blokowany — wtedy próbujemy przez przekierowanie.
+    if (
+      e.code === "auth/popup-blocked" ||
+      e.code === "auth/cancelled-popup-request" ||
+      e.code === "auth/operation-not-supported-in-this-environment"
+    ) {
+      try {
+        await signInWithRedirect(auth, googleProvider);
+        return;
+      } catch (e2) {
+        console.error(e2);
+      }
+    }
     if (e.code !== "auth/popup-closed-by-user") {
       alert("Nie udało się zalogować: " + (e.message || e.code));
     }
