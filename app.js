@@ -64,6 +64,7 @@ const VIEWS = [
   { id: "ranking", label: "Ranking" },
   { id: "matches", label: "Mecze" },
   { id: "mine", label: "Moje typy" },
+  { id: "profile", label: "Profil", authOnly: true },
   { id: "admin", label: "Panel admina", adminOnly: true }
 ];
 
@@ -204,13 +205,68 @@ function getTeams() {
   return [...map.values()].sort((a, b) => a.name.localeCompare(b.name, "pl"));
 }
 
-function teamName(id) {
-  if (!id) return "—";
+function teamById(id) {
+  if (!id) return null;
   for (const m of state.matches) {
-    if (m.homeTeam.id === id) return m.homeTeam.name;
-    if (m.awayTeam.id === id) return m.awayTeam.name;
+    if (m.homeTeam.id === id) return m.homeTeam;
+    if (m.awayTeam.id === id) return m.awayTeam;
   }
-  return id;
+  return null;
+}
+
+function teamName(id) {
+  return teamById(id)?.name || "—";
+}
+
+// Mała flaga/herb drużyny obok nazwy.
+function flagImg(team, cls = "flag") {
+  if (!team || !team.crest) return "";
+  return `<img class="${cls}" src="${team.crest}" alt="" loading="lazy" />`;
+}
+
+// Lista emoji-avatarów do wyboru w profilu.
+const AVATAR_EMOJIS = [
+  "⚽", "🏆", "🦁", "🐐", "🔥", "👑", "🤡", "🐉", "🦅", "🐺",
+  "🦈", "🍺", "💀", "🎯", "🧨", "👽", "🤖", "🥶", "😎", "🤠"
+];
+
+// Inicjały z nazwy (gdy brak avatara i zdjęcia z Google).
+function initials(name) {
+  const parts = String(name || "?").trim().split(/\s+/).slice(0, 2);
+  return parts.map((p) => p[0]?.toUpperCase() || "").join("") || "?";
+}
+
+// HTML avatara gracza + mini-flaga jego typowanego mistrza (jeśli wybrał).
+function avatarHtml(p, cls = "") {
+  const av = p.avatar;
+  let inner;
+  if (av && /^https?:\/\//.test(av)) {
+    inner = `<img src="${escapeHtml(av)}" alt="" />`;
+  } else if (av) {
+    inner = `<span class="ava-emoji">${escapeHtml(av)}</span>`;
+  } else if (p.photo) {
+    inner = `<img src="${escapeHtml(p.photo)}" alt="" />`;
+  } else {
+    inner = `<span class="ava-initials">${escapeHtml(initials(p.name))}</span>`;
+  }
+  const champ = teamById(p.champion);
+  const flag =
+    champ && champ.crest
+      ? `<img class="ava-flag" src="${champ.crest}" alt="" title="Typ na mistrza: ${escapeHtml(champ.name)}" />`
+      : "";
+  return `<span class="avatar ${cls}">${inner}${flag}</span>`;
+}
+
+// Profil zalogowanego gracza (z bazy lub domyślny z konta Google).
+function myProfile() {
+  if (!state.user) return { name: "", avatar: null, photo: null, champion: null };
+  const mine = state.predictions[state.user.uid] || {};
+  return {
+    name: mine.name || state.user.displayName || state.user.email,
+    avatar: mine.avatar || null,
+    photo: mine.photo || state.user.photoURL || null,
+    champion: mine.champion || null
+  };
 }
 
 function fmtDate(iso) {
@@ -247,6 +303,7 @@ function saveMyPredictionsDebounced() {
         {
           name: (state.myDraft?.name || "").trim() || state.user.displayName || state.user.email,
           email: state.user.email,
+          photo: state.user.photoURL || null,
           matches: state.myDraft.matches,
           champion: state.myDraft.champion || null,
           updatedAt: serverTimestamp()
@@ -260,6 +317,29 @@ function saveMyPredictionsDebounced() {
     }
     updateSaveIndicator();
   }, 700);
+}
+
+// Zapis danych profilu (nick / avatar) — natychmiast, bez opóźnienia.
+async function saveProfile() {
+  if (!state.user) return;
+  try {
+    await setDoc(
+      doc(db, "predictions", state.user.uid),
+      {
+        name: (state.myDraft.name || "").trim() || state.user.displayName || state.user.email,
+        nameSet: !!state.myDraft.nameSet,
+        avatar: state.myDraft.avatar || null,
+        photo: state.user.photoURL || null,
+        email: state.user.email,
+        updatedAt: serverTimestamp()
+      },
+      { merge: true }
+    );
+    state.saveMsg = "Zapisano ✓";
+  } catch (e) {
+    console.error(e);
+    state.saveMsg = "Błąd zapisu — sprawdź reguły Firestore.";
+  }
 }
 
 let adminSaveTimer = null;
@@ -310,7 +390,9 @@ function render() {
 // Lekkie odświeżenie podczas pisania w "Moich typach" — NIE przebudowujemy pól
 // formularza (żeby nie tracić kursora), aktualizujemy tylko wskaźnik zapisu.
 function maybeRender() {
-  if (state.view === "mine") {
+  // Na widokach z polami tekstowymi nie przebudowujemy DOM (żeby nie tracić
+  // kursora podczas pisania) — odświeżamy tylko wskaźnik zapisu.
+  if (state.view === "mine" || state.view === "profile") {
     updateSaveIndicator();
     return;
   }
@@ -323,7 +405,9 @@ function updateSaveIndicator() {
 }
 
 function headerHtml() {
-  const tabs = VIEWS.filter((v) => !v.adminOnly || isAdmin())
+  const tabs = VIEWS.filter(
+    (v) => (!v.adminOnly || isAdmin()) && (!v.authOnly || state.user)
+  )
     .map(
       (v) =>
         `<button class="tab ${state.view === v.id ? "active" : ""}" data-view="${v.id}">${v.label}</button>`
@@ -332,7 +416,8 @@ function headerHtml() {
 
   const account = state.user
     ? `<div class="account">
-         <span class="who">${escapeHtml(state.user.displayName || state.user.email)}</span>
+         ${avatarHtml(myProfile(), "sm")}
+         <span class="who">${escapeHtml(myProfile().name)}</span>
          <button class="btn ghost" id="logout">Wyloguj</button>
        </div>`
     : `<button class="btn primary" id="login">
@@ -365,6 +450,8 @@ function viewHtml() {
       return matchesHtml();
     case "mine":
       return mineHtml();
+    case "profile":
+      return profileHtml();
     case "admin":
       return isAdmin() ? adminHtml() : `<p class="muted">Brak dostępu.</p>`;
     default:
@@ -384,10 +471,16 @@ function rankingHtml() {
           .map((r) => {
             const me = state.user && r.uid === state.user.uid;
             const medal = r.rank === 1 ? "🥇" : r.rank === 2 ? "🥈" : r.rank === 3 ? "🥉" : r.rank;
+            const prof = state.predictions[r.uid] || { name: r.name };
             return `
             <tr class="${me ? "me" : ""}">
               <td class="rank">${medal}</td>
-              <td class="name">${escapeHtml(r.name)}${me ? ' <span class="you">Ty</span>' : ""}</td>
+              <td class="name">
+                <span class="player-cell">
+                  ${avatarHtml(prof)}
+                  <span class="player-name">${escapeHtml(r.name)}${me ? ' <span class="you">Ty</span>' : ""}</span>
+                </span>
+              </td>
               <td class="total"><strong>${r.total}</strong></td>
               <td>${r.matchPoints}</td>
               <td>${r.championPoints}</td>
@@ -447,9 +540,9 @@ function matchesHtml() {
             <span class="stage">${escapeHtml(fmtStage(m))}</span>
           </div>
           <div class="match-body">
-            <span class="team home">${escapeHtml(m.homeTeam.name)}</span>
+            <span class="team home">${escapeHtml(m.homeTeam.name)} ${flagImg(m.homeTeam)}</span>
             <span class="score ${finished ? "final" : ""}">${score}</span>
-            <span class="team away">${escapeHtml(m.awayTeam.name)}</span>
+            <span class="team away">${flagImg(m.awayTeam)} ${escapeHtml(m.awayTeam.name)}</span>
           </div>
           ${myLine}
         </article>`;
@@ -502,7 +595,7 @@ function mineHtml() {
         <div class="pred-row ${locked ? "locked" : ""}">
           <div class="pred-info">
             <span class="row-date">${fmtDate(m.kickoffAt)} · ${escapeHtml(fmtStage(m))}</span>
-            <span class="row-teams">${escapeHtml(m.homeTeam.name)} – ${escapeHtml(m.awayTeam.name)}</span>
+            <span class="row-teams">${flagImg(m.homeTeam)} ${escapeHtml(m.homeTeam.name)} – ${escapeHtml(m.awayTeam.name)} ${flagImg(m.awayTeam)}</span>
           </div>
           <div class="pred-inputs">
             <input type="number" min="0" inputmode="numeric" class="score-in"
@@ -528,23 +621,11 @@ function mineHtml() {
         <div id="save-indicator" class="save-indicator">${escapeHtml(state.saveMsg)}</div>
       </div>
 
-      <div class="card profile-card">
-        <div class="champion-left">
-          <div class="champ-icon">🙋</div>
-          <div>
-            <div class="champ-title">Twój nick w typerze</div>
-            <div class="muted small">Tak będziesz widoczny w rankingu (nie musi być nazwą z Google).</div>
-          </div>
-        </div>
-        <input type="text" id="nick-input" maxlength="24" placeholder="np. Mati"
-          value="${escapeHtml(state.myDraft.name || "")}" />
-      </div>
-
       <div class="card champion-card">
         <div class="champion-left">
           <div class="champ-icon">👑</div>
           <div>
-            <div class="champ-title">Mistrz turnieju</div>
+            <div class="champ-title">Mistrz turnieju ${flagImg(teamById(state.myDraft.champion), "flag big")}</div>
             <div class="muted small">+${state.settings.points.tournamentWinner} pkt za trafienie</div>
           </div>
         </div>
@@ -562,6 +643,71 @@ function mineHtml() {
           Mecze blokują się o godzinie rozpoczęcia. Blokada jest po stronie aplikacji
           (uczciwa zabawa), nie jest twardym zabezpieczeniem.
         </p>
+      </div>
+    </section>`;
+}
+
+// --- Widok: Profil ------------------------------------------------------------
+function profileHtml() {
+  if (!state.user) return `<p class="muted">Zaloguj się, aby edytować profil.</p>`;
+  seedMyDraft();
+  const d = state.myDraft;
+  const nameLocked = !!d.nameSet;
+  const preview = {
+    name: d.name,
+    avatar: d.avatar,
+    photo: state.user.photoURL || null,
+    champion: d.champion
+  };
+
+  const emojiBtns = AVATAR_EMOJIS.map(
+    (e) =>
+      `<button type="button" class="emoji-pick ${d.avatar === e ? "sel" : ""}" data-emoji="${e}">${e}</button>`
+  ).join("");
+
+  const nickBlock = nameLocked
+    ? `<p>Twój nick: <strong>${escapeHtml(d.name)}</strong></p>
+       <p class="muted small">🔒 Nick można ustawić tylko raz — jest już zablokowany.</p>`
+    : `<p class="muted small">Tak będziesz widoczny w rankingu.
+         <strong>Uwaga: nick ustawiasz tylko raz, potem się zablokuje.</strong></p>
+       <div class="nick-row">
+         <input type="text" id="nick-input" maxlength="24" placeholder="np. Mati"
+           value="${escapeHtml(d.name || "")}" />
+         <button class="btn primary" id="nick-save">Zapisz nick</button>
+       </div>`;
+
+  return `
+    <section class="stack">
+      <div class="section-head">
+        <div><div class="eyebrow">Twoja wizytówka</div><h2>Profil</h2></div>
+        <div id="save-indicator" class="save-indicator">${escapeHtml(state.saveMsg)}</div>
+      </div>
+
+      <div class="card profile-head">
+        ${avatarHtml(preview, "lg")}
+        <div>
+          <div class="profile-name">${escapeHtml(d.name)}</div>
+          <div class="muted small">${escapeHtml(state.user.email)}</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">Nick</h3>
+        ${nickBlock}
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">Avatar / zdjęcie profilowe</h3>
+        <p class="muted small">Wybierz emoji, użyj zdjęcia z Google albo wklej link do obrazka.</p>
+        <div class="emoji-grid">${emojiBtns}</div>
+        <div class="nick-row" style="margin-top:0.8rem">
+          <input type="text" id="avatar-url" placeholder="https://… link do zdjęcia"
+            value="${d.avatar && /^https?:/.test(d.avatar) ? escapeHtml(d.avatar) : ""}" />
+        </div>
+        <div class="button-row" style="margin-top:0.8rem">
+          ${state.user.photoURL ? '<button class="btn" id="avatar-google">Użyj zdjęcia z Google</button>' : ""}
+          <button class="btn ghost" id="avatar-clear">Domyślny</button>
+        </div>
       </div>
     </section>`;
 }
@@ -655,12 +801,60 @@ function wireEvents() {
   const logout = document.getElementById("logout");
   if (logout) logout.addEventListener("click", () => signOut(auth));
 
-  // Moje typy — nick
+  // Profil — nick (zmiana tylko raz)
   const nickInput = document.getElementById("nick-input");
   if (nickInput)
     nickInput.addEventListener("input", () => {
       state.myDraft.name = nickInput.value;
-      saveMyPredictionsDebounced();
+    });
+
+  const nickSave = document.getElementById("nick-save");
+  if (nickSave)
+    nickSave.addEventListener("click", async () => {
+      const v = (state.myDraft.name || "").trim();
+      if (!v) {
+        alert("Wpisz nick.");
+        return;
+      }
+      if (!confirm(`Ustawić nick „${v}"? Później już go nie zmienisz.`)) return;
+      state.myDraft.name = v;
+      state.myDraft.nameSet = true;
+      await saveProfile();
+      render();
+    });
+
+  // Profil — avatar
+  appRoot.querySelectorAll(".emoji-pick").forEach((b) =>
+    b.addEventListener("click", async () => {
+      state.myDraft.avatar = b.dataset.emoji;
+      await saveProfile();
+      render();
+    })
+  );
+
+  const avatarUrl = document.getElementById("avatar-url");
+  if (avatarUrl)
+    avatarUrl.addEventListener("change", async () => {
+      const v = avatarUrl.value.trim();
+      state.myDraft.avatar = v || null;
+      await saveProfile();
+      render();
+    });
+
+  const avatarGoogle = document.getElementById("avatar-google");
+  if (avatarGoogle)
+    avatarGoogle.addEventListener("click", async () => {
+      state.myDraft.avatar = state.user.photoURL || null;
+      await saveProfile();
+      render();
+    });
+
+  const avatarClear = document.getElementById("avatar-clear");
+  if (avatarClear)
+    avatarClear.addEventListener("click", async () => {
+      state.myDraft.avatar = null;
+      await saveProfile();
+      render();
     });
 
   // Moje typy — pola wyników
@@ -733,6 +927,8 @@ function seedMyDraft() {
   const mine = state.predictions[state.user.uid];
   state.myDraft = {
     name: mine?.name || state.user.displayName || state.user.email,
+    nameSet: !!mine?.nameSet,
+    avatar: mine?.avatar || null,
     matches: structuredClone(mine?.matches || {}),
     champion: mine?.champion || null
   };
