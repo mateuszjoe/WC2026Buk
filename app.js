@@ -242,20 +242,30 @@ function flagImg(team, cls = "flag") {
 }
 
 // Style generowanych avatarów (DiceBear — darmowe, bez klucza, zwraca SVG).
+// Mieszanka wyrazistych postaci, robotów i grafik abstrakcyjnych.
 const AVATAR_STYLES = [
-  "adventurer", "bottts", "fun-emoji", "lorelei", "notionists",
-  "open-peeps", "pixel-art", "micah", "big-smile", "thumbs",
-  "personas", "miniavs"
+  "avataaars", "bottts", "adventurer", "micah", "big-smile",
+  "fun-emoji", "open-peeps", "personas", "lorelei", "notionists",
+  "croodles", "thumbs", "pixel-art", "miniavs", "dylan", "glass"
+];
+
+// Wyraziste, "boiskowe" tła avatarów.
+const AVATAR_BG = [
+  "1abc9c", "2ecc71", "3498db", "9b59b6", "e67e22",
+  "e74c3c", "f1c40f", "16a085", "2980b9", "d35400"
 ];
 
 // Generuje zestaw propozycji avatarów (URL-e), zależny od "ziarna" (reroll).
 function avatarOptions() {
   const base = encodeURIComponent(state.myDraft?.name || state.user?.uid || "gracz");
   const salt = state.avatarSeed || 0;
-  return AVATAR_STYLES.map(
-    (style, i) =>
-      `https://api.dicebear.com/9.x/${style}/svg?seed=${base}-${salt}-${i}&radius=50&backgroundType=gradientLinear`
-  );
+  return AVATAR_STYLES.map((style, i) => {
+    const bg = AVATAR_BG[(salt + i) % AVATAR_BG.length];
+    return (
+      `https://api.dicebear.com/9.x/${style}/svg?seed=${base}-${salt}-${i}` +
+      `&radius=50&backgroundColor=${bg}&backgroundType=gradientLinear`
+    );
+  });
 }
 
 // Inicjały z nazwy (gdy brak avatara i zdjęcia z Google).
