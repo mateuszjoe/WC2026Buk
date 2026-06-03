@@ -1,0 +1,66 @@
+[
+  {
+    "id": "match-001",
+    "stage": "group",
+    "group": "A",
+    "kickoffAt": "2026-06-11T19:00:00.000Z",
+    "homeTeam": { "id": "mex", "name": "Meksyk" },
+    "awayTeam": { "id": "pol", "name": "Polska" }
+  },
+  {
+    "id": "match-002",
+    "stage": "group",
+    "group": "A",
+    "kickoffAt": "2026-06-12T22:00:00.000Z",
+    "homeTeam": { "id": "can", "name": "Kanada" },
+    "awayTeam": { "id": "mar", "name": "Maroko" }
+  },
+  {
+    "id": "match-003",
+    "stage": "group",
+    "group": "B",
+    "kickoffAt": "2026-06-13T18:00:00.000Z",
+    "homeTeam": { "id": "usa", "name": "USA" },
+    "awayTeam": { "id": "jpn", "name": "Japonia" }
+  },
+  {
+    "id": "match-004",
+    "stage": "group",
+    "group": "B",
+    "kickoffAt": "2026-06-13T21:00:00.000Z",
+    "homeTeam": { "id": "arg", "name": "Argentyna" },
+    "awayTeam": { "id": "kor", "name": "Korea Płd." }
+  },
+  {
+    "id": "match-005",
+    "stage": "group",
+    "group": "C",
+    "kickoffAt": "2026-06-14T19:00:00.000Z",
+    "homeTeam": { "id": "fra", "name": "Francja" },
+    "awayTeam": { "id": "cro", "name": "Chorwacja" }
+  },
+  {
+    "id": "match-006",
+    "stage": "group",
+    "group": "C",
+    "kickoffAt": "2026-06-14T22:00:00.000Z",
+    "homeTeam": { "id": "bra", "name": "Brazylia" },
+    "awayTeam": { "id": "ned", "name": "Holandia" }
+  },
+  {
+    "id": "match-007",
+    "stage": "group",
+    "group": "D",
+    "kickoffAt": "2026-06-15T19:00:00.000Z",
+    "homeTeam": { "id": "eng", "name": "Anglia" },
+    "awayTeam": { "id": "sen", "name": "Senegal" }
+  },
+  {
+    "id": "match-008",
+    "stage": "group",
+    "group": "D",
+    "kickoffAt": "2026-06-15T22:00:00.000Z",
+    "homeTeam": { "id": "esp", "name": "Hiszpania" },
+    "awayTeam": { "id": "por", "name": "Portugalia" }
+  }
+]

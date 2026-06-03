@@ -1,12 +1,23 @@
 <!doctype html>
 <html lang="pl">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Typer MŚ 2026</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Typer Mistrzostw Świata 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <div id="app">
+      <div class="boot">Wczytywanie typera…</div>
+    </div>
+
+    <!-- app.js to moduł ES; importuje Firebase z CDN i konfig z firebase-config.js -->
+    <script type="module" src="./app.js"></script>
   </body>
 </html>

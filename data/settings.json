@@ -6,5 +6,6 @@
     "tournamentWinner": 10
   },
   "lockPredictionsAtKickoff": true,
-  "championTeamId": null
+  "championLockAt": "2026-06-11T16:00:00.000Z",
+  "adminEmail": "mateuszjoe@gmail.com"
 }
