@@ -547,23 +547,29 @@ details.mini-standings[open] summary { color: var(--text); }
 .fs-team.win .fs-score { color: var(--accent); }
 .fs-side { margin-left: auto; flex-shrink: 0; }
 
-/* Wiersz do obstawiania (Moje typy) */
-.bet-row { flex-wrap: wrap; }
-.bet-info { flex: 1; min-width: 210px; display: flex; align-items: center; gap: 0.7rem; }
-.bet-teams { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.28rem; }
-.bet-team { display: flex; align-items: center; gap: 0.45rem; min-width: 0; }
+/* Wiersz do obstawiania (Moje typy) — drużyna + wynik + pole w jednym rzędzie */
+.bet-row { gap: 0.6rem; align-items: center; }
+.bet-meta {
+  width: 54px; flex-shrink: 0;
+  display: flex; flex-direction: column; gap: 0.1rem; align-items: flex-start;
+}
+.bet-grid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.45rem; }
+.bet-team-row { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+.bet-team-row .fs-flag { width: 22px; flex-shrink: 0; display: inline-flex; justify-content: center; }
 .bet-name {
   flex: 1; min-width: 0;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600;
 }
-.bet-team .real {
-  width: 20px; text-align: center; flex-shrink: 0;
-  color: var(--accent); font-weight: 800; font-variant-numeric: tabular-nums;
+.bet-team-row.win .bet-name { color: #fff; }
+.bet-team-row .real {
+  width: 18px; flex-shrink: 0; text-align: center;
+  color: var(--muted); font-weight: 800; font-variant-numeric: tabular-nums;
 }
-.bet-controls { display: flex; align-items: center; gap: 0.6rem; margin-left: auto; }
-.bet-inputs { display: flex; align-items: center; gap: 0.35rem; }
-.bet-row.locked { opacity: 0.62; }
-.bet-row.fin { background: rgba(54, 211, 153, 0.04); border-radius: 8px; }
+.bet-team-row.win .real { color: var(--accent); }
+.bet-team-row input[type="number"] { width: 50px; flex-shrink: 0; padding: 0.45rem 0.3rem; }
+.bet-tag { margin-left: auto; flex-shrink: 0; align-self: center; }
+.bet-row.locked { opacity: 0.6; }
+.bet-row.fin { background: rgba(54, 211, 153, 0.05); border-radius: 10px; padding-left: 0.5rem; padding-right: 0.5rem; }
 
 /* Punkty / etykiety typu */
 .pts {
@@ -599,14 +605,43 @@ details.mini-standings[open] summary { color: var(--text); }
 
 .section-head.compact { align-items: center; margin-bottom: 0.4rem; }
 
+/* ---------- Tablet ---------- */
+@media (max-width: 760px) {
+  .group-grid { grid-template-columns: 1fr; }
+}
+
 /* ---------- Mobile ---------- */
 @media (max-width: 560px) {
+  .container { width: 94vw; }
+  main.container { padding: 1.1rem 0 3rem; }
   .who { display: none; }
-  h2 { font-size: 1.3rem; }
-  .pred-row { flex-direction: column; align-items: stretch; }
-  .pred-inputs { justify-content: flex-end; }
-  .group-grid { grid-template-columns: 1fr; }
-  .bet-controls { margin-left: 0; width: 100%; justify-content: space-between; }
+  h2 { font-size: 1.25rem; }
+  .card { padding: 0.9rem; border-radius: 14px; }
+  .group-block { padding: 0.9rem 0.85rem 0.6rem; }
+
+  /* większe, wygodne pola dotykowe */
+  input[type="number"] { min-height: 42px; }
+  .bet-team-row input[type="number"] { width: 54px; }
+  .tab { padding: 0.5rem 0.8rem; }
+
+  /* wiersz typowania: czas u góry, drużyny pełna szerokość */
+  .bet-row { flex-wrap: wrap; gap: 0.3rem 0.6rem; }
+  .bet-meta { width: auto; flex-direction: row; gap: 0.5rem; align-items: center; }
+  .bet-grid { flex-basis: 100%; }
+  .bet-tag { margin-left: 0; flex-basis: 100%; text-align: right; }
+
+  /* tabela grupy: zostaw najważniejsze kolumny (M, Bramki, Pkt) */
+  .standings th:nth-child(4), .standings td:nth-child(4),
+  .standings th:nth-child(5), .standings td:nth-child(5),
+  .standings th:nth-child(6), .standings td:nth-child(6) { display: none; }
+
+  /* ranking: tylko suma + mecze obok gracza */
+  .leaderboard th:nth-child(4), .leaderboard td:nth-child(4),
+  .leaderboard th:nth-child(5), .leaderboard td:nth-child(5),
   .leaderboard th:nth-child(6), .leaderboard td:nth-child(6),
   .leaderboard th:nth-child(7), .leaderboard td:nth-child(7) { display: none; }
+  .leaderboard td, .leaderboard th { padding: 0.6rem 0.5rem; }
+
+  .pred-row { flex-direction: column; align-items: stretch; }
+  .pred-inputs { justify-content: flex-end; }
 }

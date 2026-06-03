@@ -678,35 +678,42 @@ function fsMatchRow(m) {
     </div>`;
 }
 
-// Wiersz do OBSTAWIANIA (Moje typy): wynik realny + pola Twojego typu.
+// Wiersz do OBSTAWIANIA (Moje typy) — układ Flashscore: każda drużyna w jednym
+// wierszu razem z realnym wynikiem i polem Twojego typu.
 function betRow(m) {
   const locked = matchLocked(m);
   const pred = state.myDraft.matches[m.id] || {};
-  const h = pred.h ?? "";
-  const a = pred.a ?? "";
   const r = getResult(m);
   const finished = Boolean(r);
   const myp = pred.h !== undefined && pred.a !== undefined ? pred : null;
   const tag = finished ? myPredTag(myp, r) : "";
-  const realScore = (v) => (finished ? `<b class="real">${v}</b>` : "");
+
+  const teamLine = (team, side) => {
+    const val = pred[side] ?? "";
+    const real = finished ? r[side] : null;
+    const win = finished && (side === "h" ? r.h > r.a : r.a > r.h);
+    return `
+      <div class="bet-team-row ${win ? "win" : ""}">
+        <span class="fs-flag">${flagImg(team)}</span>
+        <span class="bet-name">${escapeHtml(team.name)}</span>
+        ${finished ? `<b class="real">${real}</b>` : ""}
+        <input type="number" min="0" inputmode="numeric" class="score-in"
+          data-match="${m.id}" data-side="${side}" value="${val}" ${locked ? "disabled" : ""}
+          aria-label="Twój typ — ${escapeHtml(team.name)}" />
+      </div>`;
+  };
+
   return `
     <div class="bet-row ${locked ? "locked" : ""} ${finished ? "fin" : ""}">
-      <div class="bet-info">
-        <div class="bet-meta"><span class="fs-time">${fmtShort(m.kickoffAt)}</span>${liveTag(m)}</div>
-        <div class="bet-teams">
-          <span class="bet-team"><span class="fs-flag">${flagImg(m.homeTeam)}</span><span class="bet-name">${escapeHtml(m.homeTeam.name)}</span>${realScore(r?.h)}</span>
-          <span class="bet-team"><span class="fs-flag">${flagImg(m.awayTeam)}</span><span class="bet-name">${escapeHtml(m.awayTeam.name)}</span>${realScore(r?.a)}</span>
-        </div>
+      <div class="bet-meta">
+        <span class="fs-time">${fmtShort(m.kickoffAt)}</span>
+        ${liveTag(m)}${locked && !finished ? '<span class="lock-tag">🔒</span>' : ""}
       </div>
-      <div class="bet-controls">
-        <div class="bet-inputs">
-          <input type="number" min="0" inputmode="numeric" class="score-in" data-match="${m.id}" data-side="h" value="${h}" ${locked ? "disabled" : ""} aria-label="Twój typ — gospodarze" />
-          <span class="colon">:</span>
-          <input type="number" min="0" inputmode="numeric" class="score-in" data-match="${m.id}" data-side="a" value="${a}" ${locked ? "disabled" : ""} aria-label="Twój typ — goście" />
-          ${locked ? '<span class="lock-tag">🔒</span>' : ""}
-        </div>
-        ${tag}
+      <div class="bet-grid">
+        ${teamLine(m.homeTeam, "h")}
+        ${teamLine(m.awayTeam, "a")}
       </div>
+      ${tag ? `<div class="bet-tag">${tag}</div>` : ""}
     </div>`;
 }
 
