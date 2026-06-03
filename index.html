@@ -17,7 +17,11 @@
       <div class="boot">Wczytywanie typera…</div>
     </div>
 
-    <!-- app.js to moduł ES; importuje Firebase z CDN i konfig z firebase-config.js -->
-    <script type="module" src="./app.js"></script>
+    <!-- app.js to moduł ES; importuje Firebase z CDN i konfig z firebase-config.js.
+         Ładujemy z parametrem czasu, żeby przeglądarka nie trzymała starej wersji
+         po wgraniu zmian (cache-busting). -->
+    <script type="module">
+      import(`./app.js?ts=${Date.now()}`);
+    </script>
   </body>
 </html>
