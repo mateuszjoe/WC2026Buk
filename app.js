@@ -215,7 +215,7 @@ function saveMyPredictionsDebounced() {
       await setDoc(
         doc(db, "predictions", state.user.uid),
         {
-          name: state.user.displayName || state.user.email,
+          name: (state.myDraft?.name || "").trim() || state.user.displayName || state.user.email,
           email: state.user.email,
           matches: state.myDraft.matches,
           champion: state.myDraft.champion || null,
@@ -498,6 +498,18 @@ function mineHtml() {
         <div id="save-indicator" class="save-indicator">${escapeHtml(state.saveMsg)}</div>
       </div>
 
+      <div class="card profile-card">
+        <div class="champion-left">
+          <div class="champ-icon">🙋</div>
+          <div>
+            <div class="champ-title">Twój nick w typerze</div>
+            <div class="muted small">Tak będziesz widoczny w rankingu (nie musi być nazwą z Google).</div>
+          </div>
+        </div>
+        <input type="text" id="nick-input" maxlength="24" placeholder="np. Mati"
+          value="${escapeHtml(state.myDraft.name || "")}" />
+      </div>
+
       <div class="card champion-card">
         <div class="champion-left">
           <div class="champ-icon">👑</div>
@@ -612,6 +624,14 @@ function wireEvents() {
   const logout = document.getElementById("logout");
   if (logout) logout.addEventListener("click", () => signOut(auth));
 
+  // Moje typy — nick
+  const nickInput = document.getElementById("nick-input");
+  if (nickInput)
+    nickInput.addEventListener("input", () => {
+      state.myDraft.name = nickInput.value;
+      saveMyPredictionsDebounced();
+    });
+
   // Moje typy — pola wyników
   appRoot.querySelectorAll(".score-in").forEach((input) => {
     input.addEventListener("input", () => {
@@ -681,6 +701,7 @@ function seedMyDraft() {
   if (state.myDraftSeededFor === state.user.uid && state.myDraft) return;
   const mine = state.predictions[state.user.uid];
   state.myDraft = {
+    name: mine?.name || state.user.displayName || state.user.email,
     matches: structuredClone(mine?.matches || {}),
     champion: mine?.champion || null
   };

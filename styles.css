@@ -274,6 +274,22 @@ select:focus { outline: none; border-color: var(--accent); }
 .champ-icon { font-size: 1.8rem; }
 .champ-title { font-weight: 700; }
 
+.profile-card {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; flex-wrap: wrap;
+}
+input[type="text"] {
+  font: inherit;
+  font-weight: 600;
+  padding: 0.55rem 0.8rem;
+  min-width: 180px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+input[type="text"]:focus { outline: none; border-color: var(--accent); }
+
 /* ---------- Login / setup screens ---------- */
 .login-card { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; padding: 2.4rem 1.2rem; }
 .login-card .btn { margin-top: 0.6rem; }
