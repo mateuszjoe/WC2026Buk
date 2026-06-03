@@ -110,7 +110,7 @@ function calculateLeaderboard() {
 
     for (const match of matches) {
       const pred = p.matches?.[match.id];
-      const result = admin.results?.[match.id];
+      const result = getResult(match);
       const s = scoreMatch(pred, result, settings);
       matchPoints += s.points;
       if (s.exact) exactCount += 1;
@@ -160,9 +160,21 @@ function championLocked() {
   return Date.now() >= Date.parse(state.settings.championLockAt);
 }
 
+// Wynik meczu: najpierw ręczna korekta admina (Firestore), a jeśli jej nie ma —
+// wynik z pliku data/matches.json (uzupełniany automatycznie przez robota z API).
+function getResult(match) {
+  const override = state.admin.results?.[match.id];
+  if (override && typeof override.h === "number" && typeof override.a === "number") {
+    return override;
+  }
+  if (typeof match.homeScore === "number" && typeof match.awayScore === "number") {
+    return { h: match.homeScore, a: match.awayScore };
+  }
+  return undefined;
+}
+
 function matchFinished(match) {
-  const r = state.admin.results?.[match.id];
-  return Boolean(r && typeof r.h === "number" && typeof r.a === "number");
+  return Boolean(getResult(match));
 }
 
 function getTeams() {
@@ -396,8 +408,8 @@ function rankingHtml() {
 function matchesHtml() {
   const cards = state.matches
     .map((m) => {
-      const result = state.admin.results?.[m.id];
-      const finished = matchFinished(m);
+      const result = getResult(m);
+      const finished = Boolean(result);
       const score = finished ? `${result.h} : ${result.a}` : "–";
       const myPred = state.user ? state.predictions[state.user.uid]?.matches?.[m.id] : null;
 

@@ -1,0 +1,44 @@
+name: Aktualizacja terminarza i wyników MŚ 2026
+
+# Robot pobiera dane z football-data.org i zapisuje je do data/matches.json.
+# Działa automatycznie co 30 minut oraz na żądanie (przycisk "Run workflow").
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pobierz repozytorium
+        uses: actions/checkout@v4
+
+      - name: Zainstaluj Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Pobierz dane z API
+        env:
+          FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
+        run: node scripts/update-data.mjs
+
+      - name: Zapisz zmiany (jeśli są)
+        run: |
+          git config user.name "wc2026-bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/matches.json
+          if git diff --staged --quiet; then
+            echo "Brak zmian w danych — nic do zapisania."
+          else
+            git commit -m "Auto: aktualizacja terminarza i wyników MŚ 2026"
+            git push
+          fi
