@@ -57,7 +57,12 @@ const state = {
   view: "ranking", // aktywna zakładka
   myDraft: null, // lokalna kopia MOICH typów (edytowana w formularzu)
   myDraftSeededFor: null, // uid, dla którego zasialiśmy myDraft
-  saveMsg: "" // komunikat o zapisie w widoku "Moje typy"
+  saveMsg: "", // komunikat o zapisie w widoku "Moje typy"
+  avatarSeed: 0, // ziarno dla losowania avatarów
+  // Powiadomienia (in-app, gdy aplikacja jest otwarta):
+  notifyInit: false, // czy ustalono punkt odniesienia
+  lastLeaderUid: null, // ostatni lider rankingu
+  notifiedFinished: new Set() // mecze, o których już powiadomiono
 };
 
 const VIEWS = [
@@ -974,7 +979,29 @@ function profileHtml() {
           <button class="btn ghost" id="avatar-clear">Domyślny (inicjały)</button>
         </div>
       </div>
+
+      <div class="card">
+        <h3 class="card-title">🔔 Powiadomienia</h3>
+        ${notificationsBlock()}
+      </div>
     </section>`;
+}
+
+function notificationsBlock() {
+  if (!("Notification" in window)) {
+    return `<p class="muted small">Twoja przeglądarka nie obsługuje powiadomień.</p>`;
+  }
+  if (Notification.permission === "granted") {
+    return `<p class="muted small">✅ Włączone. Dostaniesz powiadomienie o nowym liderze rankingu
+      i o zakończonych meczach (gdy aplikacja jest otwarta / zainstalowana).</p>
+      <button class="btn ghost tiny" id="notify-test">Wyślij testowe</button>`;
+  }
+  if (Notification.permission === "denied") {
+    return `<p class="muted small">🚫 Powiadomienia są zablokowane w ustawieniach przeglądarki dla tej strony.
+      Odblokuj je w ustawieniach witryny, żeby włączyć.</p>`;
+  }
+  return `<p class="muted small">Dostawaj info o nowym liderze i wynikach meczów (z komentarzem 😈).</p>
+    <button class="btn primary" id="notify-enable">🔔 Włącz powiadomienia</button>`;
 }
 
 // --- Widok: Regulamin ---------------------------------------------------------
@@ -1119,6 +1146,15 @@ function wireEvents() {
   const logout = document.getElementById("logout");
   if (logout) logout.addEventListener("click", () => signOut(auth));
 
+  // Profil — powiadomienia
+  const notifyEnable = document.getElementById("notify-enable");
+  if (notifyEnable) notifyEnable.addEventListener("click", requestNotifyPermission);
+  const notifyTest = document.getElementById("notify-test");
+  if (notifyTest)
+    notifyTest.addEventListener("click", () =>
+      notify("⚽ Test powiadomienia", "Działa! Tu wpadną info o liderze i wynikach meczów.")
+    );
+
   // Profil — nick (zmiana tylko raz)
   const nickInput = document.getElementById("nick-input");
   if (nickInput)
@@ -1261,6 +1297,117 @@ function seedMyDraft() {
 }
 
 // =============================================================================
+//  POWIADOMIENIA (in-app — gdy aplikacja jest otwarta/zainstalowana)
+// =============================================================================
+
+async function notify(title, body) {
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  const opts = {
+    body,
+    icon: "./icons/icon-192.png",
+    badge: "./icons/icon-192.png",
+    tag: title + body
+  };
+  try {
+    const reg = await navigator.serviceWorker?.ready;
+    if (reg && reg.showNotification) reg.showNotification(title, opts);
+    else new Notification(title, opts);
+  } catch (e) {
+    try { new Notification(title, opts); } catch (_) {}
+  }
+}
+
+async function requestNotifyPermission() {
+  if (!("Notification" in window)) return;
+  try {
+    await Notification.requestPermission();
+  } catch (_) {}
+  render();
+  if (Notification.permission === "granted") {
+    notify("🔔 Powiadomienia włączone", "Teraz nie ucieknie Ci żadna akcja. Powodzenia, typerze!");
+  }
+}
+
+function rand(arr) {
+  // bez Math.random() (stabilność) — wybór zależny od długości danych
+  return arr[(state.notifiedFinished.size + state.matches.length) % arr.length];
+}
+
+function notifyMatchFinished(m) {
+  const r = getResult(m);
+  if (!r) return;
+  const score = `${r.h}:${r.a}`;
+  const title = `⚽ ${m.homeTeam.name} ${r.h}:${r.a} ${m.awayTeam.name}`;
+
+  // Komentarz dotyczy TWOJEGO typu na ten mecz.
+  const mine = state.user ? state.predictions[state.user.uid]?.matches?.[m.id] : null;
+  let body;
+  if (!state.user) {
+    body = `Wynik: ${score}. Zaloguj się i typuj, bo tracisz zabawę!`;
+  } else if (!mine) {
+    body = rand([
+      `Wynik ${score}, a Ty nawet nie obstawiłeś. Wstyd, mordo.`,
+      `${score} po gwizdku. Twojego typu brak — śpisz czy co?`
+    ]);
+  } else {
+    const s = scoreMatch(mine, r, state.settings);
+    if (s.exact) {
+      body = rand([
+        `JA PIERDOLĘ! Dokładny wynik ${score} trafiony! +${s.points} pkt, ty jasnowidzu!`,
+        `Co za nos! Strzeliłeś ${score} co do bramki. +${s.points} pkt, gratulacje!`
+      ]);
+    } else if (s.correct) {
+      body = rand([
+        `Rezultat trafiony, +${s.points} pkt do kieszeni. Mogło być lepiej, ale jest.`,
+        `Nieźle — rezultat siadł, +${s.points} pkt. Dokładny wynik następnym razem.`
+      ]);
+    } else {
+      body = rand([
+        `Chuja trafiłeś i chuja dostałeś. 0 pkt. Następnym razem rusz głową.`,
+        `Pudło na całej linii. 0 pkt. Może rzut monetą zadziała lepiej?`
+      ]);
+    }
+  }
+  notify(title, body);
+}
+
+function notifyNewLeader(row) {
+  if (!row) return;
+  const me = state.user && row.uid === state.user.uid;
+  const title = "👑 Nowy lider rankingu!";
+  const body = me
+    ? `Jesteś nowym liderem, ${row.name}! Tylko tego nie spierdol.`
+    : `${row.name} wskakuje na 1. miejsce i depcze wam po pysku. Ktoś to ogarnie?`;
+  notify(title, body);
+}
+
+// Po każdej aktualizacji danych: sprawdź, czy jest o czym powiadomić.
+function checkNotifications() {
+  const board = calculateLeaderboard();
+  const leader = board[0]?.uid || null;
+
+  if (!state.notifyInit) {
+    // pierwszy przebieg — tylko zapamiętaj stan, bez powiadomień
+    state.notifiedFinished = new Set(state.matches.filter(matchFinished).map((m) => m.id));
+    state.lastLeaderUid = leader;
+    state.notifyInit = true;
+    return;
+  }
+
+  for (const m of state.matches) {
+    if (matchFinished(m) && !state.notifiedFinished.has(m.id)) {
+      state.notifiedFinished.add(m.id);
+      notifyMatchFinished(m);
+    }
+  }
+
+  if (leader && leader !== state.lastLeaderUid) {
+    state.lastLeaderUid = leader;
+    notifyNewLeader(board[0]);
+  }
+}
+
+// =============================================================================
 //  WCZYTYWANIE DANYCH + LISTENERY
 // =============================================================================
 
@@ -1288,6 +1435,7 @@ function listenToFirestore() {
         const next = {};
         snap.forEach((d) => (next[d.id] = d.data()));
         state.predictions = next;
+        checkNotifications();
         maybeRender();
       },
       (err) => console.error("predictions:", err.message)
@@ -1304,6 +1452,7 @@ function listenToFirestore() {
           results: data.results || {},
           championTeamId: data.championTeamId || null
         };
+        checkNotifications();
         maybeRender();
       },
       (err) => console.error("admin/state:", err.message)
@@ -1334,11 +1483,30 @@ onAuthStateChanged(auth, (user) => {
   render();
 });
 
+// Rejestracja service workera (instalacja jako aplikacja + powiadomienia).
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js").catch((e) => console.warn("SW:", e));
+}
+
+// Cykliczne odświeżanie wyników z pliku (robot aktualizuje go co 30 min),
+// żeby przy otwartej aplikacji wpadały powiadomienia o zakończonych meczach.
+function startMatchesPolling() {
+  setInterval(async () => {
+    try {
+      const matches = await fetch(`./data/matches.json?ts=${Date.now()}`).then((r) => r.json());
+      state.matches = [...matches].sort((a, b) => a.kickoffAt.localeCompare(b.kickoffAt));
+      checkNotifications();
+      if (state.view === "matches" || state.view === "ranking") render();
+    } catch (_) {}
+  }, 5 * 60 * 1000);
+}
+
 // --- Start --------------------------------------------------------------------
 (async function start() {
   try {
     await loadStaticData();
     render();
+    startMatchesPolling();
   } catch (e) {
     console.error(e);
     appRoot.innerHTML = `<div class="boot error">Nie udało się wczytać danych (data/*.json).<br>${escapeHtml(
