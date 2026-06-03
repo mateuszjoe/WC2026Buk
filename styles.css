@@ -609,11 +609,10 @@ details.mini-standings[open] summary { color: var(--text); }
 /* ---------- Regulamin / nagrody ---------- */
 .rules-list { margin: 0.2rem 0 0.6rem; padding-left: 0; list-style: none; }
 .rules-list li {
-  display: flex; align-items: baseline; gap: 0.6rem;
-  padding: 0.4rem 0; border-bottom: 1px solid rgba(42, 54, 102, 0.4); line-height: 1.5;
+  padding: 0.5rem 0; border-bottom: 1px solid rgba(42, 54, 102, 0.4); line-height: 1.6;
 }
 .rules-list li:last-child { border-bottom: 0; }
-.rules-list .pts { flex-shrink: 0; align-self: center; }
+.rules-list .pts { display: inline-block; margin-right: 0.45rem; vertical-align: middle; }
 
 .prizes-card { background: linear-gradient(180deg, rgba(255, 209, 102, 0.08), var(--bg-2)); }
 .podium {
