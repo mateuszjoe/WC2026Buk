@@ -282,7 +282,7 @@ function render() {
       ${viewHtml()}
     </main>
     <footer class="site-footer">
-      Prywatny typer ze znajomymi · gra na punkty, bez prawdziwych pieniędzy
+      Wóda! Szlugi! Grube baby!
     </footer>
   `;
 
