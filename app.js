@@ -328,7 +328,7 @@ function headerHtml() {
           <div class="cup">🏆</div>
           <div>
             <div class="brand-title">${escapeHtml(state.settings.tournamentName)}</div>
-            <div class="brand-sub">Typer ze znajomymi</div>
+            <div class="brand-sub">typer mordoryje</div>
           </div>
         </div>
         ${account}
