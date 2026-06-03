@@ -101,8 +101,20 @@ function scoreChampion(championPick, settings, championTeamId) {
   return championPick === championTeamId ? settings.points.tournamentWinner : 0;
 }
 
+// Zwycięzca turnieju: ręczne ustawienie admina ma pierwszeństwo, a jeśli go nie
+// ma — bierzemy zwycięzcę meczu finałowego (jeśli już rozegrany).
+function getChampionTeamId() {
+  if (state.admin.championTeamId) return state.admin.championTeamId;
+  const finalMatch = state.matches.find((m) => m.stage === "finał");
+  if (!finalMatch) return null;
+  const result = getResult(finalMatch);
+  if (!result || result.h === result.a) return null;
+  return result.h > result.a ? finalMatch.homeTeam.id : finalMatch.awayTeam.id;
+}
+
 function calculateLeaderboard() {
-  const { settings, matches, predictions, admin } = state;
+  const { settings, matches, predictions } = state;
+  const championTeamId = getChampionTeamId();
   const rows = Object.entries(predictions).map(([uid, p]) => {
     let matchPoints = 0;
     let exactCount = 0;
@@ -117,7 +129,7 @@ function calculateLeaderboard() {
       if (s.correct) correctCount += 1;
     }
 
-    const championPoints = scoreChampion(p.champion, settings, admin.championTeamId);
+    const championPoints = scoreChampion(p.champion, settings, championTeamId);
 
     return {
       uid,
