@@ -44,7 +44,7 @@
     },
     "awayTeam": {
       "id": "t1060",
-      "name": "Bosnia-Herzegovina"
+      "name": "Bośnia i Hercegowina"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -214,7 +214,7 @@
     },
     "awayTeam": {
       "id": "t1930",
-      "name": "Cape Verde Islands"
+      "name": "Republika Zielonego Przylądka"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -350,7 +350,7 @@
     },
     "awayTeam": {
       "id": "t1934",
-      "name": "Congo DR"
+      "name": "DR Konga"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -435,7 +435,7 @@
     },
     "awayTeam": {
       "id": "t1060",
-      "name": "Bosnia-Herzegovina"
+      "name": "Bośnia i Hercegowina"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -656,7 +656,7 @@
     },
     "awayTeam": {
       "id": "t1930",
-      "name": "Cape Verde Islands"
+      "name": "Republika Zielonego Przylądka"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -809,7 +809,7 @@
     },
     "awayTeam": {
       "id": "t1934",
-      "name": "Congo DR"
+      "name": "DR Konga"
     },
     "status": "TIMED",
     "homeScore": null,
@@ -839,7 +839,7 @@
     "kickoffAt": "2026-06-24T19:00:00Z",
     "homeTeam": {
       "id": "t1060",
-      "name": "Bosnia-Herzegovina"
+      "name": "Bośnia i Hercegowina"
     },
     "awayTeam": {
       "id": "t8030",
@@ -1077,7 +1077,7 @@
     "kickoffAt": "2026-06-27T00:00:00Z",
     "homeTeam": {
       "id": "t1930",
-      "name": "Cape Verde Islands"
+      "name": "Republika Zielonego Przylądka"
     },
     "awayTeam": {
       "id": "t801",
@@ -1179,7 +1179,7 @@
     "kickoffAt": "2026-06-27T23:30:00Z",
     "homeTeam": {
       "id": "t1934",
-      "name": "Congo DR"
+      "name": "DR Konga"
     },
     "awayTeam": {
       "id": "t8070",
