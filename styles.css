@@ -184,6 +184,37 @@ table.leaderboard { width: 100%; border-collapse: collapse; font-size: 0.92rem; 
 }
 .leaderboard .cnt { color: var(--muted); font-size: 0.7rem; margin-left: 0.2rem; }
 
+/* Zachęta dla niezalogowanych ("ktoś już gra") */
+.join-cta {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  background: linear-gradient(135deg, rgba(91, 140, 255, 0.16), rgba(54, 211, 153, 0.16));
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.92rem;
+}
+.join-cta .btn { margin-left: auto; }
+
+/* Panel admina — lista graczy */
+.player-admin-list { display: flex; flex-direction: column; }
+.player-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid rgba(42, 54, 102, 0.5);
+}
+.player-row:last-child { border-bottom: 0; }
+.player-row .player-cell { flex: 1; min-width: 0; }
+.player-id { display: flex; flex-direction: column; min-width: 0; }
+.player-id .block { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.player-pts { color: var(--muted); font-size: 0.82rem; white-space: nowrap; }
+.del-player { color: var(--danger); }
+.del-player[disabled] { opacity: 0.35; cursor: not-allowed; }
+
 /* ---------- Matches ---------- */
 .match-grid {
   display: grid;

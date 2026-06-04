@@ -18,6 +18,7 @@ import {
   doc,
   getDoc,
   setDoc,
+  deleteDoc,
   onSnapshot,
   collection,
   serverTimestamp
@@ -925,6 +926,14 @@ function rankingHtml() {
           ${p.exactScore} pkt dokładny wynik · ${p.correctResult} pkt traf. rezultat · ${p.tournamentWinner} pkt mistrz
         </div>
       </div>
+      ${
+        !state.user && board.length
+          ? `<div class="join-cta">
+               🔥 <strong>${board.length}</strong> ${board.length === 1 ? "gracz już typuje" : "graczy już typuje"} — nie zostań w plecy!
+               <button class="btn primary tiny" id="login-3">Zaloguj się i dołącz</button>
+             </div>`
+          : ""
+      }
       <div class="card table-card">
         <table class="leaderboard">
           <thead>
@@ -1311,6 +1320,7 @@ function notificationsBlock() {
 // Pokazuje się RAZ na urządzenie (zapamiętane w localStorage), tylko gdy
 // powiadomienia są wspierane i jeszcze nieustawione (permission === "default").
 function shouldShowNotifyPrompt() {
+  if (!state.user) return false; // dopiero po zalogowaniu (nie zanim ktoś zobaczy co to jest)
   if (state.notifyPromptDone) return false;
   if (!("Notification" in window)) return false;
   if (Notification.permission !== "default") return false;
@@ -1407,6 +1417,29 @@ function adminHtml() {
     )
     .join("");
 
+  const playerBoard = calculateLeaderboard();
+  const playerRows = playerBoard.length
+    ? playerBoard
+        .map((r) => {
+          const prof = state.predictions[r.uid] || { name: r.name };
+          const isMe = state.user && r.uid === state.user.uid;
+          return `
+            <div class="player-row">
+              <span class="player-cell">
+                ${avatarHtml(prof)}
+                <span class="player-id">
+                  <span class="player-name">${escapeHtml(r.name)}${isMe ? " (Ty)" : ""}</span>
+                  ${prof.email ? `<span class="muted small block">${escapeHtml(prof.email)}</span>` : ""}
+                </span>
+              </span>
+              <span class="player-pts">${r.total} pkt</span>
+              <button class="btn ghost tiny del-player" data-uid="${escapeHtml(r.uid)}"
+                data-name="${escapeHtml(r.name)}" ${isMe ? "disabled title=\"Nie usuniesz samego siebie\"" : ""}>🗑️</button>
+            </div>`;
+        })
+        .join("")
+    : `<p class="muted small">Brak graczy.</p>`;
+
   const rows = state.matches
     .map((m) => {
       const r = state.admin.results?.[m.id] || {};
@@ -1443,6 +1476,15 @@ function adminHtml() {
         ⚙️ Bezpiecznik — na co dzień nie musisz tu nic robić. Wyniki meczów i mistrz
         turnieju (zwycięzca finału) liczą się automatycznie z API. Tu wejdziesz tylko,
         gdy API się spóźni lub poda zły wynik — wtedy ręczna wartość nadpisze automat.
+      </div>
+
+      <div class="card">
+        <div class="section-head compact">
+          <h3 class="card-title">👥 Gracze (${playerBoard.length})</h3>
+        </div>
+        <p class="muted small">Gdyby link gdzieś wyciekł — tu wykopiesz niechcianych.
+          Usunięcie kasuje typy gracza <strong>bezpowrotnie</strong> (może wrócić, jeśli zaloguje się ponownie).</p>
+        <div class="player-admin-list">${playerRows}</div>
       </div>
 
       <div class="card champion-card">
@@ -1489,8 +1531,10 @@ function wireEvents() {
 
   const login = document.getElementById("login");
   const login2 = document.getElementById("login-2");
+  const login3 = document.getElementById("login-3");
   if (login) login.addEventListener("click", doLogin);
   if (login2) login2.addEventListener("click", doLogin);
+  if (login3) login3.addEventListener("click", doLogin);
 
   const logout = document.getElementById("logout");
   if (logout) logout.addEventListener("click", () => signOut(auth));
@@ -1655,6 +1699,24 @@ function wireEvents() {
       state.admin.championTeamId = adminChamp.value || null;
       saveAdminDebounced();
     });
+
+  // Panel admina — usuwanie graczy
+  appRoot.querySelectorAll(".del-player").forEach((b) =>
+    b.addEventListener("click", async () => {
+      if (!isAdmin()) return;
+      const uid = b.dataset.uid;
+      const name = b.dataset.name || "tego gracza";
+      if (uid === state.user?.uid) return; // nie usuwamy siebie
+      if (!confirm(`Usunąć gracza „${name}"? Jego typy znikną bezpowrotnie.`)) return;
+      try {
+        await deleteDoc(doc(db, "predictions", uid));
+        // onSnapshot sam odświeży listę i ranking
+      } catch (e) {
+        console.error("delete player:", e);
+        alert("Nie udało się usunąć. Sprawdź, czy reguły Firestore pozwalają adminowi na delete (trzeba je opublikować w konsoli).");
+      }
+    })
+  );
 }
 
 // Przeglądarki wbudowane w aplikacje (Messenger, Facebook, Instagram, TikTok…).
@@ -1973,14 +2035,12 @@ onAuthStateChanged(auth, (user) => {
   state.myDraft = null;
   state.myDraftSeededFor = null;
 
+  // Ranking jest PUBLICZNY — listener startuje też bez logowania (idempotentny).
+  listenToFirestore();
+
   if (user) {
     ensureProfileDoc(user);
-    listenToFirestore();
     if ("Notification" in window && Notification.permission === "granted") subscribePush();
-  } else {
-    stopListening();
-    state.predictions = {};
-    state.admin = { results: {}, championTeamId: null };
   }
 
   // Jeśli admin się wylogował z widoku admina — wróć do rankingu

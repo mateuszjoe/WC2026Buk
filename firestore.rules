@@ -20,17 +20,21 @@ service cloud.firestore {
         && request.auth.token.email == "mateuszjoe@gmail.com";
     }
 
-    // Typy graczy: każdy zalogowany może czytać wszystkie (do rankingu),
-    // ale pisać wolno tylko we własnym dokumencie (id = uid).
+    // Typy graczy: PUBLICZNY odczyt (ranking widoczny też dla niezalogowanych,
+    // jako zachęta "ktoś już gra"). Pisać wolno tylko we własnym dokumencie;
+    // USUWAĆ może właściciel albo admin (wykopywanie niechcianych graczy).
+    // Uwaga: publiczny odczyt = nicki/avatary/punkty ORAZ pole email są widoczne
+    // dla każdego z linkiem.
     match /predictions/{uid} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn() && request.auth.uid == uid;
+      allow read: if true;
+      allow create, update: if isSignedIn() && request.auth.uid == uid;
+      allow delete: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
     }
 
-    // Wyniki meczów i zwycięzca turnieju: czyta każdy zalogowany,
-    // pisze wyłącznie admin.
+    // Wyniki meczów i zwycięzca turnieju: PUBLICZNY odczyt (ranking liczy się
+    // też dla niezalogowanych), pisze wyłącznie admin.
     match /admin/{docId} {
-      allow read: if isSignedIn();
+      allow read: if true;
       allow write: if isAdmin();
     }
 
