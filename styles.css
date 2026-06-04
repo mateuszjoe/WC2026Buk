@@ -425,11 +425,26 @@ body::before {
 }
 
 .site-header {
-  /* Banner "Wóda! Szlugi! Grube baby!" jako klimatyczna tekstura w tle —
-     mocno przyciemniony nakładką, żeby nie przygniatał treści i tekst był czytelny. */
-  background:
-    linear-gradient(180deg, rgba(11, 16, 32, 0.84), rgba(11, 16, 32, 0.93)),
-    url("./assets/header-bg.webp") center/cover no-repeat;
+  background: linear-gradient(180deg, rgba(18, 26, 54, 0.92), rgba(11, 16, 32, 0.86));
+}
+
+/* Hero-baner: CAŁA grafika widoczna (nic nie obcinamy). Na telefonie pełna
+   szerokość ~3:1; na szerszych ekranach ograniczamy wysokość i centrujemy
+   (object-fit: contain), więc grube baby zawsze są w całości widoczne. */
+.hero-banner {
+  width: 100%;
+  background: #0a0a0c;
+  border-bottom: 1px solid var(--line);
+  line-height: 0;
+}
+.hero-banner img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 210px;
+  object-fit: contain;
+  object-position: center;
+  margin: 0 auto;
 }
 
 /* Ostrzeżenie dla przeglądarek wbudowanych (Messenger/FB/IG) */

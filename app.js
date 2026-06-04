@@ -632,6 +632,7 @@ function render() {
 
   appRoot.innerHTML = `
     ${inAppWarningHtml()}
+    ${heroBannerHtml()}
     ${headerHtml()}
     <main class="container">
       ${viewHtml()}
@@ -675,6 +676,16 @@ function inAppWarningHtml() {
         </span>
         <button class="btn primary tiny" id="open-external">Otwórz w przeglądarce</button>
       </div>
+    </div>`;
+}
+
+// Hero-baner: CAŁA grafika "Wóda! Szlugi! Grube baby!" widoczna na górze,
+// nad sticky-nawigacją. Przewija się z treścią; nawigacja zostaje pod spodem.
+function heroBannerHtml() {
+  return `
+    <div class="hero-banner">
+      <img src="./assets/hero.webp" alt="Wóda! Szlugi! Grube baby!"
+        fetchpriority="high" width="1600" height="533" />
     </div>`;
 }
 
