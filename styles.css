@@ -685,6 +685,59 @@ details.mini-standings[open] summary { color: var(--text); }
 
 .section-head.compact { align-items: center; margin-bottom: 0.4rem; }
 
+/* ---------- Kadrowanie zdjęcia (modal) ---------- */
+.cropper-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.cropper-box {
+  background: linear-gradient(180deg, var(--panel), var(--bg-2));
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.2rem;
+  width: 100%;
+  max-width: 340px;
+  text-align: center;
+}
+.cropper-box h3 { margin: 0 0 0.3rem; }
+.cropper-stage {
+  position: relative;
+  margin: 0.9rem auto;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #000;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+.cropper-stage:active { cursor: grabbing; }
+.cropper-img {
+  position: absolute;
+  max-width: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+/* przyciemnienie poza kołem + biały pierścień pokazujący wycinek */
+.cropper-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+}
+.cropper-zoom { width: 100%; margin: 0.2rem 0 1rem; accent-color: var(--accent); }
+.cropper-actions { display: flex; gap: 0.6rem; justify-content: center; }
+.cropper-actions .btn { flex: 1; justify-content: center; }
+
 /* ---------- Regulamin / nagrody ---------- */
 .rules-list { margin: 0.2rem 0 0.6rem; padding-left: 0; list-style: none; }
 .rules-list li {

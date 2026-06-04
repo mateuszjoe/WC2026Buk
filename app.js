@@ -354,9 +354,9 @@ function initials(name) {
 function avatarHtml(p, cls = "") {
   const av = p.avatar;
   let inner;
-  if (av && av !== "none" && /^https?:\/\//.test(av)) {
+  if (av && av !== "none" && /^(https?:\/\/|data:image\/)/.test(av)) {
     inner = `<img src="${escapeHtml(av)}" alt="" />`;
-  } else if (av && av !== "none" && !/^https?:/.test(av)) {
+  } else if (av && av !== "none" && !/^(https?:|data:)/.test(av)) {
     inner = `<span class="ava-emoji">${escapeHtml(av)}</span>`;
   } else if (av !== "none" && p.photo) {
     inner = `<img src="${escapeHtml(p.photo)}" alt="" />`;
@@ -369,6 +369,141 @@ function avatarHtml(p, cls = "") {
     ? `<img class="ava-flag" src="${champFlag}" alt="" title="Typ na mistrza: ${escapeHtml(champ.name)}" />`
     : "";
   return `<span class="avatar ${cls}">${inner}${flag}</span>`;
+}
+
+// --- Kadrowanie własnego zdjęcia w kółku -------------------------------------
+// Samodzielny modal (poza render(), doczepiony do <body>), żeby przebudowa DOM
+// nie zniszczyła go w trakcie kadrowania. Zapis: małe JPEG (256px) jako data URL.
+function openAvatarCropper(file) {
+  const objectUrl = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => buildCropper(img, objectUrl);
+  img.onerror = () => {
+    URL.revokeObjectURL(objectUrl);
+    alert("Nie udało się wczytać tego pliku jako obrazka.");
+  };
+  img.src = objectUrl;
+}
+
+function buildCropper(img, objectUrl) {
+  const STAGE = 280; // rozmiar kwadratowej sceny (px)
+  const OUT = 256; // rozmiar zapisywanego avatara (px)
+  // obraz "cover" sceny przy zoom=1
+  const baseScale = STAGE / Math.min(img.naturalWidth, img.naturalHeight);
+  let zoom = 1;
+  const dispW = () => img.naturalWidth * baseScale * zoom;
+  const dispH = () => img.naturalHeight * baseScale * zoom;
+  let ox = (STAGE - dispW()) / 2; // offset lewego-górnego rogu obrazu (px, <=0)
+  let oy = (STAGE - dispH()) / 2;
+
+  const clamp = () => {
+    ox = Math.min(0, Math.max(STAGE - dispW(), ox));
+    oy = Math.min(0, Math.max(STAGE - dispH(), oy));
+  };
+  clamp();
+
+  const overlay = document.createElement("div");
+  overlay.className = "cropper-overlay";
+  overlay.innerHTML = `
+    <div class="cropper-box">
+      <h3>Wykadruj zdjęcie</h3>
+      <p class="muted small">Przesuń palcem/myszką, suwakiem przybliż. Wycinek w kółku to Twój avatar.</p>
+      <div class="cropper-stage" style="width:${STAGE}px;height:${STAGE}px">
+        <img class="cropper-img" alt="" draggable="false" />
+        <div class="cropper-ring"></div>
+      </div>
+      <input type="range" class="cropper-zoom" min="1" max="4" step="0.01" value="1" />
+      <div class="cropper-actions">
+        <button class="btn ghost" data-crop="cancel">Anuluj</button>
+        <button class="btn primary" data-crop="save">Zapisz avatar</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  const elImg = overlay.querySelector(".cropper-img");
+  const elZoom = overlay.querySelector(".cropper-zoom");
+  const stage = overlay.querySelector(".cropper-stage");
+  elImg.src = img.src;
+
+  const apply = () => {
+    elImg.style.width = dispW() + "px";
+    elImg.style.height = dispH() + "px";
+    elImg.style.left = ox + "px";
+    elImg.style.top = oy + "px";
+  };
+  apply();
+
+  const pt = (e) =>
+    e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY };
+  let dragging = false,
+    lastX = 0,
+    lastY = 0;
+  const onDown = (e) => {
+    dragging = true;
+    const p = pt(e);
+    lastX = p.x;
+    lastY = p.y;
+  };
+  const onMove = (e) => {
+    if (!dragging) return;
+    const p = pt(e);
+    ox += p.x - lastX;
+    oy += p.y - lastY;
+    lastX = p.x;
+    lastY = p.y;
+    clamp();
+    apply();
+    if (e.cancelable) e.preventDefault();
+  };
+  const onUp = () => {
+    dragging = false;
+  };
+  stage.addEventListener("mousedown", onDown);
+  window.addEventListener("mousemove", onMove);
+  window.addEventListener("mouseup", onUp);
+  stage.addEventListener("touchstart", onDown, { passive: false });
+  stage.addEventListener("touchmove", onMove, { passive: false });
+  stage.addEventListener("touchend", onUp);
+
+  elZoom.addEventListener("input", () => {
+    const cx = STAGE / 2,
+      cy = STAGE / 2;
+    const relX = (cx - ox) / dispW();
+    const relY = (cy - oy) / dispH();
+    zoom = parseFloat(elZoom.value);
+    ox = cx - relX * dispW();
+    oy = cy - relY * dispH();
+    clamp();
+    apply();
+  });
+
+  const cleanup = () => {
+    window.removeEventListener("mousemove", onMove);
+    window.removeEventListener("mouseup", onUp);
+    URL.revokeObjectURL(objectUrl);
+    overlay.remove();
+  };
+
+  overlay.querySelector('[data-crop="cancel"]').addEventListener("click", cleanup);
+  overlay.querySelector('[data-crop="save"]').addEventListener("click", async () => {
+    const scale = baseScale * zoom;
+    const canvas = document.createElement("canvas");
+    canvas.width = OUT;
+    canvas.height = OUT;
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(img, -ox / scale, -oy / scale, STAGE / scale, STAGE / scale, 0, 0, OUT, OUT);
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+    cleanup();
+    state.myDraft.avatar = dataUrl;
+    await saveProfile();
+    render();
+  });
+  // klik w ciemne tło = anuluj (mousedown, by nie kolidowało z przeciąganiem)
+  overlay.addEventListener("mousedown", (e) => {
+    if (e.target === overlay) cleanup();
+  });
 }
 
 // Profil zalogowanego gracza (z bazy lub domyślny z konta Google).
@@ -1130,14 +1265,18 @@ function profileHtml() {
         </div>
         <p class="muted small">Szybki wybór — emoji:</p>
         <div class="emoji-grid">${emojiBtns}</div>
-        <p class="muted small" style="margin-top:0.9rem">…albo wygenerowana grafika, zdjęcie z Google lub własny link.</p>
-        <div class="avatar-grid">${avatarBtns}</div>
+        <p class="muted small" style="margin-top:0.9rem">…albo wgraj własne zdjęcie, weź z Google lub wklej link.</p>
+        <div class="button-row" style="margin-top:0.6rem">
+          <button class="btn primary" id="avatar-upload">📷 Wgraj swoje zdjęcie</button>
+          ${state.user.photoURL ? '<button class="btn" id="avatar-google">Zdjęcie z Google</button>' : ""}
+        </div>
+        <input type="file" id="avatar-file" accept="image/*" hidden />
+        <div class="avatar-grid" style="margin-top:0.9rem">${avatarBtns}</div>
         <div class="nick-row" style="margin-top:0.9rem">
           <input type="text" id="avatar-url" placeholder="https://… własny link do zdjęcia"
             value="${d.avatar && /^https?:/.test(d.avatar) && !d.avatar.includes("dicebear") ? escapeHtml(d.avatar) : ""}" />
         </div>
         <div class="button-row" style="margin-top:0.8rem">
-          ${state.user.photoURL ? '<button class="btn" id="avatar-google">Użyj zdjęcia z Google</button>' : ""}
           <button class="btn ghost" id="avatar-clear">Domyślny (inicjały)</button>
         </div>
       </div>
@@ -1373,6 +1512,18 @@ function wireEvents() {
     avatarReroll.addEventListener("click", () => {
       state.avatarSeed = (state.avatarSeed || 0) + 1;
       render();
+    });
+
+  // Wgranie własnego zdjęcia → kadrowanie w kółku
+  const avatarUpload = document.getElementById("avatar-upload");
+  const avatarFile = document.getElementById("avatar-file");
+  if (avatarUpload && avatarFile)
+    avatarUpload.addEventListener("click", () => avatarFile.click());
+  if (avatarFile)
+    avatarFile.addEventListener("change", () => {
+      const file = avatarFile.files && avatarFile.files[0];
+      avatarFile.value = ""; // reset — by można było wgrać ten sam plik ponownie
+      if (file) openAvatarCropper(file);
     });
 
   const avatarUrl = document.getElementById("avatar-url");
