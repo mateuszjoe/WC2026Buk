@@ -738,6 +738,37 @@ details.mini-standings[open] summary { color: var(--text); }
 .cropper-actions { display: flex; gap: 0.6rem; justify-content: center; }
 .cropper-actions .btn { flex: 1; justify-content: center; }
 
+/* ---------- Jednorazowy popup o powiadomieniach ---------- */
+.notify-pop-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.notify-pop {
+  background: linear-gradient(180deg, var(--panel), var(--bg-2));
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.4rem 1.2rem;
+  width: 100%;
+  max-width: 340px;
+  text-align: center;
+  animation: notify-pop-in 0.18s ease-out;
+}
+.notify-pop-emoji { font-size: 2.6rem; line-height: 1; margin-bottom: 0.3rem; }
+.notify-pop h3 { margin: 0 0 0.4rem; }
+.notify-pop-actions { display: flex; gap: 0.6rem; justify-content: center; margin-top: 1rem; }
+.notify-pop-actions .btn { flex: 1; justify-content: center; }
+@keyframes notify-pop-in {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
 /* ---------- Regulamin / nagrody ---------- */
 .rules-list { margin: 0.2rem 0 0.6rem; padding-left: 0; list-style: none; }
 .rules-list li {

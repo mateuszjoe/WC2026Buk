@@ -68,6 +68,7 @@ const state = {
   avatarSeed: 0, // ziarno dla losowania avatarów
   // Powiadomienia (in-app, gdy aplikacja jest otwarta):
   notifyInit: false, // czy ustalono punkt odniesienia
+  notifyPromptDone: false, // czy jednorazowy popup o powiadomieniach już zamknięty
   lastLeaderUid: null, // ostatni lider rankingu
   notifiedFinished: new Set() // mecze, o których już powiadomiono
 };
@@ -776,6 +777,7 @@ function render() {
     <footer class="site-footer">
       Wóda! Szlugi! Grube baby!
     </footer>
+    ${notifyPromptHtml()}
   `;
 
   wireEvents();
@@ -1305,6 +1307,44 @@ function notificationsBlock() {
     <button class="btn primary" id="notify-enable">🔔 Włącz powiadomienia</button>`;
 }
 
+// --- Jednorazowy popup o powiadomieniach (na ekranie głównym) -----------------
+// Pokazuje się RAZ na urządzenie (zapamiętane w localStorage), tylko gdy
+// powiadomienia są wspierane i jeszcze nieustawione (permission === "default").
+function shouldShowNotifyPrompt() {
+  if (state.notifyPromptDone) return false;
+  if (!("Notification" in window)) return false;
+  if (Notification.permission !== "default") return false;
+  if (isInAppBrowser()) return false; // tam i tak nie zadziała (jest osobny baner)
+  try {
+    if (localStorage.getItem("notifyPromptSeen")) return false;
+  } catch (_) {}
+  return true;
+}
+
+function dismissNotifyPrompt() {
+  state.notifyPromptDone = true;
+  try {
+    localStorage.setItem("notifyPromptSeen", "1");
+  } catch (_) {}
+}
+
+function notifyPromptHtml() {
+  if (!shouldShowNotifyPrompt()) return "";
+  return `
+    <div class="notify-pop-overlay">
+      <div class="notify-pop">
+        <div class="notify-pop-emoji">🔔</div>
+        <h3>Włącz powiadomienia</h3>
+        <p class="muted small">Dostawaj info o nowym liderze rankingu i wynikach meczów prosto na telefon
+          — bez spamu, tylko konkrety (z komentarzem 😈). Zawsze zmienisz to w Profilu.</p>
+        <div class="notify-pop-actions">
+          <button class="btn ghost" id="notify-pop-later">Może później</button>
+          <button class="btn primary" id="notify-pop-enable">🔔 Włącz</button>
+        </div>
+      </div>
+    </div>`;
+}
+
 // --- Widok: Regulamin ---------------------------------------------------------
 function rulesHtml() {
   const p = state.settings.points;
@@ -1457,6 +1497,20 @@ function wireEvents() {
 
   const openExternal = document.getElementById("open-external");
   if (openExternal) openExternal.addEventListener("click", openInExternalBrowser);
+
+  // Jednorazowy popup o powiadomieniach (ekran główny)
+  const notifyPopEnable = document.getElementById("notify-pop-enable");
+  if (notifyPopEnable)
+    notifyPopEnable.addEventListener("click", () => {
+      dismissNotifyPrompt();
+      requestNotifyPermission(); // sama wywoła render()
+    });
+  const notifyPopLater = document.getElementById("notify-pop-later");
+  if (notifyPopLater)
+    notifyPopLater.addEventListener("click", () => {
+      dismissNotifyPrompt();
+      render();
+    });
 
   // Profil — powiadomienia
   const notifyEnable = document.getElementById("notify-enable");
