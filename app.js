@@ -16,6 +16,7 @@ import {
 import {
   getFirestore,
   doc,
+  getDoc,
   setDoc,
   onSnapshot,
   collection,
@@ -1740,12 +1741,35 @@ function stopListening() {
   unsubscribers = [];
 }
 
+// Po zalogowaniu twórz minimalny wpis gracza, jeśli go jeszcze nie ma — dzięki
+// temu każdy zalogowany od razu pojawia się w rankingu (nawet zanim zacznie
+// typować). NIE nadpisuje istniejących danych (tylko gdy dokumentu brak).
+async function ensureProfileDoc(user) {
+  try {
+    const ref = doc(db, "predictions", user.uid);
+    const snap = await getDoc(ref);
+    if (snap.exists()) return;
+    await setDoc(ref, {
+      name: user.displayName || user.email,
+      nameSet: false,
+      avatar: null,
+      photo: user.photoURL || null,
+      email: user.email,
+      joinedAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+  } catch (e) {
+    console.error("ensureProfileDoc:", e);
+  }
+}
+
 onAuthStateChanged(auth, (user) => {
   state.user = user;
   state.myDraft = null;
   state.myDraftSeededFor = null;
 
   if (user) {
+    ensureProfileDoc(user);
     listenToFirestore();
     if ("Notification" in window && Notification.permission === "granted") subscribePush();
   } else {
