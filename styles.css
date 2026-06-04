@@ -324,14 +324,16 @@ code {
 
 /* ---------- Flagi drużyn ---------- */
 .flag {
+  /* Jednolite pudełko 3:2 dla KAŻDEJ flagi — niezależnie od proporcji kraju.
+     object-fit: cover przycina minimalnie, ale wszystkie mają identyczny rozmiar. */
+  width: 21px;
   height: 14px;
-  max-height: 14px;
-  width: auto;
+  object-fit: cover;
   vertical-align: -2px;
-  border-radius: 2px;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
-.flag.big { height: 22px; max-height: 22px; vertical-align: -5px; }
+.flag.big { width: 33px; height: 22px; vertical-align: -5px; }
 
 /* ---------- Avatary ---------- */
 .avatar {
