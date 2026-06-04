@@ -182,11 +182,6 @@ table.leaderboard { width: 100%; border-collapse: collapse; font-size: 0.92rem; 
   font-size: 0.7rem; background: var(--accent); color: #06210f;
   padding: 0.05rem 0.4rem; border-radius: 999px; font-weight: 700; vertical-align: middle;
 }
-.loser {
-  font-size: 0.7rem; background: rgba(255, 107, 107, 0.18); color: var(--danger);
-  padding: 0.05rem 0.4rem; border-radius: 999px; font-weight: 700; vertical-align: middle;
-  white-space: nowrap;
-}
 .leaderboard .cnt { color: var(--muted); font-size: 0.7rem; margin-left: 0.2rem; }
 
 /* ---------- Matches ---------- */

@@ -741,7 +741,7 @@ function viewHtml() {
     case "rules":
       return rulesHtml();
     case "admin":
-      return isAdmin() ? adminHtml() : `<p class="muted">Brak dostępu. To panel admina, nie dla Ciebie, januszu. Spierdalaj do typowania.</p>`;
+      return isAdmin() ? adminHtml() : `<p class="muted">Brak dostępu.</p>`;
     default:
       return "";
   }
@@ -754,12 +754,11 @@ function rankingHtml() {
 
   const rows =
     board.length === 0
-      ? `<tr><td colspan="6" class="muted center">Pusto jak w portfelu po weekendzie. Bądź pierwszym typerem — zaloguj się i wpisz typy, mordo!</td></tr>`
+      ? `<tr><td colspan="6" class="muted center">Brak typów. Bądź pierwszy — zaloguj się i wpisz typy!</td></tr>`
       : board
           .map((r) => {
             const me = state.user && r.uid === state.user.uid;
-            const isLast = board.length >= 4 && r.rank === board.length && r.total < board[0].total;
-            const medal = r.rank === 1 ? "🥇" : r.rank === 2 ? "🥈" : r.rank === 3 ? "🥉" : isLast ? "💩" : r.rank;
+            const medal = r.rank === 1 ? "🥇" : r.rank === 2 ? "🥈" : r.rank === 3 ? "🥉" : r.rank;
             const prof = state.predictions[r.uid] || { name: r.name };
             return `
             <tr class="${me ? "me" : ""}">
@@ -767,7 +766,7 @@ function rankingHtml() {
               <td class="name">
                 <span class="player-cell">
                   ${avatarHtml(prof)}
-                  <span class="player-name">${escapeHtml(r.name)}${me ? ' <span class="you">Ty</span>' : ""}${isLast ? ' <span class="loser">🪦 cieć turnieju</span>' : ""}</span>
+                  <span class="player-name">${escapeHtml(r.name)}${me ? ' <span class="you">Ty</span>' : ""}</span>
                 </span>
               </td>
               <td class="total"><strong>${r.total}</strong></td>
@@ -782,7 +781,7 @@ function rankingHtml() {
     <section class="stack">
       <div class="section-head">
         <div>
-          <div class="eyebrow">Kto wymiata, kto ssie</div>
+          <div class="eyebrow">Klasyfikacja</div>
           <h2>Ranking</h2>
         </div>
         <div class="points-legend">
@@ -891,7 +890,7 @@ function matchViewToggle() {
 function dateBlocksHtml(rowFn, listClass) {
   const list = allKnownMatchesSorted();
   if (!list.length) {
-    return `<p class="muted">Brak meczów z ustalonymi drużynami — pojawią się, jak FIFA w końcu ogarnie pary. Cierpliwości, typerze.</p>`;
+    return `<p class="muted">Brak meczów z ustalonymi drużynami — pojawią się, gdy znane będą pary.</p>`;
   }
   return matchesByDate(list)
     .map(
@@ -977,7 +976,7 @@ function mineHtml() {
         <div class="card login-card">
           <div class="cup big">🏆</div>
           <h2>Zaloguj się, żeby typować</h2>
-          <p class="muted">Bez logowania jesteś tylko widzem z browarem. Zaloguj przez Google — typy zapiszą się same i wpadną do rankingu.</p>
+          <p class="muted">Twoje typy zapiszą się automatycznie i będą liczone w rankingu.</p>
           <button class="btn primary" id="login-2"><span class="g-dot"></span> Zaloguj przez Google</button>
         </div>
       </section>`;
@@ -1163,7 +1162,7 @@ function notificationsBlock() {
     return `<p class="muted small">🚫 Powiadomienia są zablokowane w ustawieniach przeglądarki dla tej strony.
       Odblokuj je w ustawieniach witryny, żeby włączyć.</p>`;
   }
-  return `<p class="muted small">Dostawaj info o nowym liderze i wynikach meczów — z komentarzem, który zmiażdży Ci ego 😈.</p>
+  return `<p class="muted small">Dostawaj info o nowym liderze i wynikach meczów (z komentarzem 😈).</p>
     <button class="btn primary" id="notify-enable">🔔 Włącz powiadomienia</button>`;
 }
 
@@ -1326,7 +1325,7 @@ function wireEvents() {
   const notifyTest = document.getElementById("notify-test");
   if (notifyTest)
     notifyTest.addEventListener("click", () =>
-      notify("⚽ Test powiadomienia", "Działa, kurwa! Tu wpadną info o liderze i wynikach. Trzymaj telefon blisko.")
+      notify("⚽ Test powiadomienia", "Działa! Tu wpadną info o liderze i wynikach meczów.")
     );
 
   // Profil — nick (zmiana tylko raz)
@@ -1561,7 +1560,7 @@ async function requestNotifyPermission() {
   } catch (_) {}
   render();
   if (Notification.permission === "granted") {
-    notify("🔔 Powiadomienia włączone", "Teraz żadna akcja Ci nie ucieknie. A jak spierdolisz typ — dowiesz się pierwszy.");
+    notify("🔔 Powiadomienia włączone", "Teraz nie ucieknie Ci żadna akcja. Powodzenia, typerze!");
     subscribePush();
   }
 }
@@ -1620,45 +1619,28 @@ function notifyMatchFinished(m) {
   const mine = state.user ? state.predictions[state.user.uid]?.matches?.[m.id] : null;
   let body;
   if (!state.user) {
-    body = rand([
-      `Wynik: ${score}. A Ty nawet konta nie masz, januszu. Zaloguj się i typuj.`,
-      `${score} i po meczu. Ty dalej na kanapie z browarem zamiast typować. Wbijaj.`,
-      `Padło ${score}. Bez logowania jesteś tu nikim, mordo. Rusz dupę i dołącz.`
-    ]);
+    body = `Wynik: ${score}. Zaloguj się i typuj, bo tracisz zabawę!`;
   } else if (!mine) {
     body = rand([
       `Wynik ${score}, a Ty nawet nie obstawiłeś. Wstyd, mordo.`,
-      `${score} po gwizdku. Twojego typu brak — spałeś czy chlałeś?`,
-      `Mecz przeleciał bez Ciebie: ${score}. Zero typu, zero punktów, zero charakteru.`,
-      `${score} i kuku. Nie obstawiłeś, więc się potem w grupie nie pieprz.`,
-      `Leniu jeden — ${score} poszło bez Twojego typu. Ogarnij się następnym razem.`
+      `${score} po gwizdku. Twojego typu brak — śpisz czy co?`
     ]);
   } else {
     const s = scoreMatch(mine, r, state.settings);
     if (s.exact) {
       body = rand([
         `JA PIERDOLĘ! Dokładny wynik ${score} trafiony! +${s.points} pkt, ty jasnowidzu!`,
-        `Co za nos! Strzeliłeś ${score} co do bramki. +${s.points} pkt, kurwa szacun.`,
-        `${score} co do gola! +${s.points} pkt. Wróżką jesteś czy ustawiasz mecze?`,
-        `Idealnie ${score}! +${s.points} pkt. Reszta tej bandy może Ci buty czyścić.`,
-        `Dokładny ${score}, +${s.points} pkt. Dziś śpisz jak król, degeneracie.`
+        `Co za nos! Strzeliłeś ${score} co do bramki. +${s.points} pkt, gratulacje!`
       ]);
     } else if (s.correct) {
       body = rand([
         `Rezultat trafiony, +${s.points} pkt do kieszeni. Mogło być lepiej, ale jest.`,
-        `Nieźle — rezultat siadł, +${s.points} pkt. Dokładny wynik następnym razem, łebski.`,
-        `+${s.points} pkt za rezultat. Bez szału, ale punkt to punkt, januszu.`,
-        `Trafiłeś kto wygrał, +${s.points} pkt. W połowie geniusz, w połowie ślepiec.`,
-        `Rezultat ok, +${s.points} pkt. Gola nie wstrzeliłeś, ale i tak lepiej niż połowa tych ciamajd.`
+        `Nieźle — rezultat siadł, +${s.points} pkt. Dokładny wynik następnym razem.`
       ]);
     } else {
       body = rand([
         `Chuja trafiłeś i chuja dostałeś. 0 pkt. Następnym razem rusz głową.`,
-        `Pudło na całej linii. 0 pkt. Może rzut monetą zadziała lepiej?`,
-        `0 pkt. Tak źle, że nawet baby z banera się z Ciebie śmieją.`,
-        `Spierdoliłeś typ totalnie. 0 pkt. Wróć do oglądania, ekspercie.`,
-        `Zero. Nul. Pała. Typowałeś po trzech głębszych, co?`,
-        `0 pkt i klops. Twój typ nadawał się tylko do zesrania.`
+        `Pudło na całej linii. 0 pkt. Może rzut monetą zadziała lepiej?`
       ]);
     }
   }
@@ -1670,17 +1652,8 @@ function notifyNewLeader(row) {
   const me = state.user && row.uid === state.user.uid;
   const title = "👑 Nowy lider rankingu!";
   const body = me
-    ? rand([
-        `Jesteś nowym liderem, ${row.name}! Tylko tego nie spierdol.`,
-        `${row.name} na szczycie! Teraz cała banda chce Cię zrzucić — broń dupy.`,
-        `Prowadzisz, ${row.name}. Smakuje? To się nie przyzwyczajaj.`
-      ])
-    : rand([
-        `${row.name} wskakuje na 1. miejsce i depcze wam po pysku. Ktoś to ogarnie?`,
-        `Nowy lider: ${row.name}. Reszta ssie. Zwłaszcza Ty.`,
-        `${row.name} na czele i robi z was typerów niedzielnych. Wstyd.`,
-        `Lider to teraz ${row.name}. Wy dalej w ogonie jak zwykle, mordy.`
-      ]);
+    ? `Jesteś nowym liderem, ${row.name}! Tylko tego nie spierdol.`
+    : `${row.name} wskakuje na 1. miejsce i depcze wam po pysku. Ktoś to ogarnie?`;
   notify(title, body);
 }
 
