@@ -56,7 +56,7 @@ const googleProvider = new GoogleAuthProvider();
 
 // Klucz publiczny VAPID do prawdziwego push (wysyłką zajmuje się robot na GitHubie).
 const VAPID_PUBLIC =
-  "BAQl5Gb6pj34iL4XK6NAtjsmNDhYJB7gkOLB5KFE93taOpMLVtFMlhShRBqQjjNekXn5eRC3TT9ysggxZyVXgJM";
+  "BG3cydpyJ5h6UmN4neBM4CIYinuI5uKlaOw4HF10oVHbEjTFUiFzZbvw6LeJSW0h9BIArP7KQwaDVCwa6tXOlh4";
 
 // --- Stan aplikacji -----------------------------------------------------------
 const state = {
@@ -2644,6 +2644,13 @@ function urlBase64ToUint8Array(base64String) {
   return arr;
 }
 
+function arrayBufferToBase64Url(buffer) {
+  const bytes = new Uint8Array(buffer || []);
+  let raw = "";
+  for (const byte of bytes) raw += String.fromCharCode(byte);
+  return btoa(raw).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
 async function subscribePush() {
   try {
     if (!state.user) return;
@@ -2651,6 +2658,13 @@ async function subscribePush() {
     if (Notification.permission !== "granted") return;
     const reg = await navigator.serviceWorker.ready;
     let sub = await reg.pushManager.getSubscription();
+    const currentKey = sub?.options?.applicationServerKey
+      ? arrayBufferToBase64Url(sub.options.applicationServerKey)
+      : "";
+    if (sub && currentKey !== VAPID_PUBLIC) {
+      await sub.unsubscribe();
+      sub = null;
+    }
     if (!sub) {
       sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,

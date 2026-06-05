@@ -16,7 +16,7 @@ import { readFileSync } from "node:fs";
 const SA = process.env.FIREBASE_SERVICE_ACCOUNT;
 const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY;
 const VAPID_PUBLIC =
-  "BAQl5Gb6pj34iL4XK6NAtjsmNDhYJB7gkOLB5KFE93taOpMLVtFMlhShRBqQjjNekXn5eRC3TT9ysggxZyVXgJM";
+  "BG3cydpyJ5h6UmN4neBM4CIYinuI5uKlaOw4HF10oVHbEjTFUiFzZbvw6LeJSW0h9BIArP7KQwaDVCwa6tXOlh4";
 
 if (!SA || !VAPID_PRIVATE) {
   console.log("Brak sekretów push (FIREBASE_SERVICE_ACCOUNT / VAPID_PRIVATE_KEY) — pomijam wysyłkę.");
