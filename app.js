@@ -70,6 +70,8 @@ const state = {
   chat: [], // wiadomości czatu (najnowsze na dole)
   chatDraft: "", // treść wpisywanej wiadomości
   chatImage: null, // załączone zdjęcie (data URL) do wysłania
+  chatOpen: false, // czy dymek czatu jest rozwinięty (panel nad aplikacją)
+  chatLastRead: 0, // ms ostatnio odczytanej wiadomości (licznik nieprzeczytanych)
   myDraft: null, // lokalna kopia MOICH typów (edytowana w formularzu)
   myDraftSeededFor: null, // uid, dla którego zasialiśmy myDraft
   saveMsg: "", // komunikat o zapisie w widoku "Moje typy"
@@ -85,7 +87,6 @@ const VIEWS = [
   { id: "ranking", label: "Ranking" },
   { id: "matches", label: "Mecze" },
   { id: "mine", label: "Moje typy" },
-  { id: "chat", label: "💬 Czat" },
   { id: "profile", label: "Profil", authOnly: true },
   { id: "rules", label: "Regulamin" },
   { id: "admin", label: "Panel admina", adminOnly: true }
@@ -867,6 +868,11 @@ function render() {
   `;
 
   wireEvents();
+
+  // Pływający dymek czatu — żyje poza #app (na <body>), więc otwieranie/zamykanie
+  // nie rusza strony pod spodem. Montujemy raz, potem tylko odświeżamy.
+  mountChatWidget();
+  updateChatWidget();
 }
 
 // Lekkie odświeżenie podczas pisania w "Moich typach" — NIE przebudowujemy pól
@@ -876,11 +882,6 @@ function maybeRender() {
   // kursora podczas pisania) — odświeżamy tylko wskaźnik zapisu.
   if (state.view === "mine" || state.view === "profile") {
     updateSaveIndicator();
-    return;
-  }
-  // Na czacie odświeżamy tylko listę wiadomości — nie ruszamy pola pisania.
-  if (state.view === "chat") {
-    updateChatMessages();
     return;
   }
   render();
@@ -964,8 +965,6 @@ function viewHtml() {
       return matchesHtml();
     case "mine":
       return mineHtml();
-    case "chat":
-      return chatHtml();
     case "profile":
       return profileHtml();
     case "rules":
@@ -1030,44 +1029,185 @@ function chatMessagesHtml() {
     .join("");
 }
 
-function chatHtml() {
-  const messages = chatMessagesHtml();
-  const composer = state.user
-    ? `
-      <div class="chat-composer">
-        ${
-          state.chatImage
-            ? `<div class="chat-attach">
-                 <img src="${state.chatImage}" alt="" />
-                 <button type="button" id="chat-attach-remove" title="Usuń załącznik">✕</button>
-               </div>`
-            : ""
-        }
-        <div class="chat-input-row">
-          <button type="button" class="btn ghost chat-photo" id="chat-photo" title="Dodaj zdjęcie">📷</button>
-          <input type="text" id="chat-text" maxlength="1000" autocomplete="off"
-            placeholder="Napisz coś… (możesz wkleić link do GIF-a / zdjęcia)"
-            value="${escapeHtml(state.chatDraft)}" />
-          <button type="button" class="btn primary" id="chat-send">Wyślij</button>
-        </div>
-        <input type="file" id="chat-file" accept="image/*" hidden />
-        <p class="chat-hint muted small">GIF: skopiuj „link do GIF-a" z Tenora/Giphy i wklej tutaj. Filmów nie wysyłamy.</p>
-      </div>`
-    : `<div class="chat-login">
-         <p class="muted">Zaloguj się, żeby pisać na czacie.</p>
-         <button class="btn primary" id="login-4"><span class="g-dot"></span> Zaloguj przez Google</button>
-       </div>`;
-
+// HTML pola pisania (zależne od zalogowania).
+function chatComposerHtml() {
+  if (!state.user) {
+    return `<div class="chat-login">
+        <p class="muted small">Zaloguj się, żeby pisać.</p>
+        <button class="btn primary tiny" id="cw-login"><span class="g-dot"></span> Zaloguj przez Google</button>
+      </div>`;
+  }
   return `
-    <section class="stack chat-view">
-      <div class="section-head">
-        <div><div class="eyebrow">Pogaduchy, żarty, beka</div><h2>💬 Czat</h2></div>
+    <div id="cw-attach"></div>
+    <div class="chat-input-row">
+      <button type="button" class="btn ghost chat-photo" id="cw-photo" title="Dodaj zdjęcie">📷</button>
+      <input type="text" id="cw-text" maxlength="1000" autocomplete="off"
+        placeholder="Napisz coś… (wklej link do GIF-a/zdjęcia)" value="${escapeHtml(state.chatDraft)}" />
+      <button type="button" class="btn primary" id="cw-send">Wyślij</button>
+    </div>
+    <input type="file" id="cw-file" accept="image/*" hidden />
+    <p class="chat-hint muted small">GIF: skopiuj „link do GIF-a" z Tenora/Giphy i wklej tutaj. Bez filmów.</p>`;
+}
+
+function chatAttachHtml() {
+  if (!state.chatImage) return "";
+  return `<div class="chat-attach"><img src="${state.chatImage}" alt="" /><button type="button" id="cw-attach-remove" title="Usuń">✕</button></div>`;
+}
+
+// Odśwież podgląd załączonego zdjęcia (bez ruszania pola tekstowego).
+function updateChatAttach() {
+  const area = document.getElementById("cw-attach");
+  if (!area) return;
+  area.innerHTML = chatAttachHtml();
+  const rm = document.getElementById("cw-attach-remove");
+  if (rm) rm.addEventListener("click", () => { state.chatImage = null; updateChatAttach(); });
+}
+
+// Liczba nieprzeczytanych (nowsze niż ostatni odczyt i nie moje).
+function unreadCount() {
+  return state.chat.reduce((n, m) => {
+    const t = m.createdAt && m.createdAt.toMillis ? m.createdAt.toMillis() : 0;
+    const mine = state.user && m.uid === state.user.uid;
+    return n + (t > (state.chatLastRead || 0) && !mine ? 1 : 0);
+  }, 0);
+}
+
+function updateChatBadge() {
+  const badge = document.querySelector("#chat-widget .chat-badge");
+  if (!badge) return;
+  const n = unreadCount();
+  badge.textContent = n > 9 ? "9+" : String(n);
+  badge.style.display = n > 0 ? "" : "none";
+  const fab = document.querySelector("#chat-widget .chat-fab");
+  if (fab) fab.classList.toggle("has-unread", n > 0);
+}
+
+function markChatRead() {
+  let max = state.chatLastRead || 0;
+  for (const m of state.chat) {
+    const t = m.createdAt && m.createdAt.toMillis ? m.createdAt.toMillis() : 0;
+    if (t > max) max = t;
+  }
+  state.chatLastRead = max;
+  try { localStorage.setItem("chatLastRead", String(max)); } catch (_) {}
+  updateChatBadge();
+}
+
+// Buduje pole pisania i podpina zdarzenia (raz; przy zmianie zalogowania na nowo).
+function renderChatComposer(w) {
+  const wrap = w.querySelector(".chat-composer-wrap");
+  wrap.dataset.logged = String(!!state.user);
+  wrap.innerHTML = chatComposerHtml();
+  const text = wrap.querySelector("#cw-text");
+  if (text) {
+    text.addEventListener("input", () => { state.chatDraft = text.value; });
+    text.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); sendChatMessage(); }
+    });
+  }
+  const send = wrap.querySelector("#cw-send");
+  if (send) send.addEventListener("click", sendChatMessage);
+  const photo = wrap.querySelector("#cw-photo");
+  const file = wrap.querySelector("#cw-file");
+  if (photo && file) photo.addEventListener("click", () => file.click());
+  if (file)
+    file.addEventListener("change", () => {
+      const f = file.files && file.files[0];
+      file.value = "";
+      if (f) attachChatPhoto(f);
+    });
+  const login = wrap.querySelector("#cw-login");
+  if (login) login.addEventListener("click", doLogin);
+  updateChatAttach();
+}
+
+// Doczepia pływający dymek czatu do <body> (raz). Niezależny od render() —
+// otwieranie/zamykanie NIE rusza strony pod spodem (wraca w tym samym stanie).
+function mountChatWidget() {
+  if (document.getElementById("chat-widget")) return;
+  try {
+    state.chatLastRead = Number(localStorage.getItem("chatLastRead") || 0);
+  } catch (_) {}
+  // Pierwsza wizyta: traktuj dotychczasowe wiadomości jako przeczytane.
+  if (!state.chatLastRead) {
+    state.chatLastRead = Date.now();
+    try { localStorage.setItem("chatLastRead", String(state.chatLastRead)); } catch (_) {}
+  }
+
+  const w = document.createElement("div");
+  w.id = "chat-widget";
+  w.className = "chat-widget";
+  w.innerHTML = `
+    <div class="chat-panel">
+      <div class="chat-panel-head">
+        <span class="chat-panel-title">💬 Czat — Mordoryje</span>
+        <button type="button" class="chat-close" id="cw-close" title="Zwiń">✕</button>
       </div>
-      <div class="card chat-card">
-        <div id="chat-messages" class="chat-messages">${messages}</div>
-        ${composer}
-      </div>
-    </section>`;
+      <div id="chat-messages" class="chat-messages"></div>
+      <div class="chat-composer-wrap"></div>
+    </div>
+    <button type="button" class="chat-fab" id="cw-fab" aria-label="Czat">
+      <span class="chat-fab-icon">💬</span>
+      <span class="chat-badge" style="display:none">0</span>
+    </button>`;
+  document.body.appendChild(w);
+
+  w.querySelector("#cw-fab").addEventListener("click", () => toggleChat());
+  w.querySelector("#cw-close").addEventListener("click", () => toggleChat(false));
+  // Usuwanie wiadomości (delegacja — nie trzeba podpinać po każdym odświeżeniu).
+  w.querySelector("#chat-messages").addEventListener("click", async (e) => {
+    const del = e.target.closest && e.target.closest(".chat-del");
+    if (!del) return;
+    if (!confirm("Usunąć tę wiadomość?")) return;
+    try {
+      await deleteDoc(doc(db, "chat", del.dataset.id));
+    } catch (err) {
+      console.error("chat delete:", err);
+      alert("Nie udało się usunąć wiadomości.");
+    }
+  });
+
+  renderChatComposer(w);
+  updateChatWidget();
+}
+
+function toggleChat(force) {
+  state.chatOpen = typeof force === "boolean" ? force : !state.chatOpen;
+  const w = document.getElementById("chat-widget");
+  if (!w) return;
+  w.classList.toggle("open", state.chatOpen);
+  if (state.chatOpen) {
+    const list = w.querySelector("#chat-messages");
+    if (list) {
+      list.innerHTML = chatMessagesHtml();
+      list.scrollTop = list.scrollHeight;
+    }
+    markChatRead();
+    const ti = w.querySelector("#cw-text");
+    if (ti) ti.focus();
+  } else {
+    updateChatBadge();
+  }
+}
+
+// Odśwież widget po zmianie danych/zalogowania (NIE rusza pola pisania, gdy
+// zalogowanie bez zmian — żeby nie gubić wpisywanego tekstu).
+function updateChatWidget() {
+  const w = document.getElementById("chat-widget");
+  if (!w) return;
+  const wrap = w.querySelector(".chat-composer-wrap");
+  if (wrap && wrap.dataset.logged !== String(!!state.user)) renderChatComposer(w);
+  if (state.chatOpen) {
+    const list = w.querySelector("#chat-messages");
+    if (list) {
+      const nearBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 90;
+      list.innerHTML = chatMessagesHtml();
+      if (nearBottom) list.scrollTop = list.scrollHeight;
+    }
+    markChatRead();
+  } else {
+    updateChatBadge();
+  }
 }
 
 // Skompresuj wybrane zdjęcie do data URL (max 900 px, JPEG) — by zmieściło się
@@ -1117,7 +1257,7 @@ async function attachChatPhoto(file) {
       return;
     }
     state.chatImage = dataUrl;
-    render();
+    updateChatAttach();
   } catch (_) {
     alert("Nie udało się wczytać tego zdjęcia.");
   }
@@ -1141,38 +1281,17 @@ async function sendChatMessage() {
     });
     state.chatDraft = "";
     state.chatImage = null;
-    render();
+    const ti = document.getElementById("cw-text");
+    if (ti) {
+      ti.value = "";
+      ti.focus();
+    }
+    updateChatAttach();
+    updateChatWidget();
   } catch (e) {
     console.error("chat send:", e);
     alert('Nie udało się wysłać. Czy reguły Firestore dla kolekcji „chat” są opublikowane?');
   }
-}
-
-// Aktualizacja samej listy wiadomości (bez przebudowy pola pisania), by nie
-// tracić tekstu/kursora, gdy w tle dochodzą nowe wiadomości.
-function updateChatMessages() {
-  const el = document.getElementById("chat-messages");
-  if (!el) return;
-  const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 90;
-  el.innerHTML = chatMessagesHtml();
-  wireChatDeletes();
-  if (nearBottom) el.scrollTop = el.scrollHeight;
-}
-
-function wireChatDeletes() {
-  document.querySelectorAll(".chat-del").forEach((b) =>
-    b.addEventListener("click", async () => {
-      const id = b.dataset.id;
-      if (!id) return;
-      if (!confirm("Usunąć tę wiadomość?")) return;
-      try {
-        await deleteDoc(doc(db, "chat", id));
-      } catch (e) {
-        console.error("chat delete:", e);
-        alert("Nie udało się usunąć wiadomości.");
-      }
-    })
-  );
 }
 
 // --- Widok: Ranking -----------------------------------------------------------
@@ -1864,49 +1983,9 @@ function wireEvents() {
   const login = document.getElementById("login");
   const login2 = document.getElementById("login-2");
   const login3 = document.getElementById("login-3");
-  const login4 = document.getElementById("login-4");
   if (login) login.addEventListener("click", doLogin);
   if (login2) login2.addEventListener("click", doLogin);
   if (login3) login3.addEventListener("click", doLogin);
-  if (login4) login4.addEventListener("click", doLogin);
-
-  // Czat — pole pisania, wysyłka, załączniki, usuwanie
-  const chatText = document.getElementById("chat-text");
-  if (chatText) {
-    chatText.addEventListener("input", () => {
-      state.chatDraft = chatText.value;
-    });
-    chatText.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        sendChatMessage();
-      }
-    });
-  }
-  const chatSend = document.getElementById("chat-send");
-  if (chatSend) chatSend.addEventListener("click", sendChatMessage);
-
-  const chatPhoto = document.getElementById("chat-photo");
-  const chatFile = document.getElementById("chat-file");
-  if (chatPhoto && chatFile) chatPhoto.addEventListener("click", () => chatFile.click());
-  if (chatFile)
-    chatFile.addEventListener("change", () => {
-      const f = chatFile.files && chatFile.files[0];
-      chatFile.value = "";
-      if (f) attachChatPhoto(f);
-    });
-  const chatAttachRemove = document.getElementById("chat-attach-remove");
-  if (chatAttachRemove)
-    chatAttachRemove.addEventListener("click", () => {
-      state.chatImage = null;
-      render();
-    });
-
-  if (state.view === "chat") {
-    wireChatDeletes();
-    const box = document.getElementById("chat-messages");
-    if (box) box.scrollTop = box.scrollHeight; // start na dole (najnowsze)
-  }
 
   const logout = document.getElementById("logout");
   if (logout) logout.addEventListener("click", () => signOut(auth));
@@ -2397,7 +2476,7 @@ function listenToFirestore() {
         snap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
         arr.reverse(); // najstarsze na górze
         state.chat = arr;
-        if (state.view === "chat") updateChatMessages();
+        updateChatWidget();
       },
       (err) => console.error("chat:", err.message)
     )
