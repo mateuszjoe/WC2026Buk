@@ -1104,6 +1104,14 @@ function renderChatComposer(w) {
     text.addEventListener("keydown", (e) => {
       if (e.key === "Enter") { e.preventDefault(); sendChatMessage(); }
     });
+    // Po otwarciu klawiatury: dopasuj panel i przewiń do ostatniej wiadomości.
+    text.addEventListener("focus", () => {
+      setTimeout(() => {
+        positionChatPanel();
+        const l = document.querySelector("#chat-widget #chat-messages");
+        if (l) l.scrollTop = l.scrollHeight;
+      }, 80);
+    });
   }
   const send = wrap.querySelector("#cw-send");
   if (send) send.addEventListener("click", sendChatMessage);
@@ -1171,6 +1179,51 @@ function mountChatWidget() {
   updateChatWidget();
 }
 
+// Dopasowanie panelu czatu nad klawiaturą (mobile) przez VisualViewport API —
+// żeby pole pisania siedziało tuż nad klawiaturą, a ostatnia wiadomość nad polem.
+function resetChatPanelPosition() {
+  const p = document.querySelector("#chat-widget .chat-panel");
+  if (p) {
+    p.style.bottom = "";
+    p.style.height = "";
+    p.style.top = "";
+  }
+}
+function positionChatPanel() {
+  const w = document.getElementById("chat-widget");
+  if (!w || !state.chatOpen) return;
+  const panel = w.querySelector(".chat-panel");
+  if (!panel) return;
+  const vv = window.visualViewport;
+  if (window.innerWidth > 560 || !vv) {
+    resetChatPanelPosition(); // desktop — układ z CSS
+    return;
+  }
+  const margin = 8;
+  const keyboard = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+  panel.style.top = "auto";
+  panel.style.bottom = keyboard + margin + "px";
+  panel.style.height = vv.height - margin * 2 + "px";
+  // Gdy klawiatura otwarta — trzymaj się dołu (ostatnia wiadomość nad polem).
+  if (keyboard > 0) {
+    const list = w.querySelector("#chat-messages");
+    if (list) list.scrollTop = list.scrollHeight;
+  }
+}
+let chatVVHandler = null;
+function attachChatViewportSync() {
+  if (!window.visualViewport || chatVVHandler) return;
+  chatVVHandler = () => positionChatPanel();
+  window.visualViewport.addEventListener("resize", chatVVHandler);
+  window.visualViewport.addEventListener("scroll", chatVVHandler);
+}
+function detachChatViewportSync() {
+  if (!window.visualViewport || !chatVVHandler) return;
+  window.visualViewport.removeEventListener("resize", chatVVHandler);
+  window.visualViewport.removeEventListener("scroll", chatVVHandler);
+  chatVVHandler = null;
+}
+
 function toggleChat(force) {
   state.chatOpen = typeof force === "boolean" ? force : !state.chatOpen;
   const w = document.getElementById("chat-widget");
@@ -1178,14 +1231,19 @@ function toggleChat(force) {
   w.classList.toggle("open", state.chatOpen);
   if (state.chatOpen) {
     const list = w.querySelector("#chat-messages");
-    if (list) {
-      list.innerHTML = chatMessagesHtml();
-      list.scrollTop = list.scrollHeight;
-    }
+    if (list) list.innerHTML = chatMessagesHtml();
+    positionChatPanel();
+    if (list) list.scrollTop = list.scrollHeight;
     markChatRead();
-    const ti = w.querySelector("#cw-text");
-    if (ti) ti.focus();
+    attachChatViewportSync();
+    // Na desktopie od razu fokus; na telefonie nie wymuszamy klawiatury (czyta).
+    if (window.innerWidth > 560) {
+      const ti = w.querySelector("#cw-text");
+      if (ti) ti.focus();
+    }
   } else {
+    detachChatViewportSync();
+    resetChatPanelPosition();
     updateChatBadge();
   }
 }
