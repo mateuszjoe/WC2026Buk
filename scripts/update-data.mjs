@@ -95,6 +95,11 @@ const matches = data.matches
         crest: m.awayTeam?.crest || null
       },
       status: m.status,
+      // REGULAR / EXTRA_TIME / PENALTY_SHOOTOUT — do typów liczy się tylko czas
+      // regulaminowy (REGULAR). Przy dogrywce auto-wynik z API zawiera dogrywkę.
+      duration: m.score?.duration || "REGULAR",
+      // Faktyczny zwycięzca (też po dogrywce/karnych) — do "kto awansuje" i mistrza.
+      winner: m.score?.winner || null,
       // Wynik dopisywany automatycznie, gdy mecz ma rezultat:
       homeScore: typeof ft.home === "number" ? ft.home : null,
       awayScore: typeof ft.away === "number" ? ft.away : null

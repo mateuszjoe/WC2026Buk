@@ -3,7 +3,8 @@
   "points": {
     "correctResult": 1,
     "exactScore": 3,
-    "tournamentWinner": 10
+    "tournamentWinner": 10,
+    "advanceBonus": 1
   },
   "lockPredictionsAtKickoff": true,
   "championLockAt": "2026-06-11T16:00:00.000Z",

@@ -680,6 +680,38 @@ details.mini-standings[open] summary { color: var(--text); }
 .bet-team-row input[type="number"] { width: 50px; flex-shrink: 0; padding: 0.45rem 0.3rem; }
 .bet-tag { margin-left: auto; flex-shrink: 0; align-self: center; }
 .bet-row.locked { opacity: 0.6; }
+
+/* Faza pucharowa — wiersz się zawija, picker awansu w nowej linii */
+.bet-row.ko { flex-wrap: wrap; }
+.adv-pick {
+  flex-basis: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.15rem;
+  padding-top: 0.4rem;
+  border-top: 1px dashed rgba(42, 54, 102, 0.6);
+}
+.adv-label { font-size: 0.78rem; color: var(--text); }
+.adv-label .muted { font-size: 0.72rem; }
+.adv-btns { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.adv-btn {
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.adv-btn:hover:not([disabled]) { border-color: var(--accent-2); transform: translateY(-1px); }
+.adv-btn.sel { background: var(--gold); color: #3a2c00; border-color: transparent; }
+.adv-btn[disabled] { cursor: default; }
+.et-note { flex-basis: 100%; color: var(--gold); font-size: 0.76rem; margin-top: 0.1rem; }
 .bet-row.fin { background: rgba(54, 211, 153, 0.05); border-radius: 10px; padding-left: 0.5rem; padding-right: 0.5rem; }
 
 /* Punkty / etykiety typu */

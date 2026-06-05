@@ -117,12 +117,43 @@ function scoreChampion(championPick, settings, championTeamId) {
   return championPick === championTeamId ? settings.points.tournamentWinner : 0;
 }
 
+// Mecz pucharowy (poza fazą grupową).
+function isKnockout(m) {
+  return Boolean(m && m.stage && m.stage !== "group");
+}
+
+// Która strona faktycznie awansowała (też po dogrywce/karnych) — z pola winner.
+function advancingSide(m) {
+  if (m.winner === "HOME_TEAM") return "h";
+  if (m.winner === "AWAY_TEAM") return "a";
+  return null;
+}
+
+// Bonus za wskazanie drużyny awansującej. Liczy się TYLKO, gdy:
+//  - to mecz pucharowy,
+//  - w regulaminowym czasie (90') był REMIS,
+//  - gracz typował remis (czyli trafił rezultat),
+//  - i wskazał właściwą drużynę awansującą (po dogrywce/karnych).
+// Jeśli gracz typował remis, a drużyna awansowała wygraną w 90' — 0 pkt (rezultat nietrafiony).
+function advanceBonus(pred, result, m, settings) {
+  if (!isKnockout(m) || !pred || !result) return 0;
+  if (getOutcome(result.h, result.a) !== "draw") return 0; // 90' nie był remisem
+  if (getOutcome(pred.h, pred.a) !== "draw") return 0; // gracz nie typował remisu
+  const actual = advancingSide(m);
+  if (!actual || !pred.adv) return 0;
+  return pred.adv === actual ? settings.points.advanceBonus ?? 1 : 0;
+}
+
 // Zwycięzca turnieju: ręczne ustawienie admina ma pierwszeństwo, a jeśli go nie
 // ma — bierzemy zwycięzcę meczu finałowego (jeśli już rozegrany).
 function getChampionTeamId() {
   if (state.admin.championTeamId) return state.admin.championTeamId;
   const finalMatch = state.matches.find((m) => m.stage === "finał");
   if (!finalMatch) return null;
+  // Mistrz = faktyczny zdobywca pucharu (liczy się też dogrywka/karne).
+  if (finalMatch.winner === "HOME_TEAM") return finalMatch.homeTeam.id;
+  if (finalMatch.winner === "AWAY_TEAM") return finalMatch.awayTeam.id;
+  // Fallback (np. stare dane bez pola winner): zwycięzca z wyniku 90'.
   const result = getResult(finalMatch);
   if (!result || result.h === result.a) return null;
   return result.h > result.a ? finalMatch.homeTeam.id : finalMatch.awayTeam.id;
@@ -156,6 +187,7 @@ function calculateLeaderboard() {
   const rows = Object.entries(predictions).map(([uid, p]) => {
     let exactCount = 0;
     let outcomeOnlyCount = 0; // trafiony rezultat, ale nie dokładny wynik
+    let advanceCount = 0; // trafione wskazania drużyny awansującej (po remisie w 90')
 
     for (const match of matches) {
       const pred = p.matches?.[match.id];
@@ -163,32 +195,37 @@ function calculateLeaderboard() {
       const s = scoreMatch(pred, result, settings);
       if (s.exact) exactCount += 1;
       else if (s.correct) outcomeOnlyCount += 1;
+      if (advanceBonus(pred, result, match, settings) > 0) advanceCount += 1;
     }
 
     const exactPoints = exactCount * settings.points.exactScore;
     const outcomePoints = outcomeOnlyCount * settings.points.correctResult;
+    const advancePoints = advanceCount * (settings.points.advanceBonus ?? 1);
     const championPoints = scoreChampion(p.champion, settings, championTeamId);
 
     return {
       uid,
       name: p.name || "Gracz",
-      total: exactPoints + outcomePoints + championPoints,
+      total: exactPoints + outcomePoints + advancePoints + championPoints,
       exactPoints,
       outcomePoints,
+      advancePoints,
       championPoints,
       exactCount,
       outcomeOnlyCount,
+      advanceCount,
       championProgress: championPoints > 0 ? 1000 : championProgress(p.champion)
     };
   });
 
   // Remis rozstrzyga kolejno: dokładne wyniki → trafiony mistrz →
-  // rezultaty → jak wysoko zaszedł typ na mistrza → nazwa.
+  // rezultaty → bonusy za awans → jak wysoko zaszedł typ na mistrza → nazwa.
   rows.sort((l, r) => {
     if (r.total !== l.total) return r.total - l.total;
     if (r.exactCount !== l.exactCount) return r.exactCount - l.exactCount;
     if (r.championPoints !== l.championPoints) return r.championPoints - l.championPoints;
     if (r.outcomeOnlyCount !== l.outcomeOnlyCount) return r.outcomeOnlyCount - l.outcomeOnlyCount;
+    if (r.advanceCount !== l.advanceCount) return r.advanceCount - l.advanceCount;
     if (r.championProgress !== l.championProgress) return r.championProgress - l.championProgress;
     return l.name.localeCompare(r.name, "pl");
   });
@@ -240,6 +277,10 @@ function getResult(match) {
   if (override && typeof override.h === "number" && typeof override.a === "number") {
     return override;
   }
+  // Faza pucharowa: do typów liczy się TYLKO czas regulaminowy (90'). Jeśli mecz
+  // rozstrzygnięto w dogrywce/karnych (duration != REGULAR), auto-wynik z API
+  // zawiera dogrywkę — nie używamy go; wynik z 90' wpisuje admin w panelu.
+  if (match.duration && match.duration !== "REGULAR") return undefined;
   if (typeof match.homeScore === "number" && typeof match.awayScore === "number") {
     return { h: match.homeScore, a: match.awayScore };
   }
@@ -659,12 +700,17 @@ function standingsTableHtml(matches) {
 }
 
 // Etykieta punktów dla mojego typu na dany mecz.
-function myPredTag(myPred, result) {
+function myPredTag(myPred, result, m) {
   if (!myPred) return "";
   const s = scoreMatch(myPred, result, state.settings);
-  const cls = result ? (s.exact ? "exact" : s.correct ? "ok" : "miss") : "pending";
-  const label = result ? `${s.points} pkt` : "czeka";
-  return `<span class="pts ${cls}">Typ ${myPred.h}:${myPred.a} · ${label}</span>`;
+  const bonus = m ? advanceBonus(myPred, result, m, state.settings) : 0;
+  const cls = result ? (bonus > 0 || s.exact ? "exact" : s.correct ? "ok" : "miss") : "pending";
+  const advTxt =
+    m && isKnockout(m) && myPred.adv
+      ? ` · awans: ${escapeHtml(myPred.adv === "h" ? m.homeTeam.name : m.awayTeam.name)}`
+      : "";
+  const label = result ? `${s.points + bonus} pkt${bonus ? ` (+${bonus} awans 🎯)` : ""}` : "czeka";
+  return `<span class="pts ${cls}">Typ ${myPred.h}:${myPred.a}${advTxt} · ${label}</span>`;
 }
 
 // Status meczu po polsku (na podstawie pola status z API).
@@ -892,7 +938,7 @@ function rankingHtml() {
 
   const rows =
     board.length === 0
-      ? `<tr><td colspan="6" class="muted center">Brak typów. Bądź pierwszy — zaloguj się i wpisz typy!</td></tr>`
+      ? `<tr><td colspan="7" class="muted center">Brak typów. Bądź pierwszy — zaloguj się i wpisz typy!</td></tr>`
       : board
           .map((r) => {
             const me = state.user && r.uid === state.user.uid;
@@ -910,6 +956,7 @@ function rankingHtml() {
               <td class="total"><strong>${r.total}</strong></td>
               <td>${r.exactPoints}<span class="cnt">×${r.exactCount}</span></td>
               <td>${r.outcomePoints}<span class="cnt">×${r.outcomeOnlyCount}</span></td>
+              <td>${r.advancePoints}<span class="cnt">×${r.advanceCount}</span></td>
               <td>${r.championPoints}</td>
             </tr>`;
           })
@@ -923,7 +970,7 @@ function rankingHtml() {
           <h2>Ranking</h2>
         </div>
         <div class="points-legend">
-          ${p.exactScore} pkt dokładny wynik · ${p.correctResult} pkt traf. rezultat · ${p.tournamentWinner} pkt mistrz
+          ${p.exactScore} pkt dokładny wynik · ${p.correctResult} pkt traf. rezultat · 🎯 ${p.advanceBonus ?? 1} pkt awans (puchary) · ${p.tournamentWinner} pkt mistrz
         </div>
       </div>
       ${
@@ -941,6 +988,7 @@ function rankingHtml() {
               <th>#</th><th>Gracz</th><th>Suma</th>
               <th title="Punkty za dokładne wyniki">Dokł.</th>
               <th title="Punkty za trafione rezultaty (1/X/2)">Rez.</th>
+              <th title="Bonus za wskazanie drużyny awansującej (po remisie w 90')">🎯</th>
               <th title="Punkty za zwycięzcę turnieju">Mistrz</th>
             </tr>
           </thead>
@@ -991,7 +1039,8 @@ function betRow(m) {
   const r = getResult(m);
   const finished = Boolean(r);
   const myp = pred.h !== undefined && pred.a !== undefined ? pred : null;
-  const tag = finished ? myPredTag(myp, r) : "";
+  const tag = finished ? myPredTag(myp, r, m) : "";
+  const isKO = isKnockout(m);
 
   const teamLine = (team, side) => {
     const val = pred[side] ?? "";
@@ -1008,8 +1057,24 @@ function betRow(m) {
       </div>`;
   };
 
+  // Faza pucharowa: dodatkowo wskaż, kto awansuje (liczy się tylko przy remisie w 90').
+  const advPick = isKO
+    ? `<div class="adv-pick">
+         <span class="adv-label">🎯 Jeśli remis — kto awansuje? <span class="muted">(+${state.settings.points.advanceBonus ?? 1} pkt)</span></span>
+         <div class="adv-btns">
+           <button type="button" class="adv-btn ${pred.adv === "h" ? "sel" : ""}" data-match="${m.id}" data-adv="h" ${locked ? "disabled" : ""}>${escapeHtml(m.homeTeam.name)}</button>
+           <button type="button" class="adv-btn ${pred.adv === "a" ? "sel" : ""}" data-match="${m.id}" data-adv="a" ${locked ? "disabled" : ""}>${escapeHtml(m.awayTeam.name)}</button>
+         </div>
+       </div>`
+    : "";
+
+  const etNote =
+    isKO && m.duration && m.duration !== "REGULAR" && !finished
+      ? `<div class="bet-tag et-note">⏱️ Rozstrzygnięty po dogrywce/karnych — czeka na wynik 90' od admina.</div>`
+      : "";
+
   return `
-    <div class="bet-row ${locked ? "locked" : ""} ${finished ? "fin" : ""}">
+    <div class="bet-row ${locked ? "locked" : ""} ${finished ? "fin" : ""} ${isKO ? "ko" : ""}">
       <div class="bet-meta">
         <span class="fs-time">${fmtShort(m.kickoffAt)}</span>
         ${liveTag(m)}${locked && !finished ? '<span class="lock-tag">🔒</span>' : ""}
@@ -1019,6 +1084,8 @@ function betRow(m) {
         ${teamLine(m.awayTeam, "a")}
       </div>
       ${tag ? `<div class="bet-tag">${tag}</div>` : ""}
+      ${advPick}
+      ${etNote}
     </div>`;
 }
 
@@ -1385,6 +1452,24 @@ function rulesHtml() {
         </ul>
       </div>
 
+      <div class="card">
+        <h3 class="card-title">🏆 Faza pucharowa — czas regulaminowy i awans</h3>
+        <ul class="rules-list">
+          <li>Typy dotyczą <strong>regulaminowego czasu gry (90 minut)</strong>. Ewentualna
+            <strong>dogrywka i karne NIE są kwalifikowane</strong> do punktów za wynik/rezultat
+            (mecz po dogrywce admin wpisuje jako wynik z 90').</li>
+          <li>Dodatkowo możesz wskazać, <strong>kto awansuje</strong> — przydaje się, gdy typujesz remis,
+            bo w dogrywce/karnych ktoś jednak przejdzie dalej.</li>
+          <li><span class="pts ok">+${p.advanceBonus ?? 1} pkt</span> za trafioną drużynę awansującą,
+            ale <strong>tylko gdy w 90' faktycznie był remis i Ty też typowałeś remis</strong>
+            (czyli trafiłeś co najmniej rezultat).</li>
+          <li>Jeśli typujesz remis i wskazujesz drużynę A, a drużyna A awansuje przez
+            <strong>zwycięstwo w 90'</strong> (nie było remisu) — rezultat nietrafiony,
+            <strong>0 pkt</strong> i bonus nie przysługuje.</li>
+          <li><strong>Mistrz turnieju</strong> = faktyczny zdobywca pucharu (tu liczy się też dogrywka/karne).</li>
+        </ul>
+      </div>
+
       <div class="card prizes-card">
         <h3 class="card-title">🏆 Nagrody — podział puli</h3>
         <div class="podium">
@@ -1503,6 +1588,9 @@ function adminHtml() {
 
       <div class="card">
         <h3 class="card-title">Wyniki meczów</h3>
+        <p class="muted small">Faza pucharowa: wpisuj <strong>wynik z 90 minut</strong> (regulaminowy).
+          Mecze rozstrzygnięte po dogrywce/karnych nie liczą się automatycznie —
+          o awansie decyduje pole „winner" z API (typy „kto awansuje" liczą się same).</p>
         <div class="pred-list">${rows}</div>
       </div>
     </section>`;
@@ -1657,12 +1745,26 @@ function wireEvents() {
       if (!state.myDraft.matches[id]) state.myDraft.matches[id] = {};
       const v = input.value === "" ? undefined : Math.max(0, Math.trunc(Number(input.value)));
       state.myDraft.matches[id][side] = v;
-      // Usuń pusty typ (oba pola puste)
+      // Usuń pusty typ (oba pola puste i bez wskazania awansu)
       const cur = state.myDraft.matches[id];
-      if (cur.h === undefined && cur.a === undefined) delete state.myDraft.matches[id];
+      if (cur.h === undefined && cur.a === undefined && !cur.adv) delete state.myDraft.matches[id];
       saveMyPredictionsDebounced();
     });
   });
+
+  // Moje typy — wskazanie drużyny awansującej (faza pucharowa)
+  appRoot.querySelectorAll(".adv-btn").forEach((b) =>
+    b.addEventListener("click", () => {
+      const id = b.dataset.match;
+      const side = b.dataset.adv;
+      if (!state.myDraft.matches[id]) state.myDraft.matches[id] = {};
+      const cur = state.myDraft.matches[id];
+      cur.adv = cur.adv === side ? undefined : side; // ponowne kliknięcie = odznacz
+      if (cur.h === undefined && cur.a === undefined && !cur.adv) delete state.myDraft.matches[id];
+      saveMyPredictionsDebounced();
+      render();
+    })
+  );
 
   const champSelect = document.getElementById("champion-select");
   if (champSelect)
