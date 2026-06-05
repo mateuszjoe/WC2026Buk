@@ -134,12 +134,14 @@ let lastChatMs = hasChatState
 async function sendTo(entry, payload) {
   try {
     await webpush.sendNotification(entry.sub, JSON.stringify(payload));
+    return { ok: true, uid: entry.uid };
   } catch (e) {
     if (e.statusCode === 404 || e.statusCode === 410) {
       await db.doc("pushSubs/" + entry.uid).delete(); // subskrypcja wygasła
     } else {
       console.warn("push err", entry.uid, e.statusCode || e.message);
     }
+    return { ok: false, uid: entry.uid, error: e.statusCode || e.message };
   }
 }
 
@@ -214,6 +216,8 @@ if (leader && leader !== lastLeader && board[0].total > 0) {
   }
 }
 
-await Promise.allSettled(jobs);
+const settled = await Promise.allSettled(jobs);
+const sent = settled.filter((r) => r.status === "fulfilled" && r.value?.ok).length;
+const failed = settled.length - sent;
 await stateRef.set({ notified: [...notified], lastLeader, lastChatMs }, { merge: true });
-console.log(`Wysłano ${jobs.length} powiadomień (subskrypcji: ${subs.length}).`);
+console.log(`Wysłano ${sent}/${jobs.length} powiadomień (błędy: ${failed}, subskrypcji: ${subs.length}).`);
