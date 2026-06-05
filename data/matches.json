@@ -15,6 +15,8 @@
       "crest": "https://crests.football-data.org/9396.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -34,6 +36,8 @@
       "crest": "https://crests.football-data.org/798.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -53,6 +57,8 @@
       "crest": "https://crests.football-data.org/bosnia.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -72,6 +78,8 @@
       "crest": "https://crests.football-data.org/761.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -91,6 +99,8 @@
       "crest": "https://crests.football-data.org/788.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -110,6 +120,8 @@
       "crest": "https://crests.football-data.org/morocco.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -129,6 +141,8 @@
       "crest": "https://crests.football-data.org/814.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -148,6 +162,8 @@
       "crest": "https://crests.football-data.org/803.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -167,6 +183,8 @@
       "crest": "https://crests.football-data.org/curacao.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -186,6 +204,8 @@
       "crest": "https://crests.football-data.org/766.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -205,6 +225,8 @@
       "crest": "https://crests.football-data.org/791.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -224,6 +246,8 @@
       "crest": "https://crests.football-data.org/tunisia.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -243,6 +267,8 @@
       "crest": "https://crests.football-data.org/cape_verde.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -262,6 +288,8 @@
       "crest": "https://crests.football-data.org/825.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -281,6 +309,8 @@
       "crest": "https://crests.football-data.org/758.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -300,6 +330,8 @@
       "crest": "https://crests.football-data.org/783.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -319,6 +351,8 @@
       "crest": "https://crests.football-data.org/senegal.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -338,6 +372,8 @@
       "crest": "https://crests.football-data.org/813.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -357,6 +393,8 @@
       "crest": "https://crests.football-data.org/algeria.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -376,6 +414,8 @@
       "crest": "https://crests.football-data.org/8049.png"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -395,6 +435,8 @@
       "crest": "https://crests.football-data.org/congo_dr.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -414,6 +456,8 @@
       "crest": "https://crests.football-data.org/799.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -433,6 +477,8 @@
       "crest": "https://crests.football-data.org/panama.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -452,6 +498,8 @@
       "crest": "https://crests.football-data.org/818.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -471,6 +519,8 @@
       "crest": "https://crests.football-data.org/9396.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -490,6 +540,8 @@
       "crest": "https://crests.football-data.org/bosnia.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -509,6 +561,8 @@
       "crest": "https://crests.football-data.org/8030.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -528,6 +582,8 @@
       "crest": "https://crests.football-data.org/772.png"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -547,6 +603,8 @@
       "crest": "https://crests.football-data.org/779.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -566,6 +624,8 @@
       "crest": "https://crests.football-data.org/morocco.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -585,6 +645,8 @@
       "crest": "https://crests.football-data.org/haiti.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -604,6 +666,8 @@
       "crest": "https://crests.football-data.org/761.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -623,6 +687,8 @@
       "crest": "https://crests.football-data.org/792.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -642,6 +708,8 @@
       "crest": "https://crests.football-data.org/787.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -661,6 +729,8 @@
       "crest": "https://crests.football-data.org/curacao.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -680,6 +750,8 @@
       "crest": "https://crests.football-data.org/766.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -699,6 +771,8 @@
       "crest": "https://crests.football-data.org/saudi_arabia.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -718,6 +792,8 @@
       "crest": "https://crests.football-data.org/iran.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -737,6 +813,8 @@
       "crest": "https://crests.football-data.org/cape_verde.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -756,6 +834,8 @@
       "crest": "https://crests.football-data.org/825.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -775,6 +855,8 @@
       "crest": "https://crests.football-data.org/816.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -794,6 +876,8 @@
       "crest": "https://crests.football-data.org/iraq.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -813,6 +897,8 @@
       "crest": "https://crests.football-data.org/senegal.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -832,6 +918,8 @@
       "crest": "https://crests.football-data.org/algeria.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -851,6 +939,8 @@
       "crest": "https://crests.football-data.org/8070.png"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -870,6 +960,8 @@
       "crest": "https://crests.football-data.org/ghana.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -889,6 +981,8 @@
       "crest": "https://crests.football-data.org/799.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -908,6 +1002,8 @@
       "crest": "https://crests.football-data.org/congo_dr.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -927,6 +1023,8 @@
       "crest": "https://crests.football-data.org/canada.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -946,6 +1044,8 @@
       "crest": "https://crests.football-data.org/8030.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -965,6 +1065,8 @@
       "crest": "https://crests.football-data.org/haiti.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -984,6 +1086,8 @@
       "crest": "https://crests.football-data.org/764.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1003,6 +1107,8 @@
       "crest": "https://crests.football-data.org/769.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1022,6 +1128,8 @@
       "crest": "https://crests.football-data.org/772.png"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1041,6 +1149,8 @@
       "crest": "https://crests.football-data.org/759.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1060,6 +1170,8 @@
       "crest": "https://crests.football-data.org/787.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1079,6 +1191,8 @@
       "crest": "https://crests.football-data.org/8601.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1098,6 +1212,8 @@
       "crest": "https://crests.football-data.org/792.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1117,6 +1233,8 @@
       "crest": "https://crests.football-data.org/usa.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1136,6 +1254,8 @@
       "crest": "https://crests.football-data.org/779.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1155,6 +1275,8 @@
       "crest": "https://crests.football-data.org/773.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1174,6 +1296,8 @@
       "crest": "https://crests.football-data.org/iraq.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1193,6 +1317,8 @@
       "crest": "https://crests.football-data.org/760.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1212,6 +1338,8 @@
       "crest": "https://crests.football-data.org/saudi_arabia.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1231,6 +1359,8 @@
       "crest": "https://crests.football-data.org/805.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1250,6 +1380,8 @@
       "crest": "https://crests.football-data.org/iran.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1269,6 +1401,8 @@
       "crest": "https://crests.football-data.org/770.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1288,6 +1422,8 @@
       "crest": "https://crests.football-data.org/ghana.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1307,6 +1443,8 @@
       "crest": "https://crests.football-data.org/765.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1326,6 +1464,8 @@
       "crest": "https://crests.football-data.org/8070.png"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1345,6 +1485,8 @@
       "crest": "https://crests.football-data.org/762.png"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1364,6 +1506,8 @@
       "crest": "https://crests.football-data.org/816.svg"
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1383,6 +1527,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1402,6 +1548,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1421,6 +1569,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1440,6 +1590,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1459,6 +1611,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1478,6 +1632,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1497,6 +1653,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1516,6 +1674,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1535,6 +1695,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1554,6 +1716,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1573,6 +1737,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1592,6 +1758,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1611,6 +1779,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1630,6 +1800,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1649,6 +1821,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1668,6 +1842,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1687,6 +1863,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1706,6 +1884,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1725,6 +1905,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1744,6 +1926,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1763,6 +1947,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1782,6 +1968,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1801,6 +1989,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1820,6 +2010,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1839,6 +2031,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1858,6 +2052,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1877,6 +2073,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1896,6 +2094,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1915,6 +2115,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1934,6 +2136,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1953,6 +2157,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   },
@@ -1972,6 +2178,8 @@
       "crest": null
     },
     "status": "TIMED",
+    "duration": "REGULAR",
+    "winner": null,
     "homeScore": null,
     "awayScore": null
   }
