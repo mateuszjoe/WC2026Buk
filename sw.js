@@ -11,10 +11,16 @@ self.addEventListener("fetch", () => {});
 // Kliknięcie w powiadomienie → otwórz/uaktywuj okno aplikacji.
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
+  const targetUrl = event.notification.data?.url || "./";
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
-      for (const c of list) if ("focus" in c) return c.focus();
-      if (self.clients.openWindow) return self.clients.openWindow("./");
+      for (const c of list) {
+        if ("focus" in c) {
+          if ("navigate" in c) c.navigate(targetUrl);
+          return c.focus();
+        }
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(targetUrl);
     })
   );
 });
@@ -28,7 +34,9 @@ self.addEventListener("push", (event) => {
     self.registration.showNotification(title, {
       body: data.body || "",
       icon: "./icons/icon-192.png",
-      badge: "./icons/icon-192.png"
+      badge: "./icons/icon-192.png",
+      tag: data.tag || undefined,
+      data: { url: data.url || "./" }
     })
   );
 });

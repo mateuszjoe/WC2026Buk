@@ -37,6 +37,12 @@ const predictions = {};
 const subs = [];
 (await db.collection("pushSubs").get()).forEach((d) => subs.push({ uid: d.id, ...d.data() }));
 
+const chatMessages = [];
+(await db.collection("chat").orderBy("createdAt", "desc").limit(20).get()).forEach((d) =>
+  chatMessages.push({ id: d.id, ...d.data() })
+);
+chatMessages.reverse(); // najstarsze z ostatniej paczki najpierw
+
 const adminDoc = await db.doc("admin/state").get();
 const adminState = adminDoc.exists ? adminDoc.data() : {};
 const overrideResults = adminState.results || {};
@@ -44,6 +50,13 @@ const adminChampion = adminState.championTeamId || null;
 
 const stateRef = db.doc("push/state");
 const stateDoc = await stateRef.get();
+
+function timestampMs(value) {
+  if (!value) return 0;
+  if (typeof value.toMillis === "function") return value.toMillis();
+  if (value instanceof Date) return value.getTime();
+  return 0;
+}
 
 // --- Punktacja (zgodna z aplikacją) ------------------------------------------
 function getResult(m) {
@@ -100,7 +113,8 @@ const leader = board[0]?.uid || null;
 // --- Pierwszy przebieg: ustal punkt odniesienia, nie spamuj -------------------
 if (!stateDoc.exists) {
   const finished = matches.filter((m) => getResult(m)).map((m) => m.id);
-  await stateRef.set({ notified: finished, lastLeader: leader });
+  const lastChatMs = chatMessages.reduce((max, msg) => Math.max(max, timestampMs(msg.createdAt)), 0);
+  await stateRef.set({ notified: finished, lastLeader: leader, lastChatMs });
   console.log("Pierwszy przebieg — zapamiętano stan, bez wysyłki.");
   process.exit(0);
 }
@@ -108,6 +122,10 @@ if (!stateDoc.exists) {
 const pstate = stateDoc.data();
 const notified = new Set(pstate.notified || []);
 let lastLeader = pstate.lastLeader || null;
+const hasChatState = typeof pstate.lastChatMs === "number";
+let lastChatMs = hasChatState
+  ? pstate.lastChatMs
+  : chatMessages.reduce((max, msg) => Math.max(max, timestampMs(msg.createdAt)), 0);
 
 // --- Wysyłka ------------------------------------------------------------------
 async function sendTo(entry, payload) {
@@ -123,6 +141,36 @@ async function sendTo(entry, payload) {
 }
 
 const jobs = [];
+
+// Nowe wiadomości na czacie — push do wszystkich poza autorem.
+if (hasChatState) {
+  for (const msg of chatMessages) {
+    const t = timestampMs(msg.createdAt);
+    if (!t || t <= lastChatMs) continue;
+    lastChatMs = Math.max(lastChatMs, t);
+
+    const name = msg.name || "Ktoś";
+    const text = String(msg.text || "").trim();
+    const hasImage = Boolean(msg.image);
+    const body = text
+      ? text.slice(0, 120) + (text.length > 120 ? "…" : "")
+      : hasImage
+      ? "wysłał(a) zdjęcie"
+      : "nowa wiadomość";
+
+    for (const entry of subs) {
+      if (entry.uid === msg.uid) continue;
+      jobs.push(
+        sendTo(entry, {
+          title: `💬 ${name}`,
+          body,
+          tag: `chat-${msg.id}`,
+          url: "./#chat"
+        })
+      );
+    }
+  }
+}
 
 // Zakończone mecze (nowe)
 for (const m of matches) {
@@ -164,5 +212,5 @@ if (leader && leader !== lastLeader && board[0].total > 0) {
 }
 
 await Promise.allSettled(jobs);
-await stateRef.set({ notified: [...notified], lastLeader }, { merge: true });
+await stateRef.set({ notified: [...notified], lastLeader, lastChatMs }, { merge: true });
 console.log(`Wysłano ${jobs.length} powiadomień (subskrypcji: ${subs.length}).`);

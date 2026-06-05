@@ -1,0 +1,36 @@
+name: Powiadomienia push
+
+# Robot sprawdza nowe wiadomości czatu częściej niż wyniki meczów.
+# GitHub Actions nie jest backendem realtime, więc push może mieć kilka minut opóźnienia.
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: push-notifications
+  cancel-in-progress: true
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pobierz repozytorium
+        uses: actions/checkout@v4
+
+      - name: Zainstaluj Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Zależności robota
+        run: npm install --no-audit --no-fund
+
+      - name: Wyślij powiadomienia push
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+        run: node scripts/send-push.mjs

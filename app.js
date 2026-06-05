@@ -1304,6 +1304,7 @@ function positionChatPanel() {
   }
 }
 let chatVVHandler = null;
+let openedChatFromHash = false;
 function attachChatViewportSync() {
   if (!window.visualViewport || chatVVHandler) return;
   chatVVHandler = () => positionChatPanel();
@@ -1353,6 +1354,13 @@ function updateChatWidget() {
     return;
   }
   w.style.display = "";
+  if (location.hash === "#chat" && !openedChatFromHash) {
+    openedChatFromHash = true;
+    setTimeout(() => {
+      toggleChat(true);
+      history.replaceState(null, "", `${location.pathname}${location.search}#${state.view}`);
+    }, 0);
+  }
   const wrap = w.querySelector(".chat-composer-wrap");
   if (wrap && wrap.dataset.logged !== String(!!state.user)) renderChatComposer(w);
   if (state.chatOpen) {
