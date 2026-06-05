@@ -77,6 +77,7 @@ const state = {
   myDraft: null, // lokalna kopia MOICH typów (edytowana w formularzu)
   myDraftSeededFor: null, // uid, dla którego zasialiśmy myDraft
   saveMsg: "", // komunikat o zapisie w widoku "Moje typy"
+  pushMsg: "", // prosty status zapisu powiadomień push w tle
   avatarSeed: 0, // ziarno dla losowania avatarów
   // Powiadomienia (in-app, gdy aplikacja jest otwarta):
   notifyInit: false, // czy ustalono punkt odniesienia
@@ -2000,17 +2001,56 @@ function notificationsBlock() {
   if (!("Notification" in window)) {
     return `<p class="muted small">Twoja przeglądarka nie obsługuje powiadomień.</p>`;
   }
+  const hint = escapeHtml(pushBackgroundHint());
+  const status = state.pushMsg
+    ? `<p class="muted small">Status: ${escapeHtml(state.pushMsg)}</p>`
+    : "";
   if (Notification.permission === "granted") {
-    return `<p class="muted small">✅ Włączone. Dostaniesz powiadomienie o nowym liderze rankingu
-      i o zakończonych meczach (gdy aplikacja jest otwarta / zainstalowana).</p>
-      <button class="btn ghost tiny" id="notify-test">Wyślij testowe</button>`;
+    return `<p class="muted small">✅ Zgoda na powiadomienia jest włączona.</p>
+      <p class="muted small">${hint}</p>
+      <p class="muted small">Czat nie przychodzi natychmiast — robot sprawdza nowe wiadomości co kilka minut.</p>
+      ${status}
+      <div class="button-row">
+        <button class="btn primary tiny" id="notify-refresh">Odśwież push w tle</button>
+        <button class="btn ghost tiny" id="notify-test">Test lokalny</button>
+      </div>`;
   }
   if (Notification.permission === "denied") {
     return `<p class="muted small">🚫 Powiadomienia są zablokowane w ustawieniach przeglądarki dla tej strony.
       Odblokuj je w ustawieniach witryny, żeby włączyć.</p>`;
   }
-  return `<p class="muted small">Dostawaj info o nowym liderze i wynikach meczów (z komentarzem 😈).</p>
+  return `<p class="muted small">Dostawaj info o czacie, nowym liderze i wynikach meczów.</p>
+    <p class="muted small">${hint}</p>
+    ${status}
     <button class="btn primary" id="notify-enable">🔔 Włącz powiadomienia</button>`;
+}
+
+function isIOSDevice() {
+  const ua = navigator.userAgent || "";
+  return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
+function isStandaloneApp() {
+  return Boolean(window.matchMedia?.("(display-mode: standalone)").matches || navigator.standalone);
+}
+
+function pushBackgroundHint() {
+  if (isInAppBrowser()) {
+    return "W przeglądarce z Messengera/Facebooka/Instagrama push w tle zwykle nie działa. Otwórz stronę w Chrome albo Safari.";
+  }
+  if (!("serviceWorker" in navigator)) {
+    return "Ta przeglądarka nie ma Service Workera, więc push po zamknięciu aplikacji nie ruszy.";
+  }
+  if (!("PushManager" in window)) {
+    if (isIOSDevice()) {
+      return "Na iPhonie dodaj stronę do ekranu początkowego i otwieraj ją z ikonki. Zwykła karta Safari nie wystarczy.";
+    }
+    return "Ta przeglądarka nie obsługuje push w tle. Spróbuj w Chrome/Edge/Safari.";
+  }
+  if (isIOSDevice() && !isStandaloneApp()) {
+    return "Na iPhonie push w tle działa po dodaniu strony do ekranu początkowego i uruchomieniu jej z ikonki.";
+  }
+  return "Push w tle jest obsługiwany na tym urządzeniu. Po odświeżeniu zapiszę je do Firebase.";
 }
 
 // --- Jednorazowy popup o powiadomieniach (na ekranie głównym) -----------------
@@ -2301,10 +2341,18 @@ function wireEvents() {
   // Profil — powiadomienia
   const notifyEnable = document.getElementById("notify-enable");
   if (notifyEnable) notifyEnable.addEventListener("click", requestNotifyPermission);
+  const notifyRefresh = document.getElementById("notify-refresh");
+  if (notifyRefresh)
+    notifyRefresh.addEventListener("click", async () => {
+      state.pushMsg = "Sprawdzam i zapisuję to urządzenie...";
+      render();
+      await subscribePush({ force: true });
+      render();
+    });
   const notifyTest = document.getElementById("notify-test");
   if (notifyTest)
     notifyTest.addEventListener("click", () =>
-      notify("⚽ Test powiadomienia", "Działa! Tu wpadną info o liderze i wynikach meczów.")
+      notify("⚽ Test lokalny", "Działa zgoda w przeglądarce. Push z czatu może przyjść po kilku minutach.")
     );
 
   // Profil — nick (zmiana tylko raz)
@@ -2622,15 +2670,23 @@ async function notify(title, body) {
 }
 
 async function requestNotifyPermission() {
-  if (!("Notification" in window)) return;
+  if (!("Notification" in window)) {
+    state.pushMsg = "Ta przeglądarka nie obsługuje powiadomień.";
+    render();
+    return;
+  }
   try {
     await Notification.requestPermission();
   } catch (_) {}
-  render();
   if (Notification.permission === "granted") {
     notify("🔔 Powiadomienia włączone", "Teraz nie ucieknie Ci żadna akcja. Powodzenia, typerze!");
-    subscribePush();
+    await subscribePush({ force: true });
+  } else if (Notification.permission === "denied") {
+    state.pushMsg = "Zgoda jest zablokowana w ustawieniach przeglądarki.";
+  } else {
+    state.pushMsg = "Nie nadano zgody na powiadomienia.";
   }
+  render();
 }
 
 // Subskrypcja prawdziwego push (Web Push / VAPID) — zapisuje subskrypcję w bazie,
@@ -2651,17 +2707,33 @@ function arrayBufferToBase64Url(buffer) {
   return btoa(raw).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-async function subscribePush() {
+async function subscribePush(options = {}) {
+  const force = Boolean(options.force);
   try {
-    if (!state.user) return;
-    if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
-    if (Notification.permission !== "granted") return;
+    if (!state.user) {
+      state.pushMsg = "Najpierw zaloguj się na tym urządzeniu.";
+      return false;
+    }
+    if (!("serviceWorker" in navigator)) {
+      state.pushMsg = "Brak Service Workera w tej przeglądarce.";
+      return false;
+    }
+    if (!("PushManager" in window)) {
+      state.pushMsg = isIOSDevice()
+        ? "Na iPhonie dodaj stronę do ekranu początkowego i otwórz ją z ikonki."
+        : "Ta przeglądarka nie obsługuje push w tle.";
+      return false;
+    }
+    if (!("Notification" in window) || Notification.permission !== "granted") {
+      state.pushMsg = "Najpierw kliknij zgodę na powiadomienia.";
+      return false;
+    }
     const reg = await navigator.serviceWorker.ready;
     let sub = await reg.pushManager.getSubscription();
     const currentKey = sub?.options?.applicationServerKey
       ? arrayBufferToBase64Url(sub.options.applicationServerKey)
       : "";
-    if (sub && currentKey !== VAPID_PUBLIC) {
+    if (sub && (force || currentKey !== VAPID_PUBLIC)) {
       await sub.unsubscribe();
       sub = null;
     }
@@ -2681,8 +2753,12 @@ async function subscribePush() {
       },
       { merge: true }
     );
+    state.pushMsg = "OK — to urządzenie jest zapisane do powiadomień push w tle.";
+    return true;
   } catch (e) {
     console.warn("push subscribe:", e);
+    state.pushMsg = "Nie udało się zapisać push. Odśwież stronę i spróbuj jeszcze raz.";
+    return false;
   }
 }
 
@@ -2898,13 +2974,17 @@ onAuthStateChanged(auth, (user) => {
   state.user = user;
   state.myDraft = null;
   state.myDraftSeededFor = null;
+  state.pushMsg = "";
 
   // Ranking jest PUBLICZNY — listener startuje też bez logowania (idempotentny).
   listenToFirestore();
 
   if (user) {
     ensureProfileDoc(user);
-    if ("Notification" in window && Notification.permission === "granted") subscribePush();
+    if ("Notification" in window && Notification.permission === "granted")
+      subscribePush().then(() => {
+        if (state.view === "profile") render();
+      });
   }
 
   // Jeśli admin się wylogował z widoku admina — wróć do rankingu
