@@ -50,6 +50,12 @@ service cloud.firestore {
       allow delete: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
     }
 
+    // Potwierdzenia odczytu czatu: czyta każdy, pisze tylko właściciel (id = uid).
+    match /chatReads/{uid} {
+      allow read: if true;
+      allow write: if isSignedIn() && request.auth.uid == uid;
+    }
+
     // Subskrypcje push: gracz zapisuje tylko własną; czyta je wyłącznie robot
     // (konto serwisowe pomija reguły), więc klientom czytania zabraniamy.
     match /pushSubs/{uid} {

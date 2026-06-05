@@ -72,6 +72,8 @@ const state = {
   chatImage: null, // załączone zdjęcie (data URL) do wysłania
   chatOpen: false, // czy dymek czatu jest rozwinięty (panel nad aplikacją)
   chatLastRead: 0, // ms ostatnio odczytanej wiadomości (licznik nieprzeczytanych)
+  chatReads: {}, // uid -> { name, avatar, photo, lastReadMs } — potwierdzenia odczytu
+  playerModalUid: null, // uid gracza, którego profil oglądamy (modal), albo null
   myDraft: null, // lokalna kopia MOICH typów (edytowana w formularzu)
   myDraftSeededFor: null, // uid, dla którego zasialiśmy myDraft
   saveMsg: "", // komunikat o zapisie w widoku "Moje typy"
@@ -865,6 +867,7 @@ function render() {
       Wóda! Szlugi! Grube baby!
     </footer>
     ${notifyPromptHtml()}
+    ${playerModalHtml()}
   `;
 
   wireEvents();
@@ -1001,10 +1004,48 @@ function renderMessageText(text) {
   });
 }
 
+// Mini-avatar do potwierdzenia odczytu (jak na Messengerze).
+function readReceiptAvatar(r) {
+  const av = r.avatar;
+  let inner;
+  if (av && av !== "none" && /^(https?:\/\/|data:image\/)/.test(av)) {
+    inner = `<img src="${escapeHtml(av)}" alt="" />`;
+  } else if (av && av !== "none" && !/^(https?:|data:)/.test(av)) {
+    inner = `<span class="rr-emoji">${escapeHtml(av)}</span>`;
+  } else if (r.photo) {
+    inner = `<img src="${escapeHtml(r.photo)}" alt="" />`;
+  } else {
+    inner = `<span class="rr-ini">${escapeHtml(initials(r.name))}</span>`;
+  }
+  return `<span class="rr-ava" title="${escapeHtml(r.name || "")} — przeczytał(a)">${inner}</span>`;
+}
+
+// Mapa: id wiadomości -> czytelnicy, którzy doczytali DO TEJ wiadomości (ostatniej
+// w ich zasięgu). Nie pokazujemy własnego odczytu.
+function computeReadReceipts() {
+  const byMsg = {};
+  const reads = state.chatReads || {};
+  for (const uid in reads) {
+    if (state.user && uid === state.user.uid) continue;
+    const r = reads[uid];
+    const lr = r && typeof r.lastReadMs === "number" ? r.lastReadMs : 0;
+    if (!lr) continue;
+    let lastId = null;
+    for (const m of state.chat) {
+      const t = m.createdAt && m.createdAt.toMillis ? m.createdAt.toMillis() : 0;
+      if (t && t <= lr) lastId = m.id;
+      else if (t && t > lr) break; // lista rosnąco — dalej już nowsze
+    }
+    if (lastId) (byMsg[lastId] ||= []).push(r);
+  }
+  return byMsg;
+}
+
 function chatMessagesHtml() {
   if (!state.chat.length) {
     return `<p class="chat-empty muted">Cisza jak makiem zasiał… Rzuć pierwszym tekstem. 💬</p>`;
   }
+  const receipts = computeReadReceipts();
   return state.chat
     .map((m) => {
       const mine = state.user && m.uid === state.user.uid;
@@ -1013,6 +1054,11 @@ function chatMessagesHtml() {
       const body =
         (m.text ? `<div class="chat-text">${renderMessageText(m.text)}</div>` : "") +
         (m.image ? `<a href="${m.image}" target="_blank" rel="noopener"><img class="chat-img" src="${m.image}" alt="" loading="lazy" /></a>` : "");
+      const seen = receipts[m.id];
+      const seenRow =
+        seen && seen.length
+          ? `<div class="chat-receipts">${seen.slice(0, 8).map(readReceiptAvatar).join("")}${seen.length > 8 ? `<span class="rr-more">+${seen.length - 8}</span>` : ""}</div>`
+          : "";
       return `
         <div class="chat-msg ${mine ? "mine" : ""}">
           ${avatarHtml(prof, "sm")}
@@ -1024,7 +1070,7 @@ function chatMessagesHtml() {
             </div>
             ${body}
           </div>
-        </div>`;
+        </div>${seenRow}`;
     })
     .join("");
 }
@@ -1091,6 +1137,23 @@ function markChatRead() {
   state.chatLastRead = max;
   try { localStorage.setItem("chatLastRead", String(max)); } catch (_) {}
   updateChatBadge();
+  writeReadReceipt(max);
+}
+
+// Zapisz potwierdzenie odczytu w bazie (do której wiadomości doczytałem) —
+// inni zobaczą mój mini-avatar przy tej wiadomości. Bez zbędnych zapisów.
+let lastWrittenReadMs = 0;
+function writeReadReceipt(ms) {
+  if (!state.user || !ms || ms <= lastWrittenReadMs) return;
+  lastWrittenReadMs = ms;
+  const mp = myProfile();
+  setDoc(doc(db, "chatReads", state.user.uid), {
+    uid: state.user.uid,
+    name: mp.name,
+    avatar: mp.avatar || null,
+    photo: state.user.photoURL || null,
+    lastReadMs: ms
+  }).catch((e) => console.warn("read receipt:", e));
 }
 
 // Buduje pole pisania i podpina zdarzenia (raz; przy zmianie zalogowania na nowo).
@@ -1253,6 +1316,13 @@ function toggleChat(force) {
 function updateChatWidget() {
   const w = document.getElementById("chat-widget");
   if (!w) return;
+  // Czat tylko dla zalogowanych — niezalogowani nie widzą nawet dymka.
+  if (!state.user) {
+    if (state.chatOpen) toggleChat(false);
+    w.style.display = "none";
+    return;
+  }
+  w.style.display = "";
   const wrap = w.querySelector(".chat-composer-wrap");
   if (wrap && wrap.dataset.logged !== String(!!state.user)) renderChatComposer(w);
   if (state.chatOpen) {
@@ -1353,6 +1423,83 @@ async function sendChatMessage() {
 }
 
 // --- Widok: Ranking -----------------------------------------------------------
+// Modal profilu innego gracza — pokazuje jego typy (BEZ maila). Dla uczciwości
+// typ na mecz jest widoczny dopiero po jego zablokowaniu (start), a mistrz po
+// końcu 1. kolejki.
+function openPlayerProfile(uid) {
+  state.playerModalUid = uid;
+  render();
+}
+function playerModalHtml() {
+  const uid = state.playerModalUid;
+  if (!uid) return "";
+  const p = state.predictions[uid];
+  if (!p) return "";
+  const board = calculateLeaderboard();
+  const row = board.find((r) => r.uid === uid) || {
+    total: 0, exactCount: 0, outcomeOnlyCount: 0, advanceCount: 0
+  };
+  const prof = { name: p.name, avatar: p.avatar, photo: p.photo, champion: p.champion };
+  const champTeam = teamById(p.champion);
+  const champRevealed = championLocked();
+
+  const picks = state.matches
+    .filter((m) => {
+      const pk = p.matches?.[m.id];
+      return pk && (pk.h !== undefined || pk.a !== undefined);
+    })
+    .sort((a, b) => a.kickoffAt.localeCompare(b.kickoffAt));
+
+  const pickRows = picks.length
+    ? picks
+        .map((m) => {
+          const pk = p.matches[m.id];
+          const revealed = matchLocked(m) || matchFinished(m);
+          const r = getResult(m);
+          let right;
+          if (!revealed) {
+            right = `<span class="pp-hidden">🔒 ukryte do startu</span>`;
+          } else {
+            const s = r ? scoreMatch(pk, r, state.settings) : null;
+            const bonus = r ? advanceBonus(pk, r, m, state.settings) : 0;
+            const cls = r ? (bonus > 0 || s.exact ? "exact" : s.correct ? "ok" : "miss") : "pending";
+            const label = r ? `${s.points + bonus} pkt${bonus ? " 🎯" : ""}` : "czeka";
+            const advTxt =
+              isKnockout(m) && pk.adv
+                ? `<span class="pp-adv">awans: ${escapeHtml(pk.adv === "h" ? m.homeTeam.name : m.awayTeam.name)}</span>`
+                : "";
+            right = `<span class="pp-pick">${pk.h ?? "–"}:${pk.a ?? "–"}</span>${advTxt}<span class="pts ${cls}">${label}</span>`;
+          }
+          return `
+            <div class="pp-row">
+              <div class="pp-match">
+                <span class="pp-teams">${flagImg(m.homeTeam)} ${escapeHtml(m.homeTeam.name)} – ${escapeHtml(m.awayTeam.name)} ${flagImg(m.awayTeam)}</span>
+                <span class="pp-when">${fmtShort(m.kickoffAt)}${matchFinished(m) && r ? ` · było ${r.h}:${r.a}` : ""}</span>
+              </div>
+              <div class="pp-pickwrap">${right}</div>
+            </div>`;
+        })
+        .join("")
+    : `<p class="muted small">Ten gracz nie wpisał jeszcze żadnych typów.</p>`;
+
+  return `
+    <div class="player-modal-overlay">
+      <div class="player-modal">
+        <button class="pm-close" id="pm-close" title="Zamknij">✕</button>
+        <div class="pm-head">
+          ${avatarHtml(prof, "lg")}
+          <div>
+            <div class="pm-name">${escapeHtml(p.name || "Gracz")}</div>
+            <div class="muted small">${row.total} pkt · ${row.exactCount}× dokł. · ${row.outcomeOnlyCount}× rez.${row.advanceCount ? ` · ${row.advanceCount}× 🎯` : ""}</div>
+          </div>
+        </div>
+        <div class="pm-champ">👑 Mistrz: ${champRevealed ? (champTeam ? `${flagImg(champTeam)} ${escapeHtml(champTeam.name)}` : "—") : "🔒 ukryte do końca 1. kolejki"}</div>
+        <div class="pm-picks">${pickRows}</div>
+        <p class="muted small pp-foot">Cudze typy na mecz odkrywają się dopiero po jego rozpoczęciu (uczciwa gra).</p>
+      </div>
+    </div>`;
+}
+
 function rankingHtml() {
   const board = calculateLeaderboard();
   const p = state.settings.points;
@@ -1369,7 +1516,7 @@ function rankingHtml() {
             <tr class="${me ? "me" : ""}">
               <td class="rank">${medal}</td>
               <td class="name">
-                <span class="player-cell">
+                <span class="player-cell clickable" data-player="${escapeHtml(r.uid)}" title="Zobacz typy">
                   ${avatarHtml(prof)}
                   <span class="player-name">${escapeHtml(r.name)}${me ? ' <span class="you">Ty</span>' : ""}</span>
                 </span>
@@ -1462,6 +1609,8 @@ function betRow(m) {
   const myp = pred.h !== undefined && pred.a !== undefined ? pred : null;
   const tag = finished ? myPredTag(myp, r, m) : "";
   const isKO = isKnockout(m);
+  const hasPick = pred.h !== undefined || pred.a !== undefined || pred.adv;
+  const canClear = hasPick && !locked;
 
   const teamLine = (team, side) => {
     const val = pred[side] ?? "";
@@ -1499,6 +1648,7 @@ function betRow(m) {
       <div class="bet-meta">
         <span class="fs-time">${fmtShort(m.kickoffAt)}</span>
         ${liveTag(m)}${locked && !finished ? '<span class="lock-tag">🔒</span>' : ""}
+        ${canClear ? `<button type="button" class="bet-clear" data-match="${m.id}" title="Wyczyść mój typ">✕ wyczyść</button>` : ""}
       </div>
       <div class="bet-grid">
         ${teamLine(m.homeTeam, "h")}
@@ -1931,7 +2081,7 @@ function adminHtml() {
           const isMe = state.user && r.uid === state.user.uid;
           return `
             <div class="player-row">
-              <span class="player-cell">
+              <span class="player-cell clickable" data-player="${escapeHtml(r.uid)}" title="Zobacz typy">
                 ${avatarHtml(prof)}
                 <span class="player-id">
                   <span class="player-name">${escapeHtml(r.name)}${isMe ? " (Ty)" : ""}</span>
@@ -2024,9 +2174,14 @@ function adminHtml() {
 function wireEvents() {
   appRoot.querySelectorAll("[data-view]").forEach((b) =>
     b.addEventListener("click", () => {
-      state.view = b.dataset.view;
       state.saveMsg = "";
-      render();
+      // Zmiana zakładki zapisuje się w adresie (#widok), żeby odświeżenie tu wracało.
+      if (location.hash.slice(1) === b.dataset.view) {
+        state.view = b.dataset.view;
+        render();
+      } else {
+        location.hash = b.dataset.view; // wywoła hashchange -> applyHashView -> render
+      }
     })
   );
 
@@ -2037,6 +2192,25 @@ function wireEvents() {
       render();
     })
   );
+
+  // Wejście w profil innego gracza (podgląd typów)
+  appRoot.querySelectorAll("[data-player]").forEach((b) =>
+    b.addEventListener("click", () => openPlayerProfile(b.dataset.player))
+  );
+  const pmClose = document.getElementById("pm-close");
+  if (pmClose)
+    pmClose.addEventListener("click", () => {
+      state.playerModalUid = null;
+      render();
+    });
+  const pmOverlay = appRoot.querySelector(".player-modal-overlay");
+  if (pmOverlay)
+    pmOverlay.addEventListener("click", (e) => {
+      if (e.target === pmOverlay) {
+        state.playerModalUid = null;
+        render();
+      }
+    });
 
   const login = document.getElementById("login");
   const login2 = document.getElementById("login-2");
@@ -2164,7 +2338,8 @@ function wireEvents() {
       const id = input.dataset.match;
       const side = input.dataset.side;
       if (!state.myDraft.matches[id]) state.myDraft.matches[id] = {};
-      const v = input.value === "" ? undefined : Math.max(0, Math.trunc(Number(input.value)));
+      const n = Number(input.value);
+      const v = input.value === "" || isNaN(n) ? undefined : Math.max(0, Math.trunc(n));
       state.myDraft.matches[id][side] = v;
       // Usuń pusty typ (oba pola puste i bez wskazania awansu)
       const cur = state.myDraft.matches[id];
@@ -2172,6 +2347,16 @@ function wireEvents() {
       saveMyPredictionsDebounced();
     });
   });
+
+  // Moje typy — wyczyść cały typ meczu (pewne usunięcie „przypadkowych liczb")
+  appRoot.querySelectorAll(".bet-clear").forEach((b) =>
+    b.addEventListener("click", () => {
+      const id = b.dataset.match;
+      delete state.myDraft.matches[id];
+      saveMyPredictionsDebounced();
+      render();
+    })
+  );
 
   // Moje typy — wskazanie drużyny awansującej (faza pucharowa)
   appRoot.querySelectorAll(".adv-btn").forEach((b) =>
@@ -2539,6 +2724,20 @@ function listenToFirestore() {
       (err) => console.error("chat:", err.message)
     )
   );
+
+  // Potwierdzenia odczytu czatu — kto dokąd doczytał.
+  unsubscribers.push(
+    onSnapshot(
+      collection(db, "chatReads"),
+      (snap) => {
+        const next = {};
+        snap.forEach((d) => (next[d.id] = d.data()));
+        state.chatReads = next;
+        updateChatWidget();
+      },
+      (err) => console.error("chatReads:", err.message)
+    )
+  );
 }
 
 function stopListening() {
@@ -2567,6 +2766,24 @@ async function ensureProfileDoc(user) {
     console.error("ensureProfileDoc:", e);
   }
 }
+
+// --- Routing po adresie (#widok) — odświeżenie zostaje na tej samej zakładce ---
+function viewFromHash() {
+  const h = (location.hash || "").replace(/^#/, "");
+  return VIEWS.some((v) => v.id === h) ? h : null;
+}
+function applyHashView() {
+  const v = viewFromHash();
+  if (!v || v === state.view) return;
+  if (v === "admin" && !isAdmin()) return; // panel admina tylko dla admina
+  state.view = v;
+  state.saveMsg = "";
+  render();
+}
+window.addEventListener("hashchange", applyHashView);
+// Stan początkowy z adresu (np. po odświeżeniu na #mine). Admina dopilnuje guard niżej.
+const initialView = viewFromHash();
+if (initialView) state.view = initialView;
 
 onAuthStateChanged(auth, (user) => {
   state.user = user;
