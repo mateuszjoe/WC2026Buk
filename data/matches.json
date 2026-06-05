@@ -3,6 +3,7 @@
     "id": "wc-537327",
     "stage": "group",
     "group": "A",
+    "matchday": 1,
     "kickoffAt": "2026-06-11T19:00:00Z",
     "homeTeam": {
       "id": "t769",
@@ -24,6 +25,7 @@
     "id": "wc-537328",
     "stage": "group",
     "group": "A",
+    "matchday": 1,
     "kickoffAt": "2026-06-12T02:00:00Z",
     "homeTeam": {
       "id": "t772",
@@ -45,6 +47,7 @@
     "id": "wc-537333",
     "stage": "group",
     "group": "B",
+    "matchday": 1,
     "kickoffAt": "2026-06-12T19:00:00Z",
     "homeTeam": {
       "id": "t828",
@@ -66,6 +69,7 @@
     "id": "wc-537345",
     "stage": "group",
     "group": "D",
+    "matchday": 1,
     "kickoffAt": "2026-06-13T01:00:00Z",
     "homeTeam": {
       "id": "t771",
@@ -87,6 +91,7 @@
     "id": "wc-537334",
     "stage": "group",
     "group": "B",
+    "matchday": 1,
     "kickoffAt": "2026-06-13T19:00:00Z",
     "homeTeam": {
       "id": "t8030",
@@ -108,6 +113,7 @@
     "id": "wc-537339",
     "stage": "group",
     "group": "C",
+    "matchday": 1,
     "kickoffAt": "2026-06-13T22:00:00Z",
     "homeTeam": {
       "id": "t764",
@@ -129,6 +135,7 @@
     "id": "wc-537340",
     "stage": "group",
     "group": "C",
+    "matchday": 1,
     "kickoffAt": "2026-06-14T01:00:00Z",
     "homeTeam": {
       "id": "t836",
@@ -150,6 +157,7 @@
     "id": "wc-537346",
     "stage": "group",
     "group": "D",
+    "matchday": 1,
     "kickoffAt": "2026-06-14T04:00:00Z",
     "homeTeam": {
       "id": "t779",
@@ -171,6 +179,7 @@
     "id": "wc-537351",
     "stage": "group",
     "group": "E",
+    "matchday": 1,
     "kickoffAt": "2026-06-14T17:00:00Z",
     "homeTeam": {
       "id": "t759",
@@ -192,6 +201,7 @@
     "id": "wc-537357",
     "stage": "group",
     "group": "F",
+    "matchday": 1,
     "kickoffAt": "2026-06-14T20:00:00Z",
     "homeTeam": {
       "id": "t8601",
@@ -213,6 +223,7 @@
     "id": "wc-537352",
     "stage": "group",
     "group": "E",
+    "matchday": 1,
     "kickoffAt": "2026-06-14T23:00:00Z",
     "homeTeam": {
       "id": "t1935",
@@ -234,6 +245,7 @@
     "id": "wc-537358",
     "stage": "group",
     "group": "F",
+    "matchday": 1,
     "kickoffAt": "2026-06-15T02:00:00Z",
     "homeTeam": {
       "id": "t792",
@@ -255,6 +267,7 @@
     "id": "wc-537369",
     "stage": "group",
     "group": "H",
+    "matchday": 1,
     "kickoffAt": "2026-06-15T16:00:00Z",
     "homeTeam": {
       "id": "t760",
@@ -276,6 +289,7 @@
     "id": "wc-537363",
     "stage": "group",
     "group": "G",
+    "matchday": 1,
     "kickoffAt": "2026-06-15T19:00:00Z",
     "homeTeam": {
       "id": "t805",
@@ -297,6 +311,7 @@
     "id": "wc-537370",
     "stage": "group",
     "group": "H",
+    "matchday": 1,
     "kickoffAt": "2026-06-15T22:00:00Z",
     "homeTeam": {
       "id": "t801",
@@ -318,6 +333,7 @@
     "id": "wc-537364",
     "stage": "group",
     "group": "G",
+    "matchday": 1,
     "kickoffAt": "2026-06-16T01:00:00Z",
     "homeTeam": {
       "id": "t840",
@@ -339,6 +355,7 @@
     "id": "wc-537391",
     "stage": "group",
     "group": "I",
+    "matchday": 1,
     "kickoffAt": "2026-06-16T19:00:00Z",
     "homeTeam": {
       "id": "t773",
@@ -360,6 +377,7 @@
     "id": "wc-537392",
     "stage": "group",
     "group": "I",
+    "matchday": 1,
     "kickoffAt": "2026-06-16T22:00:00Z",
     "homeTeam": {
       "id": "t8062",
@@ -381,6 +399,7 @@
     "id": "wc-537397",
     "stage": "group",
     "group": "J",
+    "matchday": 1,
     "kickoffAt": "2026-06-17T01:00:00Z",
     "homeTeam": {
       "id": "t762",
@@ -402,6 +421,7 @@
     "id": "wc-537398",
     "stage": "group",
     "group": "J",
+    "matchday": 1,
     "kickoffAt": "2026-06-17T04:00:00Z",
     "homeTeam": {
       "id": "t816",
@@ -423,6 +443,7 @@
     "id": "wc-537403",
     "stage": "group",
     "group": "K",
+    "matchday": 1,
     "kickoffAt": "2026-06-17T17:00:00Z",
     "homeTeam": {
       "id": "t765",
@@ -444,6 +465,7 @@
     "id": "wc-537409",
     "stage": "group",
     "group": "L",
+    "matchday": 1,
     "kickoffAt": "2026-06-17T20:00:00Z",
     "homeTeam": {
       "id": "t770",
@@ -465,6 +487,7 @@
     "id": "wc-537410",
     "stage": "group",
     "group": "L",
+    "matchday": 1,
     "kickoffAt": "2026-06-17T23:00:00Z",
     "homeTeam": {
       "id": "t763",
@@ -486,6 +509,7 @@
     "id": "wc-537404",
     "stage": "group",
     "group": "K",
+    "matchday": 1,
     "kickoffAt": "2026-06-18T02:00:00Z",
     "homeTeam": {
       "id": "t8070",
@@ -507,6 +531,7 @@
     "id": "wc-537329",
     "stage": "group",
     "group": "A",
+    "matchday": 2,
     "kickoffAt": "2026-06-18T16:00:00Z",
     "homeTeam": {
       "id": "t798",
@@ -528,6 +553,7 @@
     "id": "wc-537335",
     "stage": "group",
     "group": "B",
+    "matchday": 2,
     "kickoffAt": "2026-06-18T19:00:00Z",
     "homeTeam": {
       "id": "t788",
@@ -549,6 +575,7 @@
     "id": "wc-537336",
     "stage": "group",
     "group": "B",
+    "matchday": 2,
     "kickoffAt": "2026-06-18T22:00:00Z",
     "homeTeam": {
       "id": "t828",
@@ -570,6 +597,7 @@
     "id": "wc-537330",
     "stage": "group",
     "group": "A",
+    "matchday": 2,
     "kickoffAt": "2026-06-19T01:00:00Z",
     "homeTeam": {
       "id": "t769",
@@ -591,6 +619,7 @@
     "id": "wc-537348",
     "stage": "group",
     "group": "D",
+    "matchday": 2,
     "kickoffAt": "2026-06-19T19:00:00Z",
     "homeTeam": {
       "id": "t771",
@@ -612,6 +641,7 @@
     "id": "wc-537342",
     "stage": "group",
     "group": "C",
+    "matchday": 2,
     "kickoffAt": "2026-06-19T22:00:00Z",
     "homeTeam": {
       "id": "t8873",
@@ -633,6 +663,7 @@
     "id": "wc-537341",
     "stage": "group",
     "group": "C",
+    "matchday": 2,
     "kickoffAt": "2026-06-20T00:30:00Z",
     "homeTeam": {
       "id": "t764",
@@ -654,6 +685,7 @@
     "id": "wc-537347",
     "stage": "group",
     "group": "D",
+    "matchday": 2,
     "kickoffAt": "2026-06-20T03:00:00Z",
     "homeTeam": {
       "id": "t803",
@@ -675,6 +707,7 @@
     "id": "wc-537359",
     "stage": "group",
     "group": "F",
+    "matchday": 2,
     "kickoffAt": "2026-06-20T17:00:00Z",
     "homeTeam": {
       "id": "t8601",
@@ -696,6 +729,7 @@
     "id": "wc-537353",
     "stage": "group",
     "group": "E",
+    "matchday": 2,
     "kickoffAt": "2026-06-20T20:00:00Z",
     "homeTeam": {
       "id": "t759",
@@ -717,6 +751,7 @@
     "id": "wc-537354",
     "stage": "group",
     "group": "E",
+    "matchday": 2,
     "kickoffAt": "2026-06-21T00:00:00Z",
     "homeTeam": {
       "id": "t791",
@@ -738,6 +773,7 @@
     "id": "wc-537360",
     "stage": "group",
     "group": "F",
+    "matchday": 2,
     "kickoffAt": "2026-06-21T04:00:00Z",
     "homeTeam": {
       "id": "t802",
@@ -759,6 +795,7 @@
     "id": "wc-537371",
     "stage": "group",
     "group": "H",
+    "matchday": 2,
     "kickoffAt": "2026-06-21T16:00:00Z",
     "homeTeam": {
       "id": "t760",
@@ -780,6 +817,7 @@
     "id": "wc-537365",
     "stage": "group",
     "group": "G",
+    "matchday": 2,
     "kickoffAt": "2026-06-21T19:00:00Z",
     "homeTeam": {
       "id": "t805",
@@ -801,6 +839,7 @@
     "id": "wc-537372",
     "stage": "group",
     "group": "H",
+    "matchday": 2,
     "kickoffAt": "2026-06-21T22:00:00Z",
     "homeTeam": {
       "id": "t758",
@@ -822,6 +861,7 @@
     "id": "wc-537366",
     "stage": "group",
     "group": "G",
+    "matchday": 2,
     "kickoffAt": "2026-06-22T01:00:00Z",
     "homeTeam": {
       "id": "t783",
@@ -843,6 +883,7 @@
     "id": "wc-537399",
     "stage": "group",
     "group": "J",
+    "matchday": 2,
     "kickoffAt": "2026-06-22T17:00:00Z",
     "homeTeam": {
       "id": "t762",
@@ -864,6 +905,7 @@
     "id": "wc-537393",
     "stage": "group",
     "group": "I",
+    "matchday": 2,
     "kickoffAt": "2026-06-22T21:00:00Z",
     "homeTeam": {
       "id": "t773",
@@ -885,6 +927,7 @@
     "id": "wc-537394",
     "stage": "group",
     "group": "I",
+    "matchday": 2,
     "kickoffAt": "2026-06-23T00:00:00Z",
     "homeTeam": {
       "id": "t8872",
@@ -906,6 +949,7 @@
     "id": "wc-537400",
     "stage": "group",
     "group": "J",
+    "matchday": 2,
     "kickoffAt": "2026-06-23T03:00:00Z",
     "homeTeam": {
       "id": "t8049",
@@ -927,6 +971,7 @@
     "id": "wc-537405",
     "stage": "group",
     "group": "K",
+    "matchday": 2,
     "kickoffAt": "2026-06-23T17:00:00Z",
     "homeTeam": {
       "id": "t765",
@@ -948,6 +993,7 @@
     "id": "wc-537411",
     "stage": "group",
     "group": "L",
+    "matchday": 2,
     "kickoffAt": "2026-06-23T20:00:00Z",
     "homeTeam": {
       "id": "t770",
@@ -969,6 +1015,7 @@
     "id": "wc-537412",
     "stage": "group",
     "group": "L",
+    "matchday": 2,
     "kickoffAt": "2026-06-23T23:00:00Z",
     "homeTeam": {
       "id": "t1836",
@@ -990,6 +1037,7 @@
     "id": "wc-537406",
     "stage": "group",
     "group": "K",
+    "matchday": 2,
     "kickoffAt": "2026-06-24T02:00:00Z",
     "homeTeam": {
       "id": "t818",
@@ -1011,6 +1059,7 @@
     "id": "wc-537337",
     "stage": "group",
     "group": "B",
+    "matchday": 3,
     "kickoffAt": "2026-06-24T19:00:00Z",
     "homeTeam": {
       "id": "t788",
@@ -1032,6 +1081,7 @@
     "id": "wc-537338",
     "stage": "group",
     "group": "B",
+    "matchday": 3,
     "kickoffAt": "2026-06-24T19:00:00Z",
     "homeTeam": {
       "id": "t1060",
@@ -1053,6 +1103,7 @@
     "id": "wc-537344",
     "stage": "group",
     "group": "C",
+    "matchday": 3,
     "kickoffAt": "2026-06-24T22:00:00Z",
     "homeTeam": {
       "id": "t815",
@@ -1074,6 +1125,7 @@
     "id": "wc-537343",
     "stage": "group",
     "group": "C",
+    "matchday": 3,
     "kickoffAt": "2026-06-24T22:00:00Z",
     "homeTeam": {
       "id": "t8873",
@@ -1095,6 +1147,7 @@
     "id": "wc-537331",
     "stage": "group",
     "group": "A",
+    "matchday": 3,
     "kickoffAt": "2026-06-25T01:00:00Z",
     "homeTeam": {
       "id": "t798",
@@ -1116,6 +1169,7 @@
     "id": "wc-537332",
     "stage": "group",
     "group": "A",
+    "matchday": 3,
     "kickoffAt": "2026-06-25T01:00:00Z",
     "homeTeam": {
       "id": "t774",
@@ -1137,6 +1191,7 @@
     "id": "wc-537355",
     "stage": "group",
     "group": "E",
+    "matchday": 3,
     "kickoffAt": "2026-06-25T20:00:00Z",
     "homeTeam": {
       "id": "t791",
@@ -1158,6 +1213,7 @@
     "id": "wc-537356",
     "stage": "group",
     "group": "E",
+    "matchday": 3,
     "kickoffAt": "2026-06-25T20:00:00Z",
     "homeTeam": {
       "id": "t9460",
@@ -1179,6 +1235,7 @@
     "id": "wc-537361",
     "stage": "group",
     "group": "F",
+    "matchday": 3,
     "kickoffAt": "2026-06-25T23:00:00Z",
     "homeTeam": {
       "id": "t802",
@@ -1200,6 +1257,7 @@
     "id": "wc-537362",
     "stage": "group",
     "group": "F",
+    "matchday": 3,
     "kickoffAt": "2026-06-25T23:00:00Z",
     "homeTeam": {
       "id": "t766",
@@ -1221,6 +1279,7 @@
     "id": "wc-537349",
     "stage": "group",
     "group": "D",
+    "matchday": 3,
     "kickoffAt": "2026-06-26T02:00:00Z",
     "homeTeam": {
       "id": "t803",
@@ -1242,6 +1301,7 @@
     "id": "wc-537350",
     "stage": "group",
     "group": "D",
+    "matchday": 3,
     "kickoffAt": "2026-06-26T02:00:00Z",
     "homeTeam": {
       "id": "t761",
@@ -1263,6 +1323,7 @@
     "id": "wc-537395",
     "stage": "group",
     "group": "I",
+    "matchday": 3,
     "kickoffAt": "2026-06-26T19:00:00Z",
     "homeTeam": {
       "id": "t8872",
@@ -1284,6 +1345,7 @@
     "id": "wc-537396",
     "stage": "group",
     "group": "I",
+    "matchday": 3,
     "kickoffAt": "2026-06-26T19:00:00Z",
     "homeTeam": {
       "id": "t804",
@@ -1305,6 +1367,7 @@
     "id": "wc-537373",
     "stage": "group",
     "group": "H",
+    "matchday": 3,
     "kickoffAt": "2026-06-27T00:00:00Z",
     "homeTeam": {
       "id": "t758",
@@ -1326,6 +1389,7 @@
     "id": "wc-537374",
     "stage": "group",
     "group": "H",
+    "matchday": 3,
     "kickoffAt": "2026-06-27T00:00:00Z",
     "homeTeam": {
       "id": "t1930",
@@ -1347,6 +1411,7 @@
     "id": "wc-537367",
     "stage": "group",
     "group": "G",
+    "matchday": 3,
     "kickoffAt": "2026-06-27T03:00:00Z",
     "homeTeam": {
       "id": "t783",
@@ -1368,6 +1433,7 @@
     "id": "wc-537368",
     "stage": "group",
     "group": "G",
+    "matchday": 3,
     "kickoffAt": "2026-06-27T03:00:00Z",
     "homeTeam": {
       "id": "t825",
@@ -1389,6 +1455,7 @@
     "id": "wc-537413",
     "stage": "group",
     "group": "L",
+    "matchday": 3,
     "kickoffAt": "2026-06-27T21:00:00Z",
     "homeTeam": {
       "id": "t1836",
@@ -1410,6 +1477,7 @@
     "id": "wc-537414",
     "stage": "group",
     "group": "L",
+    "matchday": 3,
     "kickoffAt": "2026-06-27T21:00:00Z",
     "homeTeam": {
       "id": "t799",
@@ -1431,6 +1499,7 @@
     "id": "wc-537407",
     "stage": "group",
     "group": "K",
+    "matchday": 3,
     "kickoffAt": "2026-06-27T23:30:00Z",
     "homeTeam": {
       "id": "t818",
@@ -1452,6 +1521,7 @@
     "id": "wc-537408",
     "stage": "group",
     "group": "K",
+    "matchday": 3,
     "kickoffAt": "2026-06-27T23:30:00Z",
     "homeTeam": {
       "id": "t1934",
@@ -1473,6 +1543,7 @@
     "id": "wc-537401",
     "stage": "group",
     "group": "J",
+    "matchday": 3,
     "kickoffAt": "2026-06-28T02:00:00Z",
     "homeTeam": {
       "id": "t8049",
@@ -1494,6 +1565,7 @@
     "id": "wc-537402",
     "stage": "group",
     "group": "J",
+    "matchday": 3,
     "kickoffAt": "2026-06-28T02:00:00Z",
     "homeTeam": {
       "id": "t778",
@@ -1515,6 +1587,7 @@
     "id": "wc-537417",
     "stage": "1/16 finału",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-06-28T19:00:00Z",
     "homeTeam": {
       "id": "tbd-537417-h",
@@ -1536,6 +1609,7 @@
     "id": "wc-537423",
     "stage": "1/16 finału",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-06-29T17:00:00Z",
     "homeTeam": {
       "id": "tbd-537423-h",
@@ -1557,6 +1631,7 @@
     "id": "wc-537415",
     "stage": "1/16 finału",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-06-29T20:30:00Z",
     "homeTeam": {
       "id": "tbd-537415-h",
@@ -1578,6 +1653,7 @@
     "id": "wc-537418",
     "stage": "1/16 finału",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-06-30T01:00:00Z",
     "homeTeam": {
       "id": "tbd-537418-h",
@@ -1599,6 +1675,7 @@
     "id": "wc-537424",
     "stage": "1/16 finału",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-06-30T17:00:00Z",
     "homeTeam": {
       "id": "tbd-537424-h",
@@ -1620,6 +1697,7 @@
     "id": "wc-537416",
     "stage": "1/16 finału",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-06-30T21:00:00Z",
     "homeTeam": {
       "id": "tbd-537416-h",
@@ -1641,6 +1719,7 @@
     "id": "wc-537425",
     "stage": "1/16 finału",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-01T01:00:00Z",
     "homeTeam": {
       "id": "tbd-537425-h",
@@ -1662,6 +1741,7 @@
     "id": "wc-537426",
     "stage": "1/16 finału",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-01T16:00:00Z",
     "homeTeam": {
       "id": "tbd-537426-h",
@@ -1683,6 +1763,7 @@
     "id": "wc-537422",
     "stage": "1/16 finału",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-01T20:00:00Z",
     "homeTeam": {
       "id": "tbd-537422-h",
@@ -1704,6 +1785,7 @@
     "id": "wc-537421",
     "stage": "1/16 finału",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-02T00:00:00Z",
     "homeTeam": {
       "id": "tbd-537421-h",
@@ -1725,6 +1807,7 @@
     "id": "wc-537420",
     "stage": "1/16 finału",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-02T19:00:00Z",
     "homeTeam": {
       "id": "tbd-537420-h",
@@ -1746,6 +1829,7 @@
     "id": "wc-537419",
     "stage": "1/16 finału",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-02T23:00:00Z",
     "homeTeam": {
       "id": "tbd-537419-h",
@@ -1767,6 +1851,7 @@
     "id": "wc-537429",
     "stage": "1/16 finału",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-03T03:00:00Z",
     "homeTeam": {
       "id": "tbd-537429-h",
@@ -1788,6 +1873,7 @@
     "id": "wc-537428",
     "stage": "1/16 finału",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-03T18:00:00Z",
     "homeTeam": {
       "id": "tbd-537428-h",
@@ -1809,6 +1895,7 @@
     "id": "wc-537427",
     "stage": "1/16 finału",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-03T22:00:00Z",
     "homeTeam": {
       "id": "tbd-537427-h",
@@ -1830,6 +1917,7 @@
     "id": "wc-537430",
     "stage": "1/16 finału",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-04T01:30:00Z",
     "homeTeam": {
       "id": "tbd-537430-h",
@@ -1851,6 +1939,7 @@
     "id": "wc-537376",
     "stage": "1/8 finału",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-04T17:00:00Z",
     "homeTeam": {
       "id": "tbd-537376-h",
@@ -1872,6 +1961,7 @@
     "id": "wc-537375",
     "stage": "1/8 finału",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-04T21:00:00Z",
     "homeTeam": {
       "id": "tbd-537375-h",
@@ -1893,6 +1983,7 @@
     "id": "wc-537377",
     "stage": "1/8 finału",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-05T20:00:00Z",
     "homeTeam": {
       "id": "tbd-537377-h",
@@ -1914,6 +2005,7 @@
     "id": "wc-537378",
     "stage": "1/8 finału",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-06T00:00:00Z",
     "homeTeam": {
       "id": "tbd-537378-h",
@@ -1935,6 +2027,7 @@
     "id": "wc-537379",
     "stage": "1/8 finału",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-06T19:00:00Z",
     "homeTeam": {
       "id": "tbd-537379-h",
@@ -1956,6 +2049,7 @@
     "id": "wc-537380",
     "stage": "1/8 finału",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-07T00:00:00Z",
     "homeTeam": {
       "id": "tbd-537380-h",
@@ -1977,6 +2071,7 @@
     "id": "wc-537381",
     "stage": "1/8 finału",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-07T16:00:00Z",
     "homeTeam": {
       "id": "tbd-537381-h",
@@ -1998,6 +2093,7 @@
     "id": "wc-537382",
     "stage": "1/8 finału",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-07T20:00:00Z",
     "homeTeam": {
       "id": "tbd-537382-h",
@@ -2019,6 +2115,7 @@
     "id": "wc-537383",
     "stage": "ćwierćfinał",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-09T20:00:00Z",
     "homeTeam": {
       "id": "tbd-537383-h",
@@ -2040,6 +2137,7 @@
     "id": "wc-537384",
     "stage": "ćwierćfinał",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-10T19:00:00Z",
     "homeTeam": {
       "id": "tbd-537384-h",
@@ -2061,6 +2159,7 @@
     "id": "wc-537385",
     "stage": "ćwierćfinał",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-11T21:00:00Z",
     "homeTeam": {
       "id": "tbd-537385-h",
@@ -2082,6 +2181,7 @@
     "id": "wc-537386",
     "stage": "ćwierćfinał",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-12T01:00:00Z",
     "homeTeam": {
       "id": "tbd-537386-h",
@@ -2103,6 +2203,7 @@
     "id": "wc-537387",
     "stage": "półfinał",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-14T19:00:00Z",
     "homeTeam": {
       "id": "tbd-537387-h",
@@ -2124,6 +2225,7 @@
     "id": "wc-537388",
     "stage": "półfinał",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-15T19:00:00Z",
     "homeTeam": {
       "id": "tbd-537388-h",
@@ -2145,6 +2247,7 @@
     "id": "wc-537389",
     "stage": "mecz o 3. miejsce",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-18T21:00:00Z",
     "homeTeam": {
       "id": "tbd-537389-h",
@@ -2166,6 +2269,7 @@
     "id": "wc-537390",
     "stage": "finał",
     "group": null,
+    "matchday": null,
     "kickoffAt": "2026-07-19T19:00:00Z",
     "homeTeam": {
       "id": "tbd-537390-h",
