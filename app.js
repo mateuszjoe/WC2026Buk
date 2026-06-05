@@ -790,6 +790,7 @@ function escapeHtml(s) {
 let saveTimer = null;
 function saveMyPredictionsDebounced() {
   if (!state.user) return;
+  applyMyDraftLocally();
   state.saveMsg = "Zapisywanie…";
   updateSaveIndicator();
   clearTimeout(saveTimer);
@@ -814,6 +815,20 @@ function saveMyPredictionsDebounced() {
     }
     updateSaveIndicator();
   }, 700);
+}
+
+function applyMyDraftLocally() {
+  if (!state.user || !state.myDraft) return;
+  state.predictions[state.user.uid] = {
+    ...(state.predictions[state.user.uid] || {}),
+    name: (state.myDraft.name || "").trim() || state.user.displayName || state.user.email,
+    email: state.user.email,
+    photo: state.user.photoURL || null,
+    avatar: state.myDraft.avatar || state.predictions[state.user.uid]?.avatar || null,
+    nameSet: !!state.myDraft.nameSet,
+    matches: structuredClone(state.myDraft.matches || {}),
+    champion: state.myDraft.champion || null
+  };
 }
 
 // Zapis danych profilu (nick / avatar) — natychmiast, bez opóźnienia.
@@ -1589,7 +1604,9 @@ function rankingHtml() {
 function fsMatchRow(m) {
   const r = getResult(m);
   const finished = Boolean(r);
-  const myPred = state.user ? state.predictions[state.user.uid]?.matches?.[m.id] : null;
+  const myPred = state.user
+    ? confirmedMatchPrediction(state.predictions[state.user.uid]?.matches?.[m.id])
+    : null;
   const hs = r ? r.h : "";
   const as = r ? r.a : "";
   const winH = finished && r.h > r.a;
