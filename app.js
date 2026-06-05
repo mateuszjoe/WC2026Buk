@@ -155,6 +155,16 @@ function advanceBonus(pred, result, m, settings) {
   return pred.adv === actual ? settings.points.advanceBonus ?? 1 : 0;
 }
 
+// Typ po edycji dostaje c:false i jest tylko roboczy. Stare typy bez pola "c"
+// traktujemy jako zatwierdzone, żeby nie wyzerować wcześniejszych obstawień.
+function isConfirmedMatchPrediction(pred) {
+  return Boolean(pred) && pred.c !== false;
+}
+
+function confirmedMatchPrediction(pred) {
+  return isConfirmedMatchPrediction(pred) ? pred : null;
+}
+
 // Zwycięzca turnieju: ręczne ustawienie admina ma pierwszeństwo, a jeśli go nie
 // ma — bierzemy zwycięzcę meczu finałowego (jeśli już rozegrany).
 function getChampionTeamId() {
@@ -201,7 +211,7 @@ function calculateLeaderboard() {
     let advanceCount = 0; // trafione wskazania drużyny awansującej (po remisie w 90')
 
     for (const match of matches) {
-      const pred = p.matches?.[match.id];
+      const pred = confirmedMatchPrediction(p.matches?.[match.id]);
       const result = getResult(match);
       const s = scoreMatch(pred, result, settings);
       if (s.exact) exactCount += 1;
@@ -744,6 +754,11 @@ function standingsTableHtml(matches) {
 // Etykieta punktów dla mojego typu na dany mecz.
 function myPredTag(myPred, result, m) {
   if (!myPred) return "";
+  if (!isConfirmedMatchPrediction(myPred)) {
+    const draftScore =
+      myPred.h !== undefined && myPred.a !== undefined ? `${myPred.h}:${myPred.a}` : "--:--";
+    return `<span class="pts pending">Typ roboczy ${draftScore} · zatwierdź</span>`;
+  }
   const s = scoreMatch(myPred, result, state.settings);
   const bonus = m ? advanceBonus(myPred, result, m, state.settings) : 0;
   const cls = result ? (bonus > 0 || s.exact ? "exact" : s.correct ? "ok" : "miss") : "pending";
@@ -1445,7 +1460,7 @@ function playerModalHtml() {
 
   const picks = state.matches
     .filter((m) => {
-      const pk = p.matches?.[m.id];
+      const pk = confirmedMatchPrediction(p.matches?.[m.id]);
       return pk && (pk.h !== undefined || pk.a !== undefined);
     })
     .sort((a, b) => a.kickoffAt.localeCompare(b.kickoffAt));
@@ -1453,7 +1468,7 @@ function playerModalHtml() {
   const pickRows = picks.length
     ? picks
         .map((m) => {
-          const pk = p.matches[m.id];
+          const pk = confirmedMatchPrediction(p.matches[m.id]);
           const revealed = matchLocked(m) || matchFinished(m);
           const r = getResult(m);
           let right;
@@ -1606,11 +1621,13 @@ function betRow(m) {
   const pred = state.myDraft.matches[m.id] || {};
   const r = getResult(m);
   const finished = Boolean(r);
-  const myp = pred.h !== undefined && pred.a !== undefined ? pred : null;
+  const hasScore = pred.h !== undefined && pred.a !== undefined;
+  const myp = hasScore ? pred : null;
   const tag = finished ? myPredTag(myp, r, m) : "";
   const isKO = isKnockout(m);
   const hasPick = pred.h !== undefined || pred.a !== undefined || pred.adv;
   const canClear = hasPick && !locked;
+  const isConfirmed = hasScore && isConfirmedMatchPrediction(pred);
 
   const teamLine = (team, side) => {
     const val = pred[side] ?? "";
@@ -1621,9 +1638,13 @@ function betRow(m) {
         <span class="fs-flag">${flagImg(team)}</span>
         <span class="bet-name">${escapeHtml(team.name)}</span>
         ${finished ? `<b class="real">${real}</b>` : ""}
-        <input type="number" min="0" inputmode="numeric" class="score-in"
-          data-match="${m.id}" data-side="${side}" value="${val}" ${locked ? "disabled" : ""}
-          aria-label="Twój typ — ${escapeHtml(team.name)}" />
+        <span class="score-stepper">
+          <button type="button" class="step-btn" data-match="${m.id}" data-side="${side}" data-dir="-1" ${locked ? "disabled" : ""} tabindex="-1" aria-label="mniej">−</button>
+          <input type="number" min="0" inputmode="numeric" class="score-in"
+            data-match="${m.id}" data-side="${side}" value="${val}" ${locked ? "disabled" : ""}
+            aria-label="Twój typ — ${escapeHtml(team.name)}" />
+          <button type="button" class="step-btn" data-match="${m.id}" data-side="${side}" data-dir="1" ${locked ? "disabled" : ""} tabindex="-1" aria-label="więcej">+</button>
+        </span>
       </div>`;
   };
 
@@ -1643,12 +1664,24 @@ function betRow(m) {
       ? `<div class="bet-tag et-note">⏱️ Rozstrzygnięty po dogrywce/karnych — czeka na wynik 90' od admina.</div>`
       : "";
 
+  // Akcje: zatwierdzenie typu + wyczyszczenie (gdy jest co i mecz niezablokowany).
+  const actions =
+    canClear
+      ? `<div class="bet-actions">
+           ${
+             isConfirmed
+               ? `<span class="bet-confirmed">✓ Zatwierdzony</span>`
+               : `<button type="button" class="bet-confirm" data-match="${m.id}" ${hasScore ? "" : "disabled"}>✓ Zatwierdź typ</button>`
+           }
+           <button type="button" class="bet-clear" data-match="${m.id}" title="Wyczyść mój typ">✕ wyczyść</button>
+         </div>`
+      : "";
+
   return `
     <div class="bet-row ${locked ? "locked" : ""} ${finished ? "fin" : ""} ${isKO ? "ko" : ""}">
       <div class="bet-meta">
         <span class="fs-time">${fmtShort(m.kickoffAt)}</span>
         ${liveTag(m)}${locked && !finished ? '<span class="lock-tag">🔒</span>' : ""}
-        ${canClear ? `<button type="button" class="bet-clear" data-match="${m.id}" title="Wyczyść mój typ">✕ wyczyść</button>` : ""}
       </div>
       <div class="bet-grid">
         ${teamLine(m.homeTeam, "h")}
@@ -1657,6 +1690,7 @@ function betRow(m) {
       ${tag ? `<div class="bet-tag">${tag}</div>` : ""}
       ${advPick}
       ${etNote}
+      ${actions}
     </div>`;
 }
 
@@ -2340,13 +2374,46 @@ function wireEvents() {
       if (!state.myDraft.matches[id]) state.myDraft.matches[id] = {};
       const n = Number(input.value);
       const v = input.value === "" || isNaN(n) ? undefined : Math.max(0, Math.trunc(n));
-      state.myDraft.matches[id][side] = v;
-      // Usuń pusty typ (oba pola puste i bez wskazania awansu)
       const cur = state.myDraft.matches[id];
+      cur[side] = v;
+      cur.c = false; // zmiana = trzeba zatwierdzić ponownie
+      // Usuń pusty typ (oba pola puste i bez wskazania awansu)
       if (cur.h === undefined && cur.a === undefined && !cur.adv) delete state.myDraft.matches[id];
       saveMyPredictionsDebounced();
     });
   });
+
+  // Moje typy — klikane +/− (wygodne na telefonie)
+  appRoot.querySelectorAll(".step-btn").forEach((b) =>
+    b.addEventListener("click", () => {
+      const id = b.dataset.match;
+      const side = b.dataset.side;
+      const dir = Number(b.dataset.dir) || 0;
+      if (!state.myDraft.matches[id]) state.myDraft.matches[id] = {};
+      const cur = state.myDraft.matches[id];
+      const v0 = typeof cur[side] === "number" ? cur[side] : 0;
+      cur[side] = Math.max(0, v0 + dir);
+      cur.c = false;
+      saveMyPredictionsDebounced();
+      render();
+    })
+  );
+
+  // Moje typy — zatwierdź typ (jasny sygnał, że zapisane)
+  appRoot.querySelectorAll(".bet-confirm").forEach((b) =>
+    b.addEventListener("click", () => {
+      const id = b.dataset.match;
+      const cur = state.myDraft.matches[id];
+      if (!cur) return;
+      if (cur.h === undefined || cur.a === undefined) {
+        alert("Uzupełnij wynik obu drużyn, a potem zatwierdź typ.");
+        return;
+      }
+      cur.c = true;
+      saveMyPredictionsDebounced();
+      render();
+    })
+  );
 
   // Moje typy — wyczyść cały typ meczu (pewne usunięcie „przypadkowych liczb")
   appRoot.querySelectorAll(".bet-clear").forEach((b) =>
@@ -2366,6 +2433,7 @@ function wireEvents() {
       if (!state.myDraft.matches[id]) state.myDraft.matches[id] = {};
       const cur = state.myDraft.matches[id];
       cur.adv = cur.adv === side ? undefined : side; // ponowne kliknięcie = odznacz
+      cur.c = false;
       if (cur.h === undefined && cur.a === undefined && !cur.adv) delete state.myDraft.matches[id];
       saveMyPredictionsDebounced();
       render();
@@ -2591,7 +2659,9 @@ function notifyMatchFinished(m) {
   const title = `⚽ ${m.homeTeam.name} ${r.h}:${r.a} ${m.awayTeam.name}`;
 
   // Komentarz dotyczy TWOJEGO typu na ten mecz.
-  const mine = state.user ? state.predictions[state.user.uid]?.matches?.[m.id] : null;
+  const mine = state.user
+    ? confirmedMatchPrediction(state.predictions[state.user.uid]?.matches?.[m.id])
+    : null;
   let body;
   if (!state.user) {
     body = `Wynik: ${score}. Zaloguj się i typuj, bo tracisz zabawę!`;

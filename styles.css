@@ -719,13 +719,85 @@ details.mini-standings[open] summary { color: var(--text); }
   color: var(--muted); font-weight: 800; font-variant-numeric: tabular-nums;
 }
 .bet-team-row.win .real { color: var(--accent); }
-.bet-team-row input[type="number"] { width: 50px; flex-shrink: 0; padding: 0.45rem 0.3rem; }
+.score-stepper {
+  flex-shrink: 0;
+  display: inline-grid;
+  grid-template-columns: 34px 48px 34px;
+  align-items: center;
+  gap: 0.25rem;
+}
+.step-btn {
+  min-width: 0;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 900;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.step-btn:hover:not([disabled]) { border-color: var(--accent-2); transform: translateY(-1px); }
+.step-btn[disabled] { opacity: 0.45; cursor: default; }
+.bet-team-row input[type="number"] {
+  width: 48px;
+  flex-shrink: 0;
+  padding: 0.45rem 0.25rem;
+  text-align: center;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.bet-team-row input[type="number"]::-webkit-outer-spin-button,
+.bet-team-row input[type="number"]::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+.bet-team-row input[type="number"] { appearance: textfield; }
 .bet-tag { margin-left: auto; flex-shrink: 0; align-self: center; }
 .bet-row.locked { opacity: 0.6; }
+.bet-actions {
+  flex-basis: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.15rem;
+}
+.bet-confirm,
 .bet-clear {
-  border: 0; background: transparent; color: var(--danger);
-  font: inherit; font-size: 0.7rem; font-weight: 700; cursor: pointer;
-  padding: 0.1rem 0; margin-top: 0.1rem; text-align: left; white-space: nowrap;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.bet-confirm {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #06210f;
+  padding: 0.34rem 0.75rem;
+}
+.bet-confirm:hover:not([disabled]) { transform: translateY(-1px); }
+.bet-confirm[disabled] { opacity: 0.5; cursor: not-allowed; }
+.bet-confirmed {
+  border-radius: 999px;
+  background: rgba(54, 211, 153, 0.14);
+  color: var(--accent);
+  font-size: 0.76rem;
+  font-weight: 900;
+  padding: 0.34rem 0.75rem;
+  white-space: nowrap;
+}
+.bet-clear {
+  border: 0;
+  background: transparent;
+  color: var(--danger);
+  padding: 0.34rem 0.15rem;
+  text-align: left;
 }
 .bet-clear:hover { text-decoration: underline; }
 
@@ -1054,7 +1126,9 @@ details.mini-standings[open] summary { color: var(--text); }
 
   /* większe, wygodne pola dotykowe */
   input[type="number"] { min-height: 42px; }
-  .bet-team-row input[type="number"] { width: 54px; }
+  .score-stepper { grid-template-columns: 36px 46px 36px; }
+  .bet-team-row input[type="number"] { width: 46px; }
+  .bet-actions { justify-content: space-between; }
   .tab { padding: 0.5rem 0.8rem; }
 
   /* wiersz typowania: czas u góry, drużyny pełna szerokość */
