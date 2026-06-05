@@ -1126,8 +1126,22 @@ details.mini-standings[open] summary { color: var(--text); }
 
   /* większe, wygodne pola dotykowe */
   input[type="number"] { min-height: 42px; }
-  .score-stepper { grid-template-columns: 36px 46px 36px; }
-  .bet-team-row input[type="number"] { width: 46px; }
+  .bet-team-row { gap: 0.35rem; width: 100%; }
+  .bet-name { font-size: 0.9rem; min-width: 0; }
+  .score-stepper {
+    grid-template-columns: 30px 40px 30px;
+    gap: 0.16rem;
+  }
+  .step-btn {
+    height: 34px;
+    border-radius: 9px;
+    font-size: 0.95rem;
+  }
+  .bet-team-row input[type="number"] {
+    width: 40px;
+    min-height: 34px;
+    padding: 0.35rem 0.15rem;
+  }
   .bet-actions { justify-content: space-between; }
   .tab { padding: 0.5rem 0.8rem; }
 
