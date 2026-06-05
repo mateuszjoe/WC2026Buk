@@ -18,8 +18,11 @@ const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY;
 const VAPID_PUBLIC =
   "BG3cydpyJ5h6UmN4neBM4CIYinuI5uKlaOw4HF10oVHbEjTFUiFzZbvw6LeJSW0h9BIArP7KQwaDVCwa6tXOlh4";
 
-if (!SA || !VAPID_PRIVATE) {
-  console.log("Brak sekretów push (FIREBASE_SERVICE_ACCOUNT / VAPID_PRIVATE_KEY) — pomijam wysyłkę.");
+const missingSecrets = [];
+if (!SA) missingSecrets.push("FIREBASE_SERVICE_ACCOUNT");
+if (!VAPID_PRIVATE) missingSecrets.push("VAPID_PRIVATE_KEY");
+if (missingSecrets.length) {
+  console.log(`Brak sekretów push: ${missingSecrets.join(", ")} — pomijam wysyłkę.`);
   process.exit(0);
 }
 
