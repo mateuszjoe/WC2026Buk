@@ -18,9 +18,13 @@ import {
   doc,
   getDoc,
   setDoc,
+  addDoc,
   deleteDoc,
   onSnapshot,
   collection,
+  query,
+  orderBy,
+  limit,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
@@ -63,6 +67,9 @@ const state = {
   user: null, // zalogowany użytkownik lub null
   view: "ranking", // aktywna zakładka
   matchView: "groups", // układ meczów: "groups" (wg grup) | "dates" (wg dat)
+  chat: [], // wiadomości czatu (najnowsze na dole)
+  chatDraft: "", // treść wpisywanej wiadomości
+  chatImage: null, // załączone zdjęcie (data URL) do wysłania
   myDraft: null, // lokalna kopia MOICH typów (edytowana w formularzu)
   myDraftSeededFor: null, // uid, dla którego zasialiśmy myDraft
   saveMsg: "", // komunikat o zapisie w widoku "Moje typy"
@@ -78,6 +85,7 @@ const VIEWS = [
   { id: "ranking", label: "Ranking" },
   { id: "matches", label: "Mecze" },
   { id: "mine", label: "Moje typy" },
+  { id: "chat", label: "💬 Czat" },
   { id: "profile", label: "Profil", authOnly: true },
   { id: "rules", label: "Regulamin" },
   { id: "admin", label: "Panel admina", adminOnly: true }
@@ -839,6 +847,11 @@ function maybeRender() {
     updateSaveIndicator();
     return;
   }
+  // Na czacie odświeżamy tylko listę wiadomości — nie ruszamy pola pisania.
+  if (state.view === "chat") {
+    updateChatMessages();
+    return;
+  }
   render();
 }
 
@@ -920,6 +933,8 @@ function viewHtml() {
       return matchesHtml();
     case "mine":
       return mineHtml();
+    case "chat":
+      return chatHtml();
     case "profile":
       return profileHtml();
     case "rules":
@@ -929,6 +944,204 @@ function viewHtml() {
     default:
       return "";
   }
+}
+
+// --- Widok: Czat --------------------------------------------------------------
+// Czas wiadomości: "DD.MM HH:MM" (lub "teraz", gdy serwer jeszcze nie nadał czasu).
+function fmtChatTime(ts) {
+  if (!ts || typeof ts.toDate !== "function") return "teraz";
+  return new Intl.DateTimeFormat("pl-PL", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(ts.toDate());
+}
+
+// Zamienia tekst na bezpieczny HTML: linki klikalne, a linki do obrazków/GIF-ów
+// renderowane jako podgląd. Bez osadzania wideo.
+function renderMessageText(text) {
+  const esc = escapeHtml(text || "");
+  return esc.replace(/(https?:\/\/[^\s<]+)/g, (url) => {
+    const clean = url.replace(/[.,!?)]+$/, ""); // bez końcowej interpunkcji
+    if (/\.(gif|png|jpe?g|webp)(\?[^\s]*)?$/i.test(clean)) {
+      return `<a href="${clean}" target="_blank" rel="noopener noreferrer" class="chat-media-link"><img class="chat-img-inline" src="${clean}" alt="" loading="lazy" /></a>`;
+    }
+    return `<a href="${clean}" target="_blank" rel="noopener noreferrer">${clean}</a>`;
+  });
+}
+
+function chatMessagesHtml() {
+  if (!state.chat.length) {
+    return `<p class="chat-empty muted">Cisza jak makiem zasiał… Rzuć pierwszym tekstem. 💬</p>`;
+  }
+  return state.chat
+    .map((m) => {
+      const mine = state.user && m.uid === state.user.uid;
+      const canDel = mine || isAdmin();
+      const prof = { name: m.name, avatar: m.avatar, photo: m.photo };
+      const body =
+        (m.text ? `<div class="chat-text">${renderMessageText(m.text)}</div>` : "") +
+        (m.image ? `<a href="${m.image}" target="_blank" rel="noopener"><img class="chat-img" src="${m.image}" alt="" loading="lazy" /></a>` : "");
+      return `
+        <div class="chat-msg ${mine ? "mine" : ""}">
+          ${avatarHtml(prof, "sm")}
+          <div class="chat-bubble">
+            <div class="chat-head">
+              <span class="chat-name">${escapeHtml(m.name || "Gracz")}</span>
+              <span class="chat-time">${fmtChatTime(m.createdAt)}</span>
+              ${canDel ? `<button class="chat-del" data-id="${escapeHtml(m.id)}" title="Usuń">✕</button>` : ""}
+            </div>
+            ${body}
+          </div>
+        </div>`;
+    })
+    .join("");
+}
+
+function chatHtml() {
+  const messages = chatMessagesHtml();
+  const composer = state.user
+    ? `
+      <div class="chat-composer">
+        ${
+          state.chatImage
+            ? `<div class="chat-attach">
+                 <img src="${state.chatImage}" alt="" />
+                 <button type="button" id="chat-attach-remove" title="Usuń załącznik">✕</button>
+               </div>`
+            : ""
+        }
+        <div class="chat-input-row">
+          <button type="button" class="btn ghost chat-photo" id="chat-photo" title="Dodaj zdjęcie">📷</button>
+          <input type="text" id="chat-text" maxlength="1000" autocomplete="off"
+            placeholder="Napisz coś… (możesz wkleić link do GIF-a / zdjęcia)"
+            value="${escapeHtml(state.chatDraft)}" />
+          <button type="button" class="btn primary" id="chat-send">Wyślij</button>
+        </div>
+        <input type="file" id="chat-file" accept="image/*" hidden />
+        <p class="chat-hint muted small">GIF: skopiuj „link do GIF-a" z Tenora/Giphy i wklej tutaj. Filmów nie wysyłamy.</p>
+      </div>`
+    : `<div class="chat-login">
+         <p class="muted">Zaloguj się, żeby pisać na czacie.</p>
+         <button class="btn primary" id="login-4"><span class="g-dot"></span> Zaloguj przez Google</button>
+       </div>`;
+
+  return `
+    <section class="stack chat-view">
+      <div class="section-head">
+        <div><div class="eyebrow">Pogaduchy, żarty, beka</div><h2>💬 Czat</h2></div>
+      </div>
+      <div class="card chat-card">
+        <div id="chat-messages" class="chat-messages">${messages}</div>
+        ${composer}
+      </div>
+    </section>`;
+}
+
+// Skompresuj wybrane zdjęcie do data URL (max 900 px, JPEG) — by zmieściło się
+// w dokumencie Firestore (bez Firebase Storage).
+function compressImageToDataUrl(file, maxDim = 900, quality = 0.6) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.round(img.naturalWidth * scale);
+      const h = Math.round(img.naturalHeight * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("bad image"));
+    };
+    img.src = url;
+  });
+}
+
+async function attachChatPhoto(file) {
+  if (!file) return;
+  if (!/^image\//.test(file.type)) {
+    alert('To nie jest zdjęcie. Filmów nie wysyłamy.');
+    return;
+  }
+  if (/gif/i.test(file.type)) {
+    // GIF-y z pliku bywają ogromne — w trybie bez Storage prosimy o link.
+    alert('GIF-a wrzuć przez link — w Tenor/Giphy użyj „Kopiuj link do GIF-a” i wklej w polu tekstowym.');
+    return;
+  }
+  try {
+    let dataUrl = await compressImageToDataUrl(file, 900, 0.6);
+    // Awaryjnie zmniejsz jeszcze, gdyby wyszło za duże dla dokumentu Firestore.
+    if (dataUrl.length > 720000) dataUrl = await compressImageToDataUrl(file, 700, 0.5);
+    if (dataUrl.length > 900000) {
+      alert("To zdjęcie jest za duże. Wybierz mniejsze albo wklej linkiem.");
+      return;
+    }
+    state.chatImage = dataUrl;
+    render();
+  } catch (_) {
+    alert("Nie udało się wczytać tego zdjęcia.");
+  }
+}
+
+async function sendChatMessage() {
+  if (!state.user) return;
+  const text = (state.chatDraft || "").trim();
+  const image = state.chatImage || null;
+  if (!text && !image) return;
+  const mp = myProfile();
+  try {
+    await addDoc(collection(db, "chat"), {
+      uid: state.user.uid,
+      name: mp.name,
+      avatar: mp.avatar || null,
+      photo: state.user.photoURL || null,
+      text: text.slice(0, 1000),
+      image,
+      createdAt: serverTimestamp()
+    });
+    state.chatDraft = "";
+    state.chatImage = null;
+    render();
+  } catch (e) {
+    console.error("chat send:", e);
+    alert('Nie udało się wysłać. Czy reguły Firestore dla kolekcji „chat” są opublikowane?');
+  }
+}
+
+// Aktualizacja samej listy wiadomości (bez przebudowy pola pisania), by nie
+// tracić tekstu/kursora, gdy w tle dochodzą nowe wiadomości.
+function updateChatMessages() {
+  const el = document.getElementById("chat-messages");
+  if (!el) return;
+  const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 90;
+  el.innerHTML = chatMessagesHtml();
+  wireChatDeletes();
+  if (nearBottom) el.scrollTop = el.scrollHeight;
+}
+
+function wireChatDeletes() {
+  document.querySelectorAll(".chat-del").forEach((b) =>
+    b.addEventListener("click", async () => {
+      const id = b.dataset.id;
+      if (!id) return;
+      if (!confirm("Usunąć tę wiadomość?")) return;
+      try {
+        await deleteDoc(doc(db, "chat", id));
+      } catch (e) {
+        console.error("chat delete:", e);
+        alert("Nie udało się usunąć wiadomości.");
+      }
+    })
+  );
 }
 
 // --- Widok: Ranking -----------------------------------------------------------
@@ -1620,9 +1833,49 @@ function wireEvents() {
   const login = document.getElementById("login");
   const login2 = document.getElementById("login-2");
   const login3 = document.getElementById("login-3");
+  const login4 = document.getElementById("login-4");
   if (login) login.addEventListener("click", doLogin);
   if (login2) login2.addEventListener("click", doLogin);
   if (login3) login3.addEventListener("click", doLogin);
+  if (login4) login4.addEventListener("click", doLogin);
+
+  // Czat — pole pisania, wysyłka, załączniki, usuwanie
+  const chatText = document.getElementById("chat-text");
+  if (chatText) {
+    chatText.addEventListener("input", () => {
+      state.chatDraft = chatText.value;
+    });
+    chatText.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        sendChatMessage();
+      }
+    });
+  }
+  const chatSend = document.getElementById("chat-send");
+  if (chatSend) chatSend.addEventListener("click", sendChatMessage);
+
+  const chatPhoto = document.getElementById("chat-photo");
+  const chatFile = document.getElementById("chat-file");
+  if (chatPhoto && chatFile) chatPhoto.addEventListener("click", () => chatFile.click());
+  if (chatFile)
+    chatFile.addEventListener("change", () => {
+      const f = chatFile.files && chatFile.files[0];
+      chatFile.value = "";
+      if (f) attachChatPhoto(f);
+    });
+  const chatAttachRemove = document.getElementById("chat-attach-remove");
+  if (chatAttachRemove)
+    chatAttachRemove.addEventListener("click", () => {
+      state.chatImage = null;
+      render();
+    });
+
+  if (state.view === "chat") {
+    wireChatDeletes();
+    const box = document.getElementById("chat-messages");
+    if (box) box.scrollTop = box.scrollHeight; // start na dole (najnowsze)
+  }
 
   const logout = document.getElementById("logout");
   if (logout) logout.addEventListener("click", () => signOut(auth));
@@ -2101,6 +2354,21 @@ function listenToFirestore() {
         maybeRender();
       },
       (err) => console.error("admin/state:", err.message)
+    )
+  );
+
+  // Czat — ostatnie wiadomości (najnowsze na dole).
+  unsubscribers.push(
+    onSnapshot(
+      query(collection(db, "chat"), orderBy("createdAt", "desc"), limit(80)),
+      (snap) => {
+        const arr = [];
+        snap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
+        arr.reverse(); // najstarsze na górze
+        state.chat = arr;
+        if (state.view === "chat") updateChatMessages();
+      },
+      (err) => console.error("chat:", err.message)
     )
   );
 }

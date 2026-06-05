@@ -38,6 +38,18 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Czat: czyta każdy; pisać może zalogowany TYLKO we własnym imieniu (uid),
+    // bez edycji; usuwać może autor lub admin.
+    match /chat/{msgId} {
+      allow read: if true;
+      allow create: if isSignedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() <= 1000;
+      allow update: if false;
+      allow delete: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
+    }
+
     // Subskrypcje push: gracz zapisuje tylko własną; czyta je wyłącznie robot
     // (konto serwisowe pomija reguły), więc klientom czytania zabraniamy.
     match /pushSubs/{uid} {
