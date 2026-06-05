@@ -83,6 +83,7 @@ const matches = data.matches
       id: "wc-" + m.id,
       stage: stagePl(m.stage),
       group: m.group ? m.group.replace("GROUP_", "") : null,
+      matchday: typeof m.matchday === "number" ? m.matchday : null,
       kickoffAt: m.utcDate,
       homeTeam: {
         id: m.homeTeam?.id ? "t" + m.homeTeam.id : "tbd-" + m.id + "-h",

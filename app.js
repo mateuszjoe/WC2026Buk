@@ -253,29 +253,60 @@ function isAdmin() {
 
 // Mecz zamyka się 5 minut PRZED rozpoczęciem.
 const LOCK_BEFORE_MS = 5 * 60 * 1000;
+// Koniec meczu po starcie: 90 min gry + 15 min przerwy = 105 min.
+const MATCH_DURATION_MS = (90 + 15) * 60 * 1000;
 function matchLocked(match) {
   if (!state.settings?.lockPredictionsAtKickoff) return false;
   return Date.now() >= Date.parse(match.kickoffAt) - LOCK_BEFORE_MS;
 }
 
-// Typ mistrza można zmieniać tylko do końca 1. kolejki fazy grupowej.
-// 1. kolejka = po 2 mecze w każdej grupie (czyli liczba_grup * 2 najwcześniejszych
-// meczów grupowych). Blokujemy, gdy ostatni z tych meczów się rozpoczął.
-function championLocked() {
+// Ostatni mecz 1. kolejki fazy grupowej (wg czasu rozpoczęcia).
+// 1. kolejka = po 2 mecze w każdej grupie. Jeśli dane mają numer kolejki
+// (matchday), używamy go; w innym razie bierzemy liczba_grup * 2 najwcześniejszych.
+function lastRoundOneMatch() {
   const groupMatches = state.matches
     .filter((m) => m.stage === "group" && m.group)
     .sort((a, b) => a.kickoffAt.localeCompare(b.kickoffAt));
-  const groupCount = new Set(groupMatches.map((m) => m.group)).size;
-  const roundOneCount = groupCount * 2;
-  const lastOfRoundOne = groupMatches[roundOneCount - 1];
-  if (lastOfRoundOne) {
-    return Date.now() >= Date.parse(lastOfRoundOne.kickoffAt) - LOCK_BEFORE_MS;
+  if (!groupMatches.length) return null;
+  let roundOne;
+  if (groupMatches.some((m) => typeof m.matchday === "number")) {
+    roundOne = groupMatches.filter((m) => m.matchday === 1);
+  } else {
+    const groupCount = new Set(groupMatches.map((m) => m.group)).size;
+    roundOne = groupMatches.slice(0, groupCount * 2);
   }
-  // Fallback, gdyby brakowało danych grupowych.
-  if (state.settings?.championLockAt) {
-    return Date.now() >= Date.parse(state.settings.championLockAt);
-  }
-  return false;
+  if (!roundOne.length) return null;
+  return roundOne.reduce((a, b) => (a.kickoffAt >= b.kickoffAt ? a : b));
+}
+
+// Koniec 1. kolejki = rozpoczęcie ostatniego meczu 1. kolejki + 90 min + 15 min
+// przerwy (timestamp w ms). Date sam ogarnia przejście przez północ na kolejny dzień.
+function roundOneEndMs() {
+  const last = lastRoundOneMatch();
+  if (last) return Date.parse(last.kickoffAt) + MATCH_DURATION_MS;
+  if (state.settings?.championLockAt) return Date.parse(state.settings.championLockAt);
+  return null;
+}
+
+// Typ mistrza można zmieniać tylko DO KOŃCA 1. kolejki (patrz wyżej).
+function championLocked() {
+  const end = roundOneEndMs();
+  return end != null && Date.now() >= end;
+}
+
+// Czytelny termin blokady mistrza (w strefie czasowej gracza).
+function champDeadlineText() {
+  const end = roundOneEndMs();
+  if (end == null) return "";
+  return (
+    " — do " +
+    new Intl.DateTimeFormat("pl-PL", {
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit"
+    }).format(new Date(end))
+  );
 }
 
 // Wynik meczu: najpierw ręczna korekta admina (Firestore), a jeśli jej nie ma —
@@ -1464,7 +1495,7 @@ function mineHtml() {
           ${champTeam ? `<span class="champ-flag">${flagImg(champTeam, "flag big")}</span>` : '<div class="champ-icon">👑</div>'}
           <div>
             <div class="champ-title">Mistrz turnieju${champTeam ? `: ${escapeHtml(champTeam.name)}` : ""}</div>
-            <div class="muted small">+${state.settings.points.tournamentWinner} pkt za trafienie · ${champLocked ? "zablokowane po 1. kolejce" : "można zmieniać do końca 1. kolejki"}</div>
+            <div class="muted small">+${state.settings.points.tournamentWinner} pkt za trafienie · ${champLocked ? "🔒 zablokowane (koniec 1. kolejki)" : `można zmieniać do końca 1. kolejki${champDeadlineText()}`}</div>
           </div>
         </div>
         <select id="champion-select" ${champLocked ? "disabled" : ""}>
