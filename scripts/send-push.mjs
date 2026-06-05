@@ -147,29 +147,25 @@ async function sendTo(entry, payload) {
 
 const jobs = [];
 
-// Nowe wiadomości na czacie — push do wszystkich poza autorem.
+// Nowe wiadomości na czacie — jedno neutralne powiadomienie na osobę.
 if (hasChatState) {
+  const newChatMessages = [];
   for (const msg of chatMessages) {
     const t = timestampMs(msg.createdAt);
     if (!t || t <= lastChatMs) continue;
     lastChatMs = Math.max(lastChatMs, t);
+    newChatMessages.push(msg);
+  }
 
-    const name = msg.name || "Ktoś";
-    const text = String(msg.text || "").trim();
-    const hasImage = Boolean(msg.image);
-    const body = text
-      ? text.slice(0, 120) + (text.length > 120 ? "…" : "")
-      : hasImage
-      ? "wysłał(a) zdjęcie"
-      : "nowa wiadomość";
-
+  if (newChatMessages.length) {
     for (const entry of subs) {
-      if (entry.uid === msg.uid) continue;
+      const hasMessageFromOther = newChatMessages.some((msg) => msg.uid !== entry.uid);
+      if (!hasMessageFromOther) continue;
       jobs.push(
         sendTo(entry, {
-          title: `💬 ${name}`,
-          body,
-          tag: `chat-${msg.id}`,
+          title: "💬 Nowa wiadomość w czacie",
+          body: "Otwórz czat w Typerze.",
+          tag: "chat-new",
           url: "./#chat"
         })
       );
