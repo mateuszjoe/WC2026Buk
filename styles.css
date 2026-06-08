@@ -561,11 +561,32 @@ body::before {
   font-size: 1rem; line-height: 1; padding: 0.2rem 0.3rem; opacity: 0.7;
 }
 .contrib-close:hover { opacity: 1; }
+.contrib-admin { font-weight: 700; white-space: nowrap; }
+/* Zwinięty baner — mały chip */
+.contrib-banner.collapsed { padding: 0; }
+.contrib-collapsed-inner { display: flex; justify-content: flex-end; padding: 0.25rem 0; }
+.contrib-chip {
+  border: 0; cursor: pointer; background: #1d1300; color: var(--gold);
+  font: inherit; font-weight: 800; font-size: 0.78rem;
+  padding: 0.25rem 0.7rem; border-radius: 999px;
+}
+.contrib-chip:hover { filter: brightness(1.15); }
 
 /* Znaczek opłaconej składki + przełącznik w panelu admina */
 .paid-badge { font-size: 0.85rem; vertical-align: middle; }
 .pay-toggle { white-space: nowrap; }
 .pay-toggle.paid { color: var(--accent); border-color: rgba(54, 211, 153, 0.5); }
+
+/* Plakietka liczby w poczekalni na zakładce admina */
+.tab-badge {
+  display: inline-block; min-width: 16px; height: 16px; line-height: 16px;
+  padding: 0 4px; border-radius: 999px; background: var(--danger); color: #fff;
+  font-size: 0.66rem; font-weight: 800; text-align: center; vertical-align: middle;
+}
+/* Poczekalnia — wiersze */
+.player-row.pending { background: rgba(255, 209, 102, 0.07); }
+.player-row.pending .approve-player { white-space: nowrap; }
+.player-row.pending .reject-player { white-space: nowrap; color: var(--danger); }
 
 /* Regulamin — info o składce */
 .rules-pay {

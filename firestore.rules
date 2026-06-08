@@ -28,8 +28,11 @@ service cloud.firestore {
     match /predictions/{uid} {
       allow read: if true;
       allow create: if isSignedIn() && request.auth.uid == uid;
-      // Update: właściciel swojego wpisu LUB admin (np. naprawa nicku).
-      allow update: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
+      // Update: admin może wszystko (zatwierdzanie, nick, opłata). Właściciel może
+      // edytować swój wpis, ale NIE może sam zmienić pola "approved" (poczekalnia).
+      allow update: if isAdmin()
+        || (isSignedIn() && request.auth.uid == uid
+            && request.resource.data.approved == resource.data.approved);
       allow delete: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
     }
 

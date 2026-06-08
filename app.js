@@ -213,7 +213,9 @@ function championProgress(teamId) {
 function calculateLeaderboard() {
   const { settings, matches, predictions } = state;
   const championTeamId = getChampionTeamId();
-  const rows = Object.entries(predictions).map(([uid, p]) => {
+  const rows = Object.entries(predictions)
+    .filter(([, p]) => isApprovedDoc(p)) // poczekalnia: niezatwierdzeni poza rankingiem
+    .map(([uid, p]) => {
     let exactCount = 0;
     let outcomeOnlyCount = 0; // trafiony rezultat, ale nie dokładny wynik
     let advanceCount = 0; // trafione wskazania drużyny awansującej (po remisie w 90')
@@ -270,6 +272,23 @@ function isAdmin() {
   return Boolean(
     state.user && state.settings && state.user.email === state.settings.adminEmail
   );
+}
+
+// --- Poczekalnia (zatwierdzanie nowych uczestników) ---------------------------
+// Stare wpisy bez pola "approved" traktujemy jako zatwierdzone (nie wyrzucamy
+// obecnych graczy). Tylko jawne approved:false oznacza oczekiwanie na zgodę.
+function isApprovedDoc(p) {
+  return Boolean(p) && p.approved !== false;
+}
+function myPending() {
+  if (!state.user || isAdmin()) return false;
+  const mine = state.predictions[state.user.uid];
+  return Boolean(mine) && mine.approved === false;
+}
+function pendingPlayers() {
+  return Object.entries(state.predictions)
+    .filter(([, p]) => p && p.approved === false)
+    .map(([uid, p]) => ({ uid, ...p }));
 }
 
 // Mecz zamyka się 5 minut PRZED rozpoczęciem.
@@ -977,20 +996,42 @@ function myPaid() {
   return !!(state.user && state.predictions[state.user.uid]?.paid);
 }
 
-// Baner "Wpłać składkę" pod zakładkami — tylko dla zalogowanych, znika po
-// zamknięciu (zapamiętane) oraz gdy admin oznaczy gracza jako opłaconego.
+// Liczba zatwierdzonych graczy, którzy NIE są oznaczeni jako opłaceni.
+function unpaidApprovedCount() {
+  return Object.values(state.predictions).filter((p) => isApprovedDoc(p) && !p.paid).length;
+}
+
+// Baner "Wpłać składkę" pod zakładkami. NIE zamykany na stałe — tylko zwijany
+// (do małego chipa). Gracz opłacony go nie widzi. Admin widzi go DOPÓKI jest
+// ktoś nieopłacony (przypomnienie do ścigania składek).
 function contributionBannerHtml() {
-  // Czekaj na dane — inaczej baner mignie zanim wiadomo, że ktoś opłacił/zamknął.
-  if (!state.user || !state.predictionsLoaded || myPaid()) return "";
+  if (!state.user || !state.predictionsLoaded || myPending()) return "";
+  if (isAdmin()) {
+    if (unpaidApprovedCount() === 0) return ""; // wszyscy opłacili — koniec przypominania
+  } else if (myPaid()) {
+    return ""; // opłacony gracz nie widzi baneru
+  }
+  let collapsed = false;
   try {
-    if (localStorage.getItem("contribBannerHidden")) return "";
+    collapsed = localStorage.getItem("contribCollapsed") === "1";
   } catch (_) {}
+  if (collapsed) {
+    return `
+      <div class="contrib-banner collapsed">
+        <div class="container contrib-collapsed-inner">
+          <button class="contrib-chip" id="contrib-expand" title="Rozwiń">💰 Składka ⌄</button>
+        </div>
+      </div>`;
+  }
+  const adminNote = isAdmin()
+    ? ` <span class="contrib-admin">⏳ ${unpaidApprovedCount()} jeszcze nie opłaciło</span>`
+    : "";
   return `
     <div class="contrib-banner">
       <div class="container contrib-inner">
-        <span class="contrib-text">💰 Gramy o pulę! <strong>Wpłać składkę</strong>, żeby liczyć się w walce o kasę (i Harnasia 🍺). Wpłacaj <strong>swoim nickiem z typera</strong>.</span>
+        <span class="contrib-text">💰 Gramy o pulę! <strong>Wpłać składkę</strong> — podpisz wpłatę <strong>swoim nickiem z typera</strong>.${adminNote}</span>
         <a class="btn contrib-pay" href="${ZRZUTKA_URL}" target="_blank" rel="noopener noreferrer">Wpłać składkę</a>
-        <button class="contrib-close" id="contrib-close" title="Ukryj">✕</button>
+        <button class="contrib-close" id="contrib-collapse" title="Zwiń">–</button>
       </div>
     </div>`;
 }
@@ -1006,13 +1047,15 @@ function heroBannerHtml() {
 }
 
 function headerHtml() {
+  const pendCount = isAdmin() ? pendingPlayers().length : 0;
   const tabs = VIEWS.filter(
     (v) => (!v.adminOnly || isAdmin()) && (!v.authOnly || state.user)
   )
-    .map(
-      (v) =>
-        `<button class="tab ${state.view === v.id ? "active" : ""}" data-view="${v.id}">${v.label}</button>`
-    )
+    .map((v) => {
+      const badge =
+        v.id === "admin" && pendCount > 0 ? ` <span class="tab-badge">${pendCount}</span>` : "";
+      return `<button class="tab ${state.view === v.id ? "active" : ""}" data-view="${v.id}">${v.label}${badge}</button>`;
+    })
     .join("");
 
   const account = state.user
@@ -1400,8 +1443,8 @@ function toggleChat(force) {
 function updateChatWidget() {
   const w = document.getElementById("chat-widget");
   if (!w) return;
-  // Czat tylko dla zalogowanych — niezalogowani nie widzą nawet dymka.
-  if (!state.user) {
+  // Czat tylko dla zalogowanych i zatwierdzonych (poczekalnia nie widzi dymka).
+  if (!state.user || myPending()) {
     if (state.chatOpen) toggleChat(false);
     w.style.display = "none";
     return;
@@ -1878,6 +1921,19 @@ function mineHtml() {
       </section>`;
   }
 
+  if (myPending()) {
+    return `
+      <section class="stack">
+        <div class="card login-card">
+          <div class="cup big">⏳</div>
+          <h2>Poczekalnia</h2>
+          <p class="muted">Lista uczestników jest zamknięta — admin musi Cię wpuścić.
+          Gdy zatwierdzi Twój udział, odblokują się typy i wskoczysz do rankingu.</p>
+          <p class="muted small">Daj znać adminowi, że czekasz. Strona odświeży się sama po zatwierdzeniu.</p>
+        </div>
+      </section>`;
+  }
+
   seedMyDraft();
   if (!state.myDraft) {
     return `<section class="stack"><div class="card"><p class="muted center">Wczytywanie Twoich typów…</p></div></section>`;
@@ -2260,6 +2316,26 @@ function adminHtml() {
         .join("")
     : `<p class="muted small">Brak graczy.</p>`;
 
+  const pend = pendingPlayers();
+  const pendingRows = pend.length
+    ? pend
+        .map(
+          (u) => `
+            <div class="player-row pending">
+              <span class="player-cell">
+                ${avatarHtml({ name: u.name, avatar: u.avatar, photo: u.photo })}
+                <span class="player-id">
+                  <span class="player-name">${escapeHtml(u.name || "Gracz")}</span>
+                  ${u.email ? `<span class="muted small block">${escapeHtml(u.email)}</span>` : ""}
+                </span>
+              </span>
+              <button class="btn primary tiny approve-player" data-uid="${escapeHtml(u.uid)}">✅ Wpuść</button>
+              <button class="btn ghost tiny reject-player" data-uid="${escapeHtml(u.uid)}" data-name="${escapeHtml(u.name || "")}">🚫 Odrzuć</button>
+            </div>`
+        )
+        .join("")
+    : `<p class="muted small">Nikt nie czeka. Lista zamknięta — nowi zalogowani trafią tutaj do zatwierdzenia.</p>`;
+
   const rows = state.matches
     .map((m) => {
       const r = state.admin.results?.[m.id] || {};
@@ -2296,6 +2372,15 @@ function adminHtml() {
         ⚙️ Bezpiecznik — na co dzień nie musisz tu nic robić. Wyniki meczów i mistrz
         turnieju (zwycięzca finału) liczą się automatycznie z API. Tu wejdziesz tylko,
         gdy API się spóźni lub poda zły wynik — wtedy ręczna wartość nadpisze automat.
+      </div>
+
+      <div class="card">
+        <div class="section-head compact">
+          <h3 class="card-title">⏳ Poczekalnia (${pend.length})</h3>
+        </div>
+        <p class="muted small">Lista uczestników zamknięta — nowi zalogowani czekają tu na Twoją zgodę.
+          „Wpuść" = dołącza do gry i rankingu. „Odrzuć" = kasuje zgłoszenie.</p>
+        <div class="player-admin-list">${pendingRows}</div>
       </div>
 
       <div class="card">
@@ -2389,11 +2474,20 @@ function wireEvents() {
   const openExternal = document.getElementById("open-external");
   if (openExternal) openExternal.addEventListener("click", openInExternalBrowser);
 
-  const contribClose = document.getElementById("contrib-close");
-  if (contribClose)
-    contribClose.addEventListener("click", () => {
+  // Baner składki — zwijanie / rozwijanie (nie znika na stałe)
+  const contribCollapse = document.getElementById("contrib-collapse");
+  if (contribCollapse)
+    contribCollapse.addEventListener("click", () => {
       try {
-        localStorage.setItem("contribBannerHidden", "1");
+        localStorage.setItem("contribCollapsed", "1");
+      } catch (_) {}
+      render();
+    });
+  const contribExpand = document.getElementById("contrib-expand");
+  if (contribExpand)
+    contribExpand.addEventListener("click", () => {
+      try {
+        localStorage.removeItem("contribCollapsed");
       } catch (_) {}
       render();
     });
@@ -2661,6 +2755,38 @@ function wireEvents() {
       } catch (e) {
         console.error("pay toggle:", e);
         alert("Nie udało się zapisać. Czy reguły Firestore pozwalają adminowi na update? (trzeba je opublikować)");
+      }
+    })
+  );
+
+  // Panel admina — poczekalnia: wpuść gracza
+  appRoot.querySelectorAll(".approve-player").forEach((b) =>
+    b.addEventListener("click", async () => {
+      if (!isAdmin()) return;
+      try {
+        await setDoc(
+          doc(db, "predictions", b.dataset.uid),
+          { approved: true, updatedAt: serverTimestamp() },
+          { merge: true }
+        );
+      } catch (e) {
+        console.error("approve:", e);
+        alert("Nie udało się wpuścić. Czy reguły Firestore pozwalają adminowi na update? (trzeba je opublikować)");
+      }
+    })
+  );
+
+  // Panel admina — poczekalnia: odrzuć zgłoszenie (usuń)
+  appRoot.querySelectorAll(".reject-player").forEach((b) =>
+    b.addEventListener("click", async () => {
+      if (!isAdmin()) return;
+      const name = b.dataset.name || "to zgłoszenie";
+      if (!confirm(`Odrzucić „${name}"? Zniknie z poczekalni.`)) return;
+      try {
+        await deleteDoc(doc(db, "predictions", b.dataset.uid));
+      } catch (e) {
+        console.error("reject:", e);
+        alert("Nie udało się odrzucić. Sprawdź reguły Firestore (delete dla admina).");
       }
     })
   );
@@ -2942,6 +3068,23 @@ function notifyNewLeader(row) {
 }
 
 // Po każdej aktualizacji danych: sprawdź, czy jest o czym powiadomić.
+// Powiadom admina, gdy ktoś nowy wpadnie do poczekalni (po pierwszym wczytaniu).
+function checkPendingNotifications() {
+  if (!isAdmin()) return;
+  const pend = pendingPlayers();
+  if (!state.pendingNotifyInit) {
+    state.pendingSeen = new Set(pend.map((u) => u.uid));
+    state.pendingNotifyInit = true;
+    return;
+  }
+  for (const u of pend) {
+    if (!state.pendingSeen.has(u.uid)) {
+      state.pendingSeen.add(u.uid);
+      notify("🆕 Ktoś czeka w poczekalni", `${u.name || "Nowy gracz"} chce dołączyć — wejdź w Panel admina i wpuść (lub odrzuć).`);
+    }
+  }
+}
+
 function checkNotifications() {
   const board = calculateLeaderboard();
   const leader = board[0]?.uid || null;
@@ -2998,6 +3141,7 @@ function listenToFirestore() {
         const firstLoad = !state.predictionsLoaded;
         state.predictionsLoaded = true;
         checkNotifications();
+        checkPendingNotifications();
         // Po pierwszym wczytaniu zasiej myDraft na świeżo (gdyby ktoś zdążył
         // wejść w "Moje typy" przed danymi) i wymuś pełny render.
         if (firstLoad) {
@@ -3072,12 +3216,16 @@ async function ensureProfileDoc(user) {
     const ref = doc(db, "predictions", user.uid);
     const snap = await getDoc(ref);
     if (snap.exists()) return;
+    // Lista zamknięta: nowy gracz trafia do poczekalni (approved:false).
+    // Admin (Ty) wpada od razu jako zatwierdzony.
+    const autoApproved = user.email === state.settings?.adminEmail;
     await setDoc(ref, {
       name: user.displayName || user.email,
       nameSet: false,
       avatar: null,
       photo: user.photoURL || null,
       email: user.email,
+      approved: autoApproved,
       joinedAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     });
