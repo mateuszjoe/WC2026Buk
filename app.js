@@ -2196,6 +2196,8 @@ function adminHtml() {
                 </span>
               </span>
               <span class="player-pts">${r.total} pkt</span>
+              <button class="btn ghost tiny edit-nick" data-uid="${escapeHtml(r.uid)}"
+                data-name="${escapeHtml(r.name)}" title="Zmień nick">✏️</button>
               <button class="btn ghost tiny del-player" data-uid="${escapeHtml(r.uid)}"
                 data-name="${escapeHtml(r.name)}" ${isMe ? "disabled title=\"Nie usuniesz samego siebie\"" : ""}>🗑️</button>
             </div>`;
@@ -2571,6 +2573,30 @@ function wireEvents() {
       } catch (e) {
         console.error("delete player:", e);
         alert("Nie udało się usunąć. Sprawdź, czy reguły Firestore pozwalają adminowi na delete (trzeba je opublikować w konsoli).");
+      }
+    })
+  );
+
+  // Panel admina — zmiana nicku gracza (np. przywrócenie po nadpisaniu domyślnym z Google)
+  appRoot.querySelectorAll(".edit-nick").forEach((b) =>
+    b.addEventListener("click", async () => {
+      if (!isAdmin()) return;
+      const uid = b.dataset.uid;
+      const current = b.dataset.name || "";
+      const next = prompt(`Nowy nick dla gracza:`, current);
+      if (next === null) return;
+      const v = next.trim();
+      if (!v || v === current) return;
+      try {
+        await setDoc(
+          doc(db, "predictions", uid),
+          { name: v, nameSet: true, updatedAt: serverTimestamp() },
+          { merge: true }
+        );
+        // onSnapshot odświeży listę i ranking
+      } catch (e) {
+        console.error("edit nick:", e);
+        alert("Nie udało się zmienić nicku. Czy reguły Firestore pozwalają adminowi na update? (trzeba je opublikować)");
       }
     })
   );

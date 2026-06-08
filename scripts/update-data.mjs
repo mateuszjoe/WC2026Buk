@@ -108,6 +108,17 @@ const matches = data.matches
   })
   .sort((a, b) => a.kickoffAt.localeCompare(b.kickoffAt));
 
+// BEZPIECZNIK: nie nadpisuj terminarza, jeśli API zwróciło podejrzanie mało meczów
+// (np. {matches: []} przy rate-limicie/chwilowym błędzie z kodem 200). Inaczej
+// cały terminarz i typy "znikają" do następnego przebiegu. MŚ = 104 mecze.
+if (matches.length < 64) {
+  console.error(
+    `API zwróciło tylko ${matches.length} meczów — to wygląda na chwilowy błąd. ` +
+      `NIE nadpisuję data/matches.json (zostawiam ostatnią dobrą wersję).`
+  );
+  process.exit(1);
+}
+
 await writeFile("data/matches.json", JSON.stringify(matches, null, 2) + "\n", "utf8");
 
 const finished = matches.filter((m) => m.homeScore !== null).length;

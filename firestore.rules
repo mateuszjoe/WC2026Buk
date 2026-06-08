@@ -27,7 +27,9 @@ service cloud.firestore {
     // dla każdego z linkiem.
     match /predictions/{uid} {
       allow read: if true;
-      allow create, update: if isSignedIn() && request.auth.uid == uid;
+      allow create: if isSignedIn() && request.auth.uid == uid;
+      // Update: właściciel swojego wpisu LUB admin (np. naprawa nicku).
+      allow update: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
       allow delete: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
     }
 
