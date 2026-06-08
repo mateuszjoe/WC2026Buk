@@ -980,7 +980,8 @@ function myPaid() {
 // Baner "Wpłać składkę" pod zakładkami — tylko dla zalogowanych, znika po
 // zamknięciu (zapamiętane) oraz gdy admin oznaczy gracza jako opłaconego.
 function contributionBannerHtml() {
-  if (!state.user || myPaid()) return "";
+  // Czekaj na dane — inaczej baner mignie zanim wiadomo, że ktoś opłacił/zamknął.
+  if (!state.user || !state.predictionsLoaded || myPaid()) return "";
   try {
     if (localStorage.getItem("contribBannerHidden")) return "";
   } catch (_) {}
