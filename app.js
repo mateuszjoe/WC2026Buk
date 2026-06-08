@@ -63,6 +63,7 @@ const state = {
   settings: null, // data/settings.json
   matches: [], // data/matches.json (posortowane wg daty)
   predictions: {}, // uid -> { name, email, matches:{matchId:{h,a}}, champion, updatedAt }
+  predictionsLoaded: false, // czy snapshot predykcji już dotarł (chroni przed nadpisaniem)
   admin: { results: {}, championTeamId: null }, // dokument admin/state
   user: null, // zalogowany użytkownik lub null
   view: "ranking", // aktywna zakładka
@@ -156,14 +157,15 @@ function advanceBonus(pred, result, m, settings) {
   return pred.adv === actual ? settings.points.advanceBonus ?? 1 : 0;
 }
 
-// Typ po edycji dostaje c:false i jest tylko roboczy. Stare typy bez pola "c"
-// traktujemy jako zatwierdzone, żeby nie wyzerować wcześniejszych obstawień.
+// WAŻNE: typ ZAWSZE się liczy (auto-zapis). Flaga "c" (zatwierdzony) jest tylko
+// kosmetycznym znacznikiem w "Moich typach" — NIE ukrywa typu z punktacji/widoków,
+// bo to wcześniej gubiło edytowane/niezatwierdzone obstawienia.
 function isConfirmedMatchPrediction(pred) {
-  return Boolean(pred) && pred.c !== false;
+  return Boolean(pred) && pred.c === true;
 }
 
 function confirmedMatchPrediction(pred) {
-  return isConfirmedMatchPrediction(pred) ? pred : null;
+  return pred || null;
 }
 
 // Zwycięzca turnieju: ręczne ustawienie admina ma pierwszeństwo, a jeśli go nie
@@ -790,7 +792,7 @@ function escapeHtml(s) {
 
 let saveTimer = null;
 function saveMyPredictionsDebounced() {
-  if (!state.user) return;
+  if (!state.user || !state.predictionsLoaded || !state.myDraft) return;
   applyMyDraftLocally();
   state.saveMsg = "Zapisywanie…";
   updateSaveIndicator();
@@ -834,7 +836,7 @@ function applyMyDraftLocally() {
 
 // Zapis danych profilu (nick / avatar) — natychmiast, bez opóźnienia.
 async function saveProfile() {
-  if (!state.user) return;
+  if (!state.user || !state.predictionsLoaded || !state.myDraft) return;
   try {
     await setDoc(
       doc(db, "predictions", state.user.uid),
@@ -1827,6 +1829,9 @@ function mineHtml() {
   }
 
   seedMyDraft();
+  if (!state.myDraft) {
+    return `<section class="stack"><div class="card"><p class="muted center">Wczytywanie Twoich typów…</p></div></section>`;
+  }
   const champLocked = championLocked();
 
   const teamOptions = getTeams()
@@ -1913,6 +1918,9 @@ function mineHtml() {
 function profileHtml() {
   if (!state.user) return `<p class="muted">Zaloguj się, aby edytować profil.</p>`;
   seedMyDraft();
+  if (!state.myDraft) {
+    return `<section class="stack"><div class="card"><p class="muted center">Wczytywanie profilu…</p></div></section>`;
+  }
   const d = state.myDraft;
   const nameLocked = !!d.nameSet;
   const preview = {
@@ -2636,6 +2644,8 @@ async function doLogin() {
 // Zasiej lokalną kopię typów z tego, co jest w bazie dla zalogowanego gracza
 function seedMyDraft() {
   if (!state.user) return;
+  // Nie zasiewaj, dopóki nie wczytano predykcji — inaczej nadpiszemy nick/typy.
+  if (!state.predictionsLoaded) return;
   if (state.myDraftSeededFor === state.user.uid && state.myDraft) return;
   const mine = state.predictions[state.user.uid];
   state.myDraft = {
@@ -2871,8 +2881,18 @@ function listenToFirestore() {
         const next = {};
         snap.forEach((d) => (next[d.id] = d.data()));
         state.predictions = next;
+        const firstLoad = !state.predictionsLoaded;
+        state.predictionsLoaded = true;
         checkNotifications();
-        maybeRender();
+        // Po pierwszym wczytaniu zasiej myDraft na świeżo (gdyby ktoś zdążył
+        // wejść w "Moje typy" przed danymi) i wymuś pełny render.
+        if (firstLoad) {
+          state.myDraftSeededFor = null;
+          state.myDraft = null;
+          render();
+        } else {
+          maybeRender();
+        }
       },
       (err) => console.error("predictions:", err.message)
     )
