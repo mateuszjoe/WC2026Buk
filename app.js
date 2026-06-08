@@ -58,6 +58,9 @@ const googleProvider = new GoogleAuthProvider();
 const VAPID_PUBLIC =
   "BG3cydpyJ5h6UmN4neBM4CIYinuI5uKlaOw4HF10oVHbEjTFUiFzZbvw6LeJSW0h9BIArP7KQwaDVCwa6tXOlh4";
 
+// Zrzutka na pulę — link w banerze "Wpłać składkę".
+const ZRZUTKA_URL = "https://zrzutka.pl/srymk6";
+
 // --- Stan aplikacji -----------------------------------------------------------
 const state = {
   settings: null, // data/settings.json
@@ -893,6 +896,7 @@ function render() {
     ${inAppWarningHtml()}
     ${heroBannerHtml()}
     ${headerHtml()}
+    ${contributionBannerHtml()}
     <main class="container">
       ${viewHtml()}
     </main>
@@ -941,6 +945,28 @@ function inAppWarningHtml() {
           Kliknij <strong>⋮</strong> w rogu → „Otwórz w przeglądarce".
         </span>
         <button class="btn primary tiny" id="open-external">Otwórz w przeglądarce</button>
+      </div>
+    </div>`;
+}
+
+// Czy zalogowany gracz ma już oznaczoną opłaconą składkę (ustawia admin).
+function myPaid() {
+  return !!(state.user && state.predictions[state.user.uid]?.paid);
+}
+
+// Baner "Wpłać składkę" pod zakładkami — tylko dla zalogowanych, znika po
+// zamknięciu (zapamiętane) oraz gdy admin oznaczy gracza jako opłaconego.
+function contributionBannerHtml() {
+  if (!state.user || myPaid()) return "";
+  try {
+    if (localStorage.getItem("contribBannerHidden")) return "";
+  } catch (_) {}
+  return `
+    <div class="contrib-banner">
+      <div class="container contrib-inner">
+        <span class="contrib-text">💰 Gramy o pulę! <strong>Wpłać składkę</strong>, żeby liczyć się w walce o kasę (i Harnasia 🍺). Wpłacaj <strong>swoim nickiem z typera</strong>.</span>
+        <a class="btn contrib-pay" href="${ZRZUTKA_URL}" target="_blank" rel="noopener noreferrer">Wpłać składkę</a>
+        <button class="contrib-close" id="contrib-close" title="Ukryj">✕</button>
       </div>
     </div>`;
 }
@@ -1559,7 +1585,7 @@ function rankingHtml() {
               <td class="name">
                 <span class="player-cell clickable" data-player="${escapeHtml(r.uid)}" title="Zobacz typy">
                   ${avatarHtml(prof)}
-                  <span class="player-name">${escapeHtml(r.name)}${me ? ' <span class="you">Ty</span>' : ""}</span>
+                  <span class="player-name">${escapeHtml(r.name)}${prof.paid ? ' <span class="paid-badge" title="Składka opłacona">💰</span>' : ""}${me ? ' <span class="you">Ty</span>' : ""}</span>
                 </span>
               </td>
               <td class="total"><strong>${r.total}</strong></td>
@@ -2167,6 +2193,9 @@ function rulesHtml() {
         </div>
         <p class="muted small">Gra toczy się o punkty i pulę ustaloną w grupie — bez prawdziwego bukmachera,
         kursów i płatności w aplikacji. Rozliczenie puli odbywa się między uczestnikami poza serwisem.</p>
+        <p class="rules-pay">💰 <strong>Składkę wpłacasz na zrzutkę</strong>, a w tytule/podpisie wpłaty
+        podaj <strong>swój nick z typera</strong> — inaczej nie skojarzymy wpłaty z Tobą.
+        <a href="${ZRZUTKA_URL}" target="_blank" rel="noopener noreferrer">Otwórz zrzutkę →</a></p>
       </div>
     </section>`;
 }
@@ -2196,6 +2225,8 @@ function adminHtml() {
                 </span>
               </span>
               <span class="player-pts">${r.total} pkt</span>
+              <button class="btn ghost tiny pay-toggle ${prof.paid ? "paid" : ""}" data-uid="${escapeHtml(r.uid)}"
+                data-paid="${prof.paid ? "1" : "0"}" title="${prof.paid ? "Oznacz jako NIEopłacone" : "Oznacz jako opłacone"}">${prof.paid ? "✅ opłacił" : "💰 nieopłac."}</button>
               <button class="btn ghost tiny edit-nick" data-uid="${escapeHtml(r.uid)}"
                 data-name="${escapeHtml(r.name)}" title="Zmień nick">✏️</button>
               <button class="btn ghost tiny del-player" data-uid="${escapeHtml(r.uid)}"
@@ -2333,6 +2364,15 @@ function wireEvents() {
 
   const openExternal = document.getElementById("open-external");
   if (openExternal) openExternal.addEventListener("click", openInExternalBrowser);
+
+  const contribClose = document.getElementById("contrib-close");
+  if (contribClose)
+    contribClose.addEventListener("click", () => {
+      try {
+        localStorage.setItem("contribBannerHidden", "1");
+      } catch (_) {}
+      render();
+    });
 
   // Jednorazowy popup o powiadomieniach (ekran główny)
   const notifyPopEnable = document.getElementById("notify-pop-enable");
@@ -2573,6 +2613,26 @@ function wireEvents() {
       } catch (e) {
         console.error("delete player:", e);
         alert("Nie udało się usunąć. Sprawdź, czy reguły Firestore pozwalają adminowi na delete (trzeba je opublikować w konsoli).");
+      }
+    })
+  );
+
+  // Panel admina — oznaczanie opłaconej składki
+  appRoot.querySelectorAll(".pay-toggle").forEach((b) =>
+    b.addEventListener("click", async () => {
+      if (!isAdmin()) return;
+      const uid = b.dataset.uid;
+      const nowPaid = b.dataset.paid !== "1"; // toggle
+      try {
+        await setDoc(
+          doc(db, "predictions", uid),
+          { paid: nowPaid, updatedAt: serverTimestamp() },
+          { merge: true }
+        );
+        // onSnapshot odświeży listę i baner
+      } catch (e) {
+        console.error("pay toggle:", e);
+        alert("Nie udało się zapisać. Czy reguły Firestore pozwalają adminowi na update? (trzeba je opublikować)");
       }
     })
   );

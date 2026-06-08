@@ -539,6 +539,42 @@ body::before {
 .inapp-warn-text { font-size: 0.86rem; line-height: 1.35; flex: 1; min-width: 200px; }
 .inapp-warn .btn.tiny { white-space: nowrap; }
 
+/* Baner "Wpłać składkę" (pod zakładkami) */
+.contrib-banner {
+  background: linear-gradient(90deg, var(--gold), #f0a500);
+  color: #2a1d00;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+}
+.contrib-inner {
+  display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap;
+  padding: 0.6rem 0;
+}
+.contrib-text { flex: 1; min-width: 200px; font-size: 0.9rem; line-height: 1.35; }
+.contrib-pay {
+  background: #1d1300; color: var(--gold); border: 0; font-weight: 800;
+  padding: 0.45rem 0.95rem; border-radius: 999px; white-space: nowrap;
+  text-decoration: none; display: inline-flex; align-items: center;
+}
+.contrib-pay:hover { filter: brightness(1.15); }
+.contrib-close {
+  border: 0; background: transparent; color: #2a1d00; cursor: pointer;
+  font-size: 1rem; line-height: 1; padding: 0.2rem 0.3rem; opacity: 0.7;
+}
+.contrib-close:hover { opacity: 1; }
+
+/* Znaczek opłaconej składki + przełącznik w panelu admina */
+.paid-badge { font-size: 0.85rem; vertical-align: middle; }
+.pay-toggle { white-space: nowrap; }
+.pay-toggle.paid { color: var(--accent); border-color: rgba(54, 211, 153, 0.5); }
+
+/* Regulamin — info o składce */
+.rules-pay {
+  margin: 0.6rem 0 0; padding: 0.6rem 0.8rem; font-size: 0.86rem; line-height: 1.4;
+  background: rgba(255, 209, 102, 0.12); border: 1px solid rgba(255, 209, 102, 0.4);
+  border-radius: 10px;
+}
+.rules-pay a { color: var(--gold); font-weight: 700; }
+
 /* Przełącznik układu meczów: Wg grup / Wg dat */
 .view-toggle {
   display: inline-flex;
