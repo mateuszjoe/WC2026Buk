@@ -19,6 +19,8 @@ import {
   getDoc,
   setDoc,
   addDoc,
+  updateDoc,
+  deleteField,
   deleteDoc,
   onSnapshot,
   collection,
@@ -821,6 +823,27 @@ function saveMyPredictionsDebounced() {
     }
     updateSaveIndicator();
   }, 700);
+}
+
+// Usuwa typ na dany mecz — LOKALNIE i w bazie (deleteField, bo merge nie kasuje
+// kluczy mapy, przez co wyczyszczony typ wracał po odświeżeniu).
+async function clearMatchPrediction(id) {
+  clearTimeout(saveTimer); // anuluj zaległy merge-zapis, by nie przywrócił klucza
+  if (state.myDraft?.matches) delete state.myDraft.matches[id];
+  const mine = state.predictions[state.user?.uid];
+  if (mine?.matches) delete mine.matches[id];
+  if (!state.user || !state.predictionsLoaded) return;
+  try {
+    await updateDoc(doc(db, "predictions", state.user.uid), {
+      ["matches." + id]: deleteField(),
+      updatedAt: serverTimestamp()
+    });
+    state.saveMsg = "Wyczyszczono ✓";
+  } catch (e) {
+    console.error("clear pred:", e);
+    state.saveMsg = "Błąd czyszczenia — sprawdź reguły Firestore.";
+  }
+  updateSaveIndicator();
 }
 
 function applyMyDraftLocally() {
@@ -2500,9 +2523,12 @@ function wireEvents() {
       const cur = state.myDraft.matches[id];
       cur[side] = v;
       cur.c = false; // zmiana = trzeba zatwierdzić ponownie
-      // Usuń pusty typ (oba pola puste i bez wskazania awansu)
-      if (cur.h === undefined && cur.a === undefined && !cur.adv) delete state.myDraft.matches[id];
-      saveMyPredictionsDebounced();
+      // Pusty typ (oba pola puste i bez awansu) — skasuj realnie z bazy.
+      if (cur.h === undefined && cur.a === undefined && !cur.adv) {
+        clearMatchPrediction(id);
+      } else {
+        saveMyPredictionsDebounced();
+      }
     });
   });
 
@@ -2538,12 +2564,10 @@ function wireEvents() {
     })
   );
 
-  // Moje typy — wyczyść cały typ meczu (pewne usunięcie „przypadkowych liczb")
+  // Moje typy — wyczyść cały typ meczu (realne usunięcie z bazy, deleteField)
   appRoot.querySelectorAll(".bet-clear").forEach((b) =>
-    b.addEventListener("click", () => {
-      const id = b.dataset.match;
-      delete state.myDraft.matches[id];
-      saveMyPredictionsDebounced();
+    b.addEventListener("click", async () => {
+      await clearMatchPrediction(b.dataset.match);
       render();
     })
   );
@@ -2557,8 +2581,11 @@ function wireEvents() {
       const cur = state.myDraft.matches[id];
       cur.adv = cur.adv === side ? undefined : side; // ponowne kliknięcie = odznacz
       cur.c = false;
-      if (cur.h === undefined && cur.a === undefined && !cur.adv) delete state.myDraft.matches[id];
-      saveMyPredictionsDebounced();
+      if (cur.h === undefined && cur.a === undefined && !cur.adv) {
+        clearMatchPrediction(id);
+      } else {
+        saveMyPredictionsDebounced();
+      }
       render();
     })
   );
