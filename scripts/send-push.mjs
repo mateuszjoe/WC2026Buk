@@ -13,6 +13,18 @@ import admin from "firebase-admin";
 import webpush from "web-push";
 import { readFileSync } from "node:fs";
 
+// Wysyłka powiadomień to dodatek — jej błąd NIE może wywalać całego joba
+// (inaczej GitHub Actions wysyła maile o nieudanym przebiegu). Każdy nieobsłużony
+// błąd logujemy i kończymy sukcesem.
+process.on("unhandledRejection", (e) => {
+  console.error("push (unhandledRejection):", e);
+  process.exit(0);
+});
+process.on("uncaughtException", (e) => {
+  console.error("push (uncaughtException):", e);
+  process.exit(0);
+});
+
 const SA = process.env.FIREBASE_SERVICE_ACCOUNT;
 const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY;
 const VAPID_PUBLIC =

@@ -8,6 +8,19 @@
 
 import { writeFile } from "node:fs/promises";
 
+// Chwilowe bledy (np. "fetch failed: other side closed" — zerwane polaczenie z API)
+// NIE moga psuc joba — inaczej GitHub Actions slalby maile o nieudanym przebiegu.
+// Lapiemy je i konczymy SUKCESEM (exit 0), zostawiajac ostatni dobry terminarz.
+process.on("unhandledRejection", (e) => {
+  console.warn("Chwilowy blad (unhandledRejection):", e?.message || e);
+  console.warn("Pomijam aktualizacje — zostaje ostatnia dobra wersja.");
+  process.exit(0);
+});
+process.on("uncaughtException", (e) => {
+  console.warn("Chwilowy blad (uncaughtException):", e?.message || e);
+  process.exit(0);
+});
+
 const TOKEN = process.env.FOOTBALL_DATA_TOKEN;
 if (!TOKEN) {
   console.error("Brak FOOTBALL_DATA_TOKEN. Dodaj sekret w repo: Settings → Secrets → Actions.");
@@ -66,14 +79,17 @@ const res = await fetch("https://api.football-data.org/v4/competitions/WC/matche
 });
 
 if (!res.ok) {
-  console.error("Błąd API football-data.org:", res.status, await res.text());
-  process.exit(1);
+  // Chwilowy problem z API (rate-limit itp.) — NIE psujemy joba (exit 0),
+  // zostawiamy ostatni dobry terminarz. Inaczej GitHub slalby maile o bledzie.
+  console.warn("Chwilowy blad API football-data.org:", res.status, await res.text());
+  console.warn("Pomijam aktualizacje — zostaje ostatnia dobra wersja.");
+  process.exit(0);
 }
 
 const data = await res.json();
 if (!Array.isArray(data.matches)) {
-  console.error("Niespodziewana odpowiedź API (brak pola matches).");
-  process.exit(1);
+  console.warn("Niespodziewana odpowiedz API (brak pola matches) — pomijam aktualizacje.");
+  process.exit(0);
 }
 
 const matches = data.matches
@@ -112,11 +128,12 @@ const matches = data.matches
 // (np. {matches: []} przy rate-limicie/chwilowym błędzie z kodem 200). Inaczej
 // cały terminarz i typy "znikają" do następnego przebiegu. MŚ = 104 mecze.
 if (matches.length < 64) {
-  console.error(
-    `API zwróciło tylko ${matches.length} meczów — to wygląda na chwilowy błąd. ` +
-      `NIE nadpisuję data/matches.json (zostawiam ostatnią dobrą wersję).`
+  // Za malo meczow (pewnie chwilowy blad API) — pomijamy zapis, ale konczymy
+  // sukcesem (exit 0), zeby GitHub nie wysylal maili o nieudanym przebiegu.
+  console.warn(
+    `API zwrocilo tylko ${matches.length} meczow — pomijam zapis (zostaje ostatnia dobra wersja).`
   );
-  process.exit(1);
+  process.exit(0);
 }
 
 await writeFile("data/matches.json", JSON.stringify(matches, null, 2) + "\n", "utf8");
