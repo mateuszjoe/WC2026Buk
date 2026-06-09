@@ -125,11 +125,100 @@ function leaderboard() {
 const board = leaderboard();
 const leader = board[0]?.uid || null;
 
+// --- Fazy turnieju (ogłoszenia przed startem) --------------------------------
+const NOW = Date.now();
+const PHASE_LEAD_MS = 4 * 60 * 60 * 1000; // ogłaszamy ~4h przed pierwszym meczem fazy
+const PHASE_GRACE_MS = 2 * 60 * 60 * 1000; // jeśli okno minęło o >2h — tylko oznacz, nie wysyłaj
+
+function plTime(iso) {
+  return new Intl.DateTimeFormat("pl-PL", {
+    timeZone: "Europe/Warsaw", hour: "2-digit", minute: "2-digit"
+  }).format(new Date(iso));
+}
+function plDate(d) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Warsaw", year: "numeric", month: "2-digit", day: "2-digit"
+  }).format(d);
+}
+function plHour(d) {
+  return Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Warsaw", hour: "2-digit", hour12: false }).format(d));
+}
+function realTeam(t) {
+  return Boolean(t && t.name && t.name !== "TBD" && !String(t.id || "").startsWith("tbd-"));
+}
+function earliest(ms) {
+  return ms.length ? ms.reduce((a, b) => (a.kickoffAt <= b.kickoffAt ? a : b)) : null;
+}
+
+const KO_STAGES = ["1/16 finału", "1/8 finału", "ćwierćfinał", "półfinał", "mecz o 3. miejsce", "finał"];
+const KO_TITLES = {
+  "1/16 finału": "🏆 Faza pucharowa — 1/16 finału!",
+  "1/8 finału": "🏆 1/8 finału!",
+  "ćwierćfinał": "🏆 Ćwierćfinały!",
+  "półfinał": "🏆 Półfinały!",
+  "mecz o 3. miejsce": "🥉 Mecz o 3. miejsce",
+  "finał": "🏆 FINAŁ!"
+};
+
+// Pary z nazwami drużyn (tylko realne, znane drużyny) — nic nie zgadujemy.
+function knockoutPairsBody(stageMatches, stage) {
+  const pairs = stageMatches
+    .filter((m) => realTeam(m.homeTeam) && realTeam(m.awayTeam))
+    .sort((a, b) => a.kickoffAt.localeCompare(b.kickoffAt))
+    .map((m) => `${m.homeTeam.name} – ${m.awayTeam.name}`);
+  const list = pairs.length ? pairs.slice(0, 4).join(", ") + (pairs.length > 4 ? " i inne" : "") + ". " : "";
+  const tail = stage === "finał" ? "Gra się o złoto! ⚽" : "W pucharach przegrany odpada — typuj!";
+  return list + tail;
+}
+
+function buildPhases() {
+  const out = [];
+  const first = earliest(matches);
+  if (first) {
+    out.push({
+      key: "start",
+      first,
+      payload: () => ({
+        title: "⚽ Zaczyna się Mundial!",
+        body: `Pierwszy gwizdek o ${plTime(first.kickoffAt)}: ${first.homeTeam.name} – ${first.awayTeam.name}. Wbijaj i typuj!`
+      })
+    });
+  }
+  for (const md of [2, 3]) {
+    const f = earliest(matches.filter((m) => m.stage === "group" && m.matchday === md));
+    if (!f) continue;
+    out.push({
+      key: "md" + md,
+      first: f,
+      payload: () =>
+        md === 3
+          ? { title: "📅 Ostatnia kolejka w grupach!", body: "Dziś rozstrzyga się awans z grup — wytypuj dzisiejsze mecze, zanim padnie pierwszy gwizdek." }
+          : { title: "📅 Rusza 2. kolejka grupowa", body: "Druga seria meczów w grupach. Uzupełnij typy przed startem!" }
+    });
+  }
+  for (const stage of KO_STAGES) {
+    const stageMatches = matches.filter((m) => m.stage === stage);
+    const f = earliest(stageMatches);
+    if (!f) continue;
+    out.push({
+      key: "stage:" + stage,
+      first: f,
+      payload: () => ({ title: KO_TITLES[stage] || "🏆 " + stage, body: knockoutPairsBody(stageMatches, stage) })
+    });
+  }
+  return out;
+}
+const phases = buildPhases();
+
 // --- Pierwszy przebieg: ustal punkt odniesienia, nie spamuj -------------------
 if (!stateDoc.exists) {
   const finished = matches.filter((m) => getResult(m)).map((m) => m.id);
   const lastChatMs = chatMessages.reduce((max, msg) => Math.max(max, timestampMs(msg.createdAt)), 0);
-  await stateRef.set({ notified: finished, lastLeader: leader, lastChatMs });
+  // Fazy, których okno już się otworzyło — uznaj za ogłoszone, by nie zalać przy starcie.
+  const alreadyOpen = phases
+    .filter((ph) => NOW >= Date.parse(ph.first.kickoffAt) - PHASE_LEAD_MS)
+    .map((ph) => ph.key);
+  await stateRef.set({ notified: finished, lastLeader: leader, lastChatMs, announcedPhases: alreadyOpen, typeReminders: {} });
   console.log("Pierwszy przebieg — zapamiętano stan, bez wysyłki.");
   process.exit(0);
 }
@@ -224,8 +313,59 @@ if (leader && leader !== lastLeader && board[0].total > 0) {
   }
 }
 
+// --- Ogłoszenia faz turnieju (do wszystkich subskrybentów) -------------------
+const announced = new Set(pstate.announcedPhases || []);
+for (const ph of phases) {
+  if (announced.has(ph.key)) continue;
+  const start = Date.parse(ph.first.kickoffAt);
+  if (NOW < start - PHASE_LEAD_MS) continue; // jeszcze za wcześnie
+  announced.add(ph.key); // oznacz raz (niezależnie od wysyłki)
+  if (NOW > start + PHASE_GRACE_MS) continue; // okno minęło (np. robot spał) — nie wysyłaj
+  const payload = ph.payload();
+  for (const entry of subs) {
+    jobs.push(sendTo(entry, { ...payload, tag: "phase-" + ph.key, url: "./#mine" }));
+  }
+}
+
+// --- Poranne przypomnienie o nietypowanych meczach na dziś (per gracz) -------
+const today = plDate(new Date(NOW));
+const typeReminders = { ...(pstate.typeReminders || {}) };
+if (plHour(new Date(NOW)) >= 8) {
+  const todaysMatches = matches.filter(
+    (m) =>
+      realTeam(m.homeTeam) &&
+      realTeam(m.awayTeam) &&
+      plDate(new Date(m.kickoffAt)) === today &&
+      Date.parse(m.kickoffAt) > NOW // jeszcze się nie zaczął — można typować
+  );
+  if (todaysMatches.length) {
+    for (const entry of subs) {
+      const p = predictions[entry.uid];
+      if (!p || p.approved === false) continue; // poczekalnia nie typuje
+      if (typeReminders[entry.uid] === today) continue; // już dziś przypomniano
+      const untyped = todaysMatches.filter((m) => {
+        const pk = p.matches?.[m.id];
+        return !(pk && pk.h != null && pk.a != null);
+      });
+      if (!untyped.length) continue;
+      typeReminders[entry.uid] = today;
+      jobs.push(
+        sendTo(entry, {
+          title: "⏰ Wytypuj dzisiejsze mecze!",
+          body: `Masz ${untyped.length} ${untyped.length === 1 ? "nieobstawiony mecz" : "nieobstawionych meczów"} na dziś. Zdążysz przed gwizdkiem — wbijaj!`,
+          tag: "type-reminder",
+          url: "./#mine"
+        })
+      );
+    }
+  }
+}
+
 const settled = await Promise.allSettled(jobs);
 const sent = settled.filter((r) => r.status === "fulfilled" && r.value?.ok).length;
 const failed = settled.length - sent;
-await stateRef.set({ notified: [...notified], lastLeader, lastChatMs }, { merge: true });
+await stateRef.set(
+  { notified: [...notified], lastLeader, lastChatMs, announcedPhases: [...announced], typeReminders },
+  { merge: true }
+);
 console.log(`Wysłano ${sent}/${jobs.length} powiadomień (błędy: ${failed}, subskrypcji: ${subs.length}).`);
