@@ -653,7 +653,9 @@ body::before {
   gap: 1rem;
   align-items: start;
 }
-.group-block { padding: 1rem 1.1rem 0.7rem; }
+/* min-width:0 — bez tego element siatki (domyślnie min-width:auto = min-content)
+   nie kurczył się poniżej szerokości tabeli grupy i rozpychał stronę z prawej. */
+.group-block { padding: 1rem 1.1rem 0.7rem; min-width: 0; }
 .group-head {
   display: flex;
   align-items: center;
@@ -1200,7 +1202,10 @@ details.mini-standings[open] summary { color: var(--text); }
     padding: 0.35rem 0.15rem;
   }
   .bet-actions { justify-content: space-between; }
-  .tab { padding: 0.5rem 0.8rem; }
+  /* zakładki: ciaśniej, by 5 pozycji zmieściło się bez przewijania (admin z 6
+     nadal płynnie przewija dzięki overflow-x:auto na .tabs) */
+  .tabs { gap: 0.1rem; }
+  .tab { padding: 0.5rem 0.5rem; font-size: 0.84rem; white-space: nowrap; }
 
   /* wiersz typowania: czas u góry, drużyny pełna szerokość */
   .bet-row { flex-wrap: wrap; gap: 0.3rem 0.6rem; }
@@ -1208,10 +1213,22 @@ details.mini-standings[open] summary { color: var(--text); }
   .bet-grid { flex-basis: 100%; }
   .bet-tag { margin-left: 0; flex-basis: 100%; text-align: right; }
 
-  /* tabela grupy: zostaw najważniejsze kolumny (M, Bramki, Pkt) */
+  /* tabela grupy: zostaw najważniejsze kolumny (M, Bramki, Pkt) i WYMUŚ zmieszczenie
+     w karcie. Bez table-layout:fixed tabela rozpychała się do ~390px (nazwy drużyn
+     nie były ucinane) i ucinała stronę z prawej. Fixed + stałe wąskie kolumny
+     liczbowe + ellipsis na nazwie = tabela zawsze = szerokość karty. */
+  .standings { table-layout: fixed; width: 100%; }
+  .standings th, .standings td { padding: 0.32rem 0.1rem; }
   .standings th:nth-child(4), .standings td:nth-child(4),
   .standings th:nth-child(5), .standings td:nth-child(5),
   .standings th:nth-child(6), .standings td:nth-child(6) { display: none; }
+  .standings th:first-child, .standings td.pos { width: 20px; }
+  .standings th:nth-child(3), .standings td:nth-child(3) { width: 24px; }   /* M */
+  .standings th:nth-child(7), .standings td.gd { width: 50px; }             /* Bramki */
+  .standings th:nth-child(8), .standings td.pts { width: 30px; }            /* Pkt */
+  .standings td.t, .standings th.t {
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
 
   /* ranking: na telefonie tylko # · gracz · suma (rozbicie na większym ekranie) */
   .leaderboard th:nth-child(4), .leaderboard td:nth-child(4),
