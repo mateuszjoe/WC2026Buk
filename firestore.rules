@@ -30,9 +30,11 @@ service cloud.firestore {
       allow create: if isSignedIn() && request.auth.uid == uid;
       // Update: admin może wszystko (zatwierdzanie, nick, opłata). Właściciel może
       // edytować swój wpis, ale NIE może sam zmienić pola "approved" (poczekalnia).
+      // .get(...,false): starzy gracze nie mają pola "approved" — bez tego reguła
+      // sięgała po nieistniejące pole i Firestore ODRZUCAŁ im każdy zapis typów.
       allow update: if isAdmin()
         || (isSignedIn() && request.auth.uid == uid
-            && request.resource.data.approved == resource.data.approved);
+            && request.resource.data.get('approved', false) == resource.data.get('approved', false));
       allow delete: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
     }
 
