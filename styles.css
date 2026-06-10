@@ -20,7 +20,22 @@
 
 * { box-sizing: border-box; }
 
-html, body { margin: 0; padding: 0; width: 100%; max-width: 100%; overflow-x: hidden; }
+html, body, #app {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+}
+html.vv-mobile,
+html.vv-mobile body,
+html.vv-mobile #app {
+  width: var(--app-vw, 100%);
+  max-width: var(--app-vw, 100%);
+}
+html.vv-mobile { scrollbar-gutter: auto; }
+img, video, canvas, svg { max-width: 100%; }
 /* Zawsze rezerwuj miejsce na pionowy pasek przewijania, żeby wycentrowany
    kontener nie „skakał" w bok, gdy po doczytaniu treści scrollbar się pojawia. */
 html { scrollbar-gutter: stable; overflow-y: scroll; }
@@ -65,16 +80,31 @@ body {
   gap: 1rem;
   padding: 0.9rem 0;
 }
-.brand { display: flex; align-items: center; gap: 0.7rem; }
+.header-inner, .brand, .account { min-width: 0; }
+.brand { display: flex; align-items: center; gap: 0.7rem; flex: 1 1 auto; overflow: hidden; }
+.brand > div { min-width: 0; }
 .cup {
   font-size: 1.6rem;
   filter: drop-shadow(0 2px 6px rgba(255, 209, 102, 0.4));
 }
 .cup.big { font-size: 3rem; }
-.brand-title { font-weight: 800; font-size: 1.05rem; line-height: 1.1; }
-.brand-sub { color: var(--muted); font-size: 0.78rem; }
+.brand-title {
+  font-weight: 800;
+  font-size: 1.05rem;
+  line-height: 1.1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.brand-sub {
+  color: var(--muted);
+  font-size: 0.78rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-.account { display: flex; align-items: center; gap: 0.6rem; }
+.account { display: flex; align-items: center; gap: 0.6rem; flex: 0 0 auto; }
 .who { color: var(--muted); font-size: 0.85rem; max-width: 38vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .tabs {
@@ -1129,6 +1159,7 @@ details.mini-standings[open] summary { color: var(--text); }
 .rr-more { font-size: 0.6rem; color: var(--muted); margin-left: 2px; }
 
 @media (max-width: 560px) {
+  html { scrollbar-gutter: auto; }
   .chat-widget { right: 12px; bottom: 12px; }
   /* Panel na position:fixed, by JS mógł go trzymać nad klawiaturą (VisualViewport). */
   .chat-panel {
@@ -1181,6 +1212,16 @@ details.mini-standings[open] summary { color: var(--text); }
 @media (max-width: 560px) {
   .container { width: 100%; max-width: 100%; padding-left: 14px; padding-right: 14px; }
   main.container { padding: 1.1rem 14px 3rem; }
+  .header-inner { gap: 0.65rem; padding: 0.75rem 14px; }
+  .inapp-warn-inner { padding: 0.7rem 14px; }
+  .contrib-inner { padding: 0.6rem 14px; }
+  .contrib-collapsed-inner { padding: 0.25rem 14px; }
+  .cup { font-size: 1.35rem; }
+  .brand-title { max-width: 46vw; font-size: 0.92rem; }
+  .brand-sub { max-width: 46vw; font-size: 0.68rem; }
+  .account { gap: 0.45rem; }
+  .account .btn, #login { padding: 0.48rem 0.65rem; font-size: 0.82rem; }
+  #login { max-width: 150px; justify-content: center; line-height: 1.15; text-align: center; }
   .who { display: none; }
   h2 { font-size: 1.25rem; }
   .card { padding: 0.9rem; border-radius: 14px; }
@@ -1245,3 +1286,102 @@ details.mini-standings[open] summary { color: var(--text); }
   .pred-row { flex-direction: column; align-items: stretch; }
   .pred-inputs { justify-content: flex-end; }
 }
+
+/* Fallback for Opera/DevTools reloads where CSS viewport stays desktop-wide,
+   but visualViewport reports the real narrow preview width. */
+html.vv-mobile .chat-widget { right: 12px; bottom: 12px; }
+html.vv-mobile .chat-panel {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  width: auto;
+  height: calc(100dvh - 24px);
+  max-height: none;
+}
+html.vv-mobile .group-grid { grid-template-columns: 1fr; }
+html.vv-mobile .container {
+  width: 100%;
+  max-width: 100%;
+  padding-left: 14px;
+  padding-right: 14px;
+}
+html.vv-mobile main.container { padding: 1.1rem 14px 3rem; }
+html.vv-mobile .header-inner { gap: 0.65rem; padding: 0.75rem 14px; }
+html.vv-mobile .inapp-warn-inner { padding: 0.7rem 14px; }
+html.vv-mobile .contrib-inner { padding: 0.6rem 14px; }
+html.vv-mobile .contrib-collapsed-inner { padding: 0.25rem 14px; }
+html.vv-mobile .cup { font-size: 1.35rem; }
+html.vv-mobile .brand-title { max-width: calc(var(--app-vw, 100vw) * 0.46); font-size: 0.92rem; }
+html.vv-mobile .brand-sub { max-width: calc(var(--app-vw, 100vw) * 0.46); font-size: 0.68rem; }
+html.vv-mobile .account { gap: 0.45rem; }
+html.vv-mobile .account .btn,
+html.vv-mobile #login { padding: 0.48rem 0.65rem; font-size: 0.82rem; }
+html.vv-mobile #login {
+  max-width: 150px;
+  justify-content: center;
+  line-height: 1.15;
+  text-align: center;
+}
+html.vv-mobile .who { display: none; }
+html.vv-mobile h2 { font-size: 1.25rem; }
+html.vv-mobile .card { padding: 0.9rem; border-radius: 14px; }
+html.vv-mobile .group-block { padding: 0.9rem 0.85rem 0.6rem; }
+html.vv-mobile input[type="number"] { min-height: 42px; }
+html.vv-mobile .bet-team-row { gap: 0.35rem; width: 100%; }
+html.vv-mobile .bet-name { font-size: 0.9rem; min-width: 0; }
+html.vv-mobile .score-stepper {
+  grid-template-columns: 30px 40px 30px;
+  gap: 0.16rem;
+}
+html.vv-mobile .step-btn {
+  height: 34px;
+  border-radius: 9px;
+  font-size: 0.95rem;
+}
+html.vv-mobile .bet-team-row input[type="number"] {
+  width: 40px;
+  min-height: 34px;
+  padding: 0.35rem 0.15rem;
+}
+html.vv-mobile .bet-actions { justify-content: space-between; }
+html.vv-mobile .tabs { gap: 0.1rem; }
+html.vv-mobile .tab { padding: 0.5rem 0.5rem; font-size: 0.84rem; white-space: nowrap; }
+html.vv-mobile .bet-row { flex-wrap: wrap; gap: 0.3rem 0.6rem; }
+html.vv-mobile .bet-meta { width: auto; flex-direction: row; gap: 0.5rem; align-items: center; }
+html.vv-mobile .bet-grid { flex-basis: 100%; }
+html.vv-mobile .bet-tag { margin-left: 0; flex-basis: 100%; text-align: right; }
+html.vv-mobile .standings { table-layout: fixed; width: 100%; }
+html.vv-mobile .standings th,
+html.vv-mobile .standings td { padding: 0.32rem 0.1rem; }
+html.vv-mobile .standings th:nth-child(4),
+html.vv-mobile .standings td:nth-child(4),
+html.vv-mobile .standings th:nth-child(5),
+html.vv-mobile .standings td:nth-child(5),
+html.vv-mobile .standings th:nth-child(6),
+html.vv-mobile .standings td:nth-child(6),
+html.vv-mobile .standings th:nth-child(7),
+html.vv-mobile .standings td.gd { display: none; }
+html.vv-mobile .standings th:first-child,
+html.vv-mobile .standings td.pos { width: 22px; }
+html.vv-mobile .standings th:nth-child(3),
+html.vv-mobile .standings td:nth-child(3) { width: 30px; }
+html.vv-mobile .standings th:nth-child(8),
+html.vv-mobile .standings td.pts { width: 34px; }
+html.vv-mobile .standings td.t,
+html.vv-mobile .standings th.t {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+html.vv-mobile .leaderboard th:nth-child(4),
+html.vv-mobile .leaderboard td:nth-child(4),
+html.vv-mobile .leaderboard th:nth-child(5),
+html.vv-mobile .leaderboard td:nth-child(5),
+html.vv-mobile .leaderboard th:nth-child(6),
+html.vv-mobile .leaderboard td:nth-child(6) { display: none; }
+html.vv-mobile .leaderboard td,
+html.vv-mobile .leaderboard th { padding: 0.6rem 0.5rem; }
+html.vv-mobile .leaderboard .cnt { display: none; }
+html.vv-mobile .pred-row { flex-direction: column; align-items: stretch; }
+html.vv-mobile .pred-inputs { justify-content: flex-end; }

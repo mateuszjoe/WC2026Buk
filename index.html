@@ -16,6 +16,36 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Typer MŚ" />
 
+    <script>
+      (function () {
+        function syncAppViewport() {
+          var vv = window.visualViewport;
+          var candidates = [
+            window.innerWidth,
+            vv && vv.width
+          ].filter(function (v) {
+            return typeof v === "number" && isFinite(v) && v > 0;
+          });
+          var width = Math.round(Math.min.apply(Math, candidates));
+          var root = document.documentElement;
+          var compact = width <= 560;
+          root.style.setProperty("--app-vw", width + "px");
+          root.style.scrollbarGutter = compact ? "auto" : "";
+          root.classList.toggle("vv-mobile", compact);
+        }
+        syncAppViewport();
+        requestAnimationFrame(syncAppViewport);
+        setTimeout(syncAppViewport, 0);
+        setTimeout(syncAppViewport, 250);
+        window.addEventListener("resize", syncAppViewport, { passive: true });
+        window.addEventListener("DOMContentLoaded", syncAppViewport, { passive: true });
+        window.addEventListener("load", syncAppViewport, { passive: true });
+        if (window.visualViewport) {
+          window.visualViewport.addEventListener("resize", syncAppViewport, { passive: true });
+        }
+      })();
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
