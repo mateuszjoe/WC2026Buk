@@ -26,6 +26,14 @@
           ].filter(function (v) {
             return typeof v === "number" && isFinite(v) && v > 0;
           });
+          var screenCandidates = [
+            window.screen && window.screen.width,
+            window.screen && window.screen.availWidth
+          ].filter(function (v) {
+            return typeof v === "number" && isFinite(v) && v > 0;
+          });
+          var screenWidth = Math.min.apply(Math, screenCandidates);
+          if (screenWidth <= 760) candidates.push(screenWidth);
           var width = Math.round(Math.min.apply(Math, candidates));
           var root = document.documentElement;
           var compact = width <= 560;
