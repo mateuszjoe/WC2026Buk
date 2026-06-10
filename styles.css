@@ -1219,13 +1219,15 @@ details.mini-standings[open] summary { color: var(--text); }
      liczbowe + ellipsis na nazwie = tabela zawsze = szerokość karty. */
   .standings { table-layout: fixed; width: 100%; }
   .standings th, .standings td { padding: 0.32rem 0.1rem; }
+  /* mało miejsca na telefonie: pokazujemy tylko pozycję, drużynę, M i Pkt
+     (chowamy Z, R, P oraz Bramki) — nazwa drużyny dostaje więcej miejsca */
   .standings th:nth-child(4), .standings td:nth-child(4),
   .standings th:nth-child(5), .standings td:nth-child(5),
-  .standings th:nth-child(6), .standings td:nth-child(6) { display: none; }
-  .standings th:first-child, .standings td.pos { width: 20px; }
-  .standings th:nth-child(3), .standings td:nth-child(3) { width: 24px; }   /* M */
-  .standings th:nth-child(7), .standings td.gd { width: 50px; }             /* Bramki */
-  .standings th:nth-child(8), .standings td.pts { width: 30px; }            /* Pkt */
+  .standings th:nth-child(6), .standings td:nth-child(6),
+  .standings th:nth-child(7), .standings td.gd { display: none; }
+  .standings th:first-child, .standings td.pos { width: 22px; }
+  .standings th:nth-child(3), .standings td:nth-child(3) { width: 30px; }   /* M */
+  .standings th:nth-child(8), .standings td.pts { width: 34px; }            /* Pkt */
   .standings td.t, .standings th.t {
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
