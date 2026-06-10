@@ -21,6 +21,9 @@
 * { box-sizing: border-box; }
 
 html, body { margin: 0; padding: 0; width: 100%; max-width: 100%; overflow-x: hidden; }
+/* Zawsze rezerwuj miejsce na pionowy pasek przewijania, żeby wycentrowany
+   kontener nie „skakał" w bok, gdy po doczytaniu treści scrollbar się pojawia. */
+html { scrollbar-gutter: stable; overflow-y: scroll; }
 
 body {
   font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
