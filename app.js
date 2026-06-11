@@ -1074,21 +1074,12 @@ function myPaid() {
   return !!(state.user && state.predictions[state.user.uid]?.paid);
 }
 
-// Liczba zatwierdzonych graczy, którzy NIE są oznaczeni jako opłaceni.
-function unpaidApprovedCount() {
-  return Object.values(state.predictions).filter((p) => isApprovedDoc(p) && !p.paid).length;
-}
-
 // Baner "Wpłać składkę" pod zakładkami. NIE zamykany na stałe — tylko zwijany
-// (do małego chipa). Gracz opłacony go nie widzi. Admin widzi go DOPÓKI jest
-// ktoś nieopłacony (przypomnienie do ścigania składek).
+// (do małego chipa). Widzą go TYLKO nieopłaceni gracze. Admin go nie widzi
+// (kto nie zapłacił sprawdza w panelu admina), opłacony gracz też nie.
 function contributionBannerHtml() {
   if (!state.user || !state.predictionsLoaded || myPending()) return "";
-  if (isAdmin()) {
-    if (unpaidApprovedCount() === 0) return ""; // wszyscy opłacili — koniec przypominania
-  } else if (myPaid()) {
-    return ""; // opłacony gracz nie widzi baneru
-  }
+  if (isAdmin() || myPaid()) return ""; // admin i opłaceni gracze nie widzą baneru
   let collapsed = false;
   try {
     collapsed = localStorage.getItem("contribCollapsed") === "1";
@@ -1101,13 +1092,10 @@ function contributionBannerHtml() {
         </div>
       </div>`;
   }
-  const adminNote = isAdmin()
-    ? ` <span class="contrib-admin">⏳ ${unpaidApprovedCount()} jeszcze nie opłaciło</span>`
-    : "";
   return `
     <div class="contrib-banner">
       <div class="container contrib-inner">
-        <span class="contrib-text">💰 Gramy o pulę! <strong>Wpłać składkę</strong> — podpisz wpłatę <strong>swoim nickiem z typera</strong>.${adminNote}</span>
+        <span class="contrib-text">💰 Gramy o pulę! <strong>Wpłać składkę</strong> — podpisz wpłatę <strong>swoim nickiem z typera</strong>.</span>
         <a class="btn contrib-pay" href="${ZRZUTKA_URL}" target="_blank" rel="noopener noreferrer">Wpłać składkę</a>
         <button class="contrib-close" id="contrib-collapse" title="Zwiń">–</button>
       </div>
