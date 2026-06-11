@@ -20,7 +20,7 @@ const db = admin.firestore();
 // Klucz publiczny VAPID — ten sam co w app.js i send-push.mjs. Prywatny trzymamy
 // jako sekret Functions (firebase functions:secrets:set VAPID_PRIVATE_KEY).
 const VAPID_PUBLIC =
-  "BG3cydpyJ5h6UmN4neBM4CIYinuI5uKlaOw4HF10oVHbEjTFUiFzZbvw6LeJSW0h9BIArP7KQwaDVCwa6tXOlh4";
+  "BFKlY3QsPdbL1yOLIz_ZJCM1NasX7k1N1NgqarkIa2-q3q08K7RQQtoMDWv6AKgyEKW5fR7ejks7COC-WfDRY5w";
 const VAPID_PRIVATE = defineSecret("VAPID_PRIVATE_KEY");
 
 setGlobalOptions({ maxInstances: 5 });
