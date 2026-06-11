@@ -79,12 +79,23 @@ function scorePair(h, a) {
   if (typeof h === "number" && typeof a === "number") return { h, a };
   return null;
 }
+const LIVE_MATCH_STATUSES = new Set(["IN_PLAY", "PAUSED"]);
 function getResult(m) {
   const o = overrideResults[m.id];
   if (o && typeof o.h === "number" && typeof o.a === "number") return o;
   if (!FINAL_MATCH_STATUSES.has(m.status)) return null;
   if (m.duration && m.duration !== "REGULAR")
     return scorePair(m.regularHomeScore, m.regularAwayScore);
+  return scorePair(m.homeScore, m.awayScore);
+}
+// Wynik do RANKINGU = ten sam co w apce: punkty liczą się też z meczu W TRAKCIE
+// (bieżący wynik). Nie ma osobnej kategorii "finały" — to po prostu kolejne punkty.
+function getRankingResult(m) {
+  const final = getResult(m);
+  if (final) return final;
+  if (!LIVE_MATCH_STATUSES.has(m.status)) return null;
+  if (m.duration && m.duration !== "REGULAR")
+    return scorePair(m.regularHomeScore, m.regularAwayScore) || scorePair(m.homeScore, m.awayScore);
   return scorePair(m.homeScore, m.awayScore);
 }
 const outcome = (h, a) => (h > a ? "home" : h < a ? "away" : "draw");
@@ -112,7 +123,7 @@ function leaderboard() {
     let exact = 0;
     let outcomeOnly = 0;
     for (const m of matches) {
-      const s = scoreMatch(p.matches?.[m.id], getResult(m));
+      const s = scoreMatch(p.matches?.[m.id], getRankingResult(m));
       if (s.exact) exact++;
       else if (s.correct) outcomeOnly++;
     }
