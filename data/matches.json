@@ -15,14 +15,14 @@
       "name": "RPA",
       "crest": "https://crests.football-data.org/9396.svg"
     },
-    "status": "IN_PLAY",
+    "status": "FINISHED",
     "duration": "REGULAR",
     "winner": null,
     "homeScore": 2,
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-11T21:02:50Z"
+    "lastUpdated": "2026-06-11T21:04:02Z"
   },
   {
     "id": "wc-537328",
