@@ -245,6 +245,107 @@ function mergeApiFootballLive(matches, fixtures) {
   return { matches: next, merged, live };
 }
 
+// =============================================================================
+//  ESPN (nieoficjalne, DARMOWE, bez klucza) — główne źródło LIVE dla MŚ 2026.
+//  API-Football free nie ma sezonu 2026, a football-data.org free nie podaje
+//  wyniku w trakcie meczu. ESPN scoreboard daje status, wynik i minutę na żywo.
+// =============================================================================
+const ESPN_SCOREBOARD =
+  "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
+
+function ymdCompact(d) {
+  return d.toISOString().slice(0, 10).replace(/-/g, "");
+}
+
+// Mapowanie stanu ESPN -> nasz status. "pre" zostawiamy (mecz przed startem).
+function espnStatusMap(typeName, state) {
+  if (String(typeName || "").toUpperCase() === "STATUS_HALFTIME") return "PAUSED";
+  if (state === "in") return "IN_PLAY";
+  if (state === "post") return "FINISHED";
+  return null;
+}
+
+function espnMinute(status) {
+  const m = String(status?.displayClock || "").match(/\d+/);
+  return m ? parseInt(m[0], 10) : null;
+}
+
+async function fetchEspnEvents(matches) {
+  if (!isInLiveWindow(matches)) {
+    console.log("Brak meczu w oknie live — ESPN pominięte.");
+    return [];
+  }
+  const now = Date.now();
+  const dates = new Set();
+  for (const m of matches) {
+    const t = Date.parse(m.kickoffAt);
+    if (!Number.isFinite(t)) continue;
+    if (now < t - LIVE_WINDOW_BEFORE_MS || now > t + LIVE_WINDOW_AFTER_MS) continue;
+    dates.add(ymdCompact(new Date(t)));
+  }
+  if (!dates.size) dates.add(ymdCompact(new Date(now)));
+  const events = [];
+  for (const d of dates) {
+    try {
+      const res = await fetch(`${ESPN_SCOREBOARD}?dates=${d}`);
+      if (!res.ok) {
+        console.warn(`ESPN ${d}: HTTP ${res.status} — pomijam.`);
+        continue;
+      }
+      const data = await res.json();
+      if (Array.isArray(data.events)) events.push(...data.events);
+    } catch (e) {
+      console.warn("ESPN pominięte:", e?.message || e);
+    }
+  }
+  return events;
+}
+
+function findEspnEvent(match, events) {
+  const home = normalizeName(match.homeTeam?.name);
+  const away = normalizeName(match.awayTeam?.name);
+  if (!home || !away) return null;
+  return (
+    events.find((e) => {
+      const cs = e?.competitions?.[0]?.competitors || [];
+      const h = cs.find((x) => x.homeAway === "home");
+      const a = cs.find((x) => x.homeAway === "away");
+      const eh = normalizeName(h?.team?.displayName || h?.team?.name);
+      const ea = normalizeName(a?.team?.displayName || a?.team?.name);
+      return eh === home && ea === away && closeKickoff(match.kickoffAt, e?.date);
+    }) || null
+  );
+}
+
+// Nakłada live z ESPN na mecze. Zwraca nową tablicę + liczniki.
+function mergeEspnLive(matches, events) {
+  if (!events.length) return { matches, merged: 0, live: 0 };
+  let merged = 0;
+  let live = 0;
+  const next = matches.map((m) => {
+    const e = findEspnEvent(m, events);
+    if (!e) return m;
+    const comp = e.competitions[0];
+    const st = e.status || comp?.status || {};
+    const mapped = espnStatusMap(st.type?.name, st.type?.state);
+    if (!mapped) return m; // "pre" — bez nadpisywania
+    const cs = comp.competitors || [];
+    const h = cs.find((x) => x.homeAway === "home");
+    const a = cs.find((x) => x.homeAway === "away");
+    const hs = h ? parseInt(h.score, 10) : NaN;
+    const as = a ? parseInt(a.score, 10) : NaN;
+    const patch = { status: mapped, liveElapsed: espnMinute(st) };
+    if (Number.isFinite(hs) && Number.isFinite(as)) {
+      patch.homeScore = hs;
+      patch.awayScore = as;
+    }
+    if (mapped === "IN_PLAY" || mapped === "PAUSED") live++;
+    merged++;
+    return { ...m, ...patch };
+  });
+  return { matches: next, merged, live };
+}
+
 const res = await fetch("https://api.football-data.org/v4/competitions/WC/matches", {
   headers: { "X-Auth-Token": TOKEN }
 });
@@ -313,11 +414,20 @@ if (matches.length < 64) {
   process.exit(0);
 }
 
+// Live: ESPN (darmowe, główne źródło) + API-Football (tylko jeśli ustawiony klucz
+// płatnego planu). ESPN nakłada się na końcu, więc ma pierwszeństwo.
 const apiFootballFixtures = await fetchApiFootballFixtures(matches);
-const liveMerge = mergeApiFootballLive(matches, apiFootballFixtures);
-matches = liveMerge.matches;
+const apiMerge = mergeApiFootballLive(matches, apiFootballFixtures);
+const espnEvents = await fetchEspnEvents(matches);
+const espnMerge = mergeEspnLive(apiMerge.matches, espnEvents);
+const liveMatches = espnMerge.matches; // pełna nakładka live (z minutą) -> Firestore
 
-await writeFile("data/matches.json", JSON.stringify(matches, null, 2) + "\n", "utf8");
+// Do PLIKU bez minuty (liveElapsed) — inaczej matches.json zmieniałby się co minutę
+// i robot commitowałby w kółko. Bez minuty plik zmienia się tylko przy realnej
+// zmianie wyniku/statusu (kilka commitów na mecz). Live "co sekundę" idzie Firestore.
+const matchesForFile = liveMatches.map(({ liveElapsed, liveExtra, ...rest }) => rest);
+await writeFile("data/matches.json", JSON.stringify(matchesForFile, null, 2) + "\n", "utf8");
+matches = matchesForFile;
 
 // Flaga dla workflow: gdy trwa okno meczu, pętla w GitHub Actions odpytuje co
 // kilka minut (cron */5 bywa dławiony przez GitHub do co 2-3 h — za rzadko na live).
@@ -329,7 +439,7 @@ try {
 // Live-wynik -> Firestore (live/state). Frontend nasłuchuje tego dokumentu przez
 // onSnapshot, więc gol pojawia się u graczy NATYCHMIAST (push), bez czekania na
 // commit pliku i przebudowę GitHub Pages. Piszemy tylko mecze w oknie live.
-await writeLiveToFirestore(matches);
+await writeLiveToFirestore(liveMatches);
 
 async function writeLiveToFirestore(allMatches) {
   const SA = process.env.FIREBASE_SERVICE_ACCOUNT;
@@ -371,7 +481,8 @@ async function writeLiveToFirestore(allMatches) {
 const finished = matches.filter((m) => m.status === "FINISHED" || m.status === "AWARDED").length;
 const live = matches.filter((m) => m.status === "IN_PLAY" || m.status === "PAUSED").length;
 console.log(
-  `Zapisano ${matches.length} meczów (zakończone: ${finished}, live: ${live}, API-Football: ${liveMerge.merged} dopas., ${liveMerge.live} live).`
+  `Zapisano ${matches.length} meczów (zakończone: ${finished}, live: ${live}, ` +
+    `ESPN: ${espnMerge.merged} dopas./${espnMerge.live} live, API-Football: ${apiMerge.merged} dopas.).`
 );
 
 // firebase-admin trzyma otwarte połączenie (gRPC), które potrafi blokować

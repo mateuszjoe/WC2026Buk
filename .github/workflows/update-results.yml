@@ -43,9 +43,10 @@ jobs:
           # Push wysyłamy w każdej iteracji (send-push dedupuje przez push/state).
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
-          # Odstęp między odpytaniami w trakcie meczu. 300 s = co 5 min (oszczędza
-          # dzienny limit API-Football free = 100/dzień). Podnieś, jeśli zabraknie limitu.
-          LIVE_POLL_SECONDS: "300"
+          # Odstęp między odpytaniami w trakcie meczu. ESPN jest darmowe i bez limitu
+          # sezonu, więc możemy często: 30 s = gol u graczy w ~pół minuty. Football-data
+          # (10/min limit) odpytujemy tym samym rytmem = 2/min, bezpiecznie.
+          LIVE_POLL_SECONDS: "30"
         run: |
           git config user.name "wc2026-bot"
           git config user.email "github-actions[bot]@users.noreply.github.com"
