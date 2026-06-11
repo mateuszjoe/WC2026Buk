@@ -5,3 +5,4 @@ dist
 npm-debug.log*
 *.local
 typer2026-93c0a-firebase-adminsdk-*.json
+live-window.flag

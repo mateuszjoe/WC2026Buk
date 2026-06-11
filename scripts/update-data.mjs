@@ -7,7 +7,7 @@
 //  GitHubie). NIE wpisuj tokenu do kodu.
 // =============================================================================
 
-import { writeFile } from "node:fs/promises";
+import { writeFile, rm } from "node:fs/promises";
 
 // Chwilowe bledy (np. "fetch failed: other side closed" — zerwane polaczenie z API)
 // NIE moga psuc joba — inaczej GitHub Actions slalby maile o nieudanym przebiegu.
@@ -116,14 +116,22 @@ function closeKickoff(aIso, bIso) {
   return Math.abs(a - b) <= 3 * 60 * 60 * 1000;
 }
 
-function shouldPollApiFootball(matches) {
-  const now = Date.now();
+// Okno meczu: od 15 min przed pierwszym gwizdkiem do 150 min po. W tym czasie
+// dociągamy live-score i — w workflow — zapętlamy pollowanie. Węższe niż kiedyś
+// (było +4 h), żeby oszczędzać dzienny limit zapytań API-Football (free = 100/dzień).
+const LIVE_WINDOW_BEFORE_MS = 15 * 60 * 1000;
+const LIVE_WINDOW_AFTER_MS = 150 * 60 * 1000;
+
+function isInLiveWindow(matches, now = Date.now()) {
   return matches.some((m) => {
     const t = Date.parse(m.kickoffAt);
     if (!Number.isFinite(t)) return false;
-    // Od 45 min przed meczem do 4 h po starcie: live-score, HT, FT i opóźnienia.
-    return now >= t - 45 * 60 * 1000 && now <= t + 4 * 60 * 60 * 1000;
+    return now >= t - LIVE_WINDOW_BEFORE_MS && now <= t + LIVE_WINDOW_AFTER_MS;
   });
+}
+
+function shouldPollApiFootball(matches) {
+  return isInLiveWindow(matches);
 }
 
 function apiFootballStatus(short) {
@@ -309,6 +317,13 @@ const liveMerge = mergeApiFootballLive(matches, apiFootballFixtures);
 matches = liveMerge.matches;
 
 await writeFile("data/matches.json", JSON.stringify(matches, null, 2) + "\n", "utf8");
+
+// Flaga dla workflow: gdy trwa okno meczu, pętla w GitHub Actions odpytuje co
+// kilka minut (cron */5 bywa dławiony przez GitHub do co 2-3 h — za rzadko na live).
+try {
+  if (isInLiveWindow(matches)) await writeFile("live-window.flag", "1");
+  else await rm("live-window.flag", { force: true });
+} catch (_) {}
 
 const finished = matches.filter((m) => m.status === "FINISHED" || m.status === "AWARDED").length;
 const live = matches.filter((m) => m.status === "IN_PLAY" || m.status === "PAUSED").length;

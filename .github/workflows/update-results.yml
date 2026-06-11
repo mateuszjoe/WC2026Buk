@@ -1,7 +1,9 @@
 name: Aktualizacja terminarza i wyników MŚ 2026
 
-# Robot pobiera dane z football-data.org i zapisuje je do data/matches.json.
-# Działa automatycznie co 5 minut oraz na żądanie (przycisk "Run workflow").
+# Robot pobiera dane z football-data.org (+ live-score z API-Football) i zapisuje
+# je do data/matches.json. Cron */5 to tylko "best effort" — GitHub potrafi go
+# dławić do co 2-3 h. Dlatego gdy trwa okno meczu (flaga live-window.flag), job
+# ZAPĘTLA pollowanie co kilka minut, żeby ranking live faktycznie się odświeżał.
 on:
   schedule:
     - cron: "*/5 * * * *"
@@ -17,6 +19,8 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
+    # Job może chodzić do 6 h; pętla i tak kończy się sama poniżej (LOOP_DEADLINE).
+    timeout-minutes: 350
     steps:
       - name: Pobierz repozytorium
         uses: actions/checkout@v4
@@ -29,30 +33,53 @@ jobs:
       - name: Zależności robota
         run: npm install --no-audit --no-fund
 
-      - name: Pobierz dane z API
+      - name: Pobierz dane i odświeżaj w trakcie meczu
         env:
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
-          # API-Football/API-Sports live-score (opcjonalne, ale potrzebne do rankingu live).
+          # API-Football/API-Sports live-score (potrzebne do rankingu live).
           API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
           API_SPORTS_KEY: ${{ secrets.API_SPORTS_KEY }}
           APISPORTS_KEY: ${{ secrets.APISPORTS_KEY }}
-        run: node scripts/update-data.mjs
-
-      - name: Zapisz zmiany (jeśli są)
+          # Push wysyłamy w każdej iteracji (send-push dedupuje przez push/state).
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          # Odstęp między odpytaniami w trakcie meczu. 300 s = co 5 min (oszczędza
+          # dzienny limit API-Football free = 100/dzień). Podnieś, jeśli zabraknie limitu.
+          LIVE_POLL_SECONDS: "300"
         run: |
           git config user.name "wc2026-bot"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/matches.json
-          if git diff --staged --quiet; then
-            echo "Brak zmian w danych — nic do zapisania."
-          else
-            git commit -m "Auto: aktualizacja terminarza i wyników MŚ 2026"
-            git push
-          fi
+          # Twardy limit pętli ~2h50m (zapas do limitu joba 6 h). Po tym czasie job
+          # kończy się, a kolejny przebieg crona/dispatch wznowi pętlę, jeśli mecz wciąż trwa.
+          LOOP_DEADLINE=$(( $(date +%s) + 10200 ))
+          while true; do
+            node scripts/update-data.mjs
 
-      - name: Wyślij powiadomienia push
-        if: always()
-        env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
-        run: node scripts/send-push.mjs
+            git add data/matches.json
+            if git diff --staged --quiet; then
+              echo "Brak zmian w danych — nic do zapisania."
+            else
+              git commit -m "Auto: aktualizacja terminarza i wyników MŚ 2026"
+              # Robot mógł commitować w międzyczasie z innej iteracji/przebiegu — rebase i ponów.
+              for attempt in 1 2 3; do
+                if git push; then break; fi
+                echo "Push odrzucony — rebase i ponawiam ($attempt/3)."
+                git pull --rebase --autostash origin main || true
+              done
+            fi
+
+            # Powiadomienia push (gole/koniec meczu). send-push sam pilnuje duplikatów.
+            node scripts/send-push.mjs || echo "send-push pominięty (błąd nie psuje joba)."
+
+            # Pętla tylko w oknie meczu — poza nim kończymy po jednym przebiegu.
+            if [ ! -f live-window.flag ]; then
+              echo "Brak meczu w oknie live — kończę przebieg."
+              break
+            fi
+            if [ "$(date +%s)" -ge "$LOOP_DEADLINE" ]; then
+              echo "Limit czasu pętli — kończę (kolejny przebieg wznowi, jeśli mecz trwa)."
+              break
+            fi
+            echo "Mecz w toku — następne sprawdzenie za ${LIVE_POLL_SECONDS}s."
+            sleep "${LIVE_POLL_SECONDS}"
+          done
