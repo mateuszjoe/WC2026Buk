@@ -18,8 +18,8 @@
     "status": "FINISHED",
     "duration": "REGULAR",
     "winner": null,
-    "homeScore": 2,
-    "awayScore": 0,
+    "homeScore": null,
+    "awayScore": null,
     "regularHomeScore": null,
     "regularAwayScore": null,
     "lastUpdated": "2026-06-11T21:09:14Z"
