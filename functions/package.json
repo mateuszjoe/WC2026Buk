@@ -3,7 +3,7 @@
   "description": "Cloud Functions — natychmiastowy web push (czat, gole)",
   "private": true,
   "engines": {
-    "node": "20"
+    "node": "22"
   },
   "main": "index.js",
   "dependencies": {

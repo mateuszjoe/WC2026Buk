@@ -28,7 +28,7 @@ process.on("uncaughtException", (e) => {
 const SA = process.env.FIREBASE_SERVICE_ACCOUNT;
 const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY;
 const VAPID_PUBLIC =
-  "BG3cydpyJ5h6UmN4neBM4CIYinuI5uKlaOw4HF10oVHbEjTFUiFzZbvw6LeJSW0h9BIArP7KQwaDVCwa6tXOlh4";
+  "BFKlY3QsPdbL1yOLIz_ZJCM1NasX7k1N1NgqarkIa2-q3q08K7RQQtoMDWv6AKgyEKW5fR7ejks7COC-WfDRY5w";
 
 const missingSecrets = [];
 if (!SA) missingSecrets.push("FIREBASE_SERVICE_ACCOUNT");

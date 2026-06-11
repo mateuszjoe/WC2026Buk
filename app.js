@@ -58,7 +58,7 @@ const googleProvider = new GoogleAuthProvider();
 
 // Klucz publiczny VAPID do prawdziwego push (wysyłką zajmuje się robot na GitHubie).
 const VAPID_PUBLIC =
-  "BG3cydpyJ5h6UmN4neBM4CIYinuI5uKlaOw4HF10oVHbEjTFUiFzZbvw6LeJSW0h9BIArP7KQwaDVCwa6tXOlh4";
+  "BFKlY3QsPdbL1yOLIz_ZJCM1NasX7k1N1NgqarkIa2-q3q08K7RQQtoMDWv6AKgyEKW5fR7ejks7COC-WfDRY5w";
 
 // Zrzutka na pulę — link w banerze "Wpłać składkę".
 const ZRZUTKA_URL = "https://zrzutka.pl/srymk6";
