@@ -32,6 +32,10 @@ jobs:
       - name: Pobierz dane z API
         env:
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
+          # API-Football/API-Sports live-score (opcjonalne, ale potrzebne do rankingu live).
+          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+          API_SPORTS_KEY: ${{ secrets.API_SPORTS_KEY }}
+          APISPORTS_KEY: ${{ secrets.APISPORTS_KEY }}
         run: node scripts/update-data.mjs
 
       - name: Zapisz zmiany (jeśli są)

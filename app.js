@@ -873,7 +873,8 @@ function myPredTag(myPred, result, m, options = {}) {
 
 // Status meczu po polsku (na podstawie pola status z API).
 function liveTag(m) {
-  if (m.status === "IN_PLAY") return '<span class="live">● LIVE</span>';
+  const minute = typeof m.liveElapsed === "number" ? ` ${m.liveElapsed}'` : "";
+  if (m.status === "IN_PLAY") return `<span class="live">● LIVE${minute}</span>`;
   if (m.status === "PAUSED") return '<span class="live">PRZERWA</span>';
   if (matchFinished(m)) return '<span class="ft">KONIEC</span>';
   return "";
