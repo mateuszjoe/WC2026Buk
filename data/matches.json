@@ -19,7 +19,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537328",
@@ -41,7 +44,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-04-01T00:21:07Z"
   },
   {
     "id": "wc-537333",
@@ -63,7 +69,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-04-01T00:21:07Z"
   },
   {
     "id": "wc-537345",
@@ -85,7 +94,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537334",
@@ -107,7 +119,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537339",
@@ -129,7 +144,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537340",
@@ -151,7 +169,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537346",
@@ -173,7 +194,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-04-02T15:21:05Z"
   },
   {
     "id": "wc-537351",
@@ -195,7 +219,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537357",
@@ -217,7 +244,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537352",
@@ -235,11 +265,14 @@
       "name": "Ekwador",
       "crest": "https://crests.football-data.org/791.svg"
     },
-    "status": "TIMED",
+    "status": "SCHEDULED",
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-27T11:09:09Z"
   },
   {
     "id": "wc-537358",
@@ -261,7 +294,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-04-01T00:21:07Z"
   },
   {
     "id": "wc-537369",
@@ -283,7 +319,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537363",
@@ -305,7 +344,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537370",
@@ -327,7 +369,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537364",
@@ -349,7 +394,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537391",
@@ -371,7 +419,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537392",
@@ -393,7 +444,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-04-01T10:21:10Z"
   },
   {
     "id": "wc-537397",
@@ -415,7 +469,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537398",
@@ -437,7 +494,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537403",
@@ -459,7 +519,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-04-01T10:21:10Z"
   },
   {
     "id": "wc-537409",
@@ -481,7 +544,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537410",
@@ -503,7 +569,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537404",
@@ -525,7 +594,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537329",
@@ -547,7 +619,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-04-01T00:21:07Z"
   },
   {
     "id": "wc-537335",
@@ -569,7 +644,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-04-01T00:21:07Z"
   },
   {
     "id": "wc-537336",
@@ -591,7 +669,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537330",
@@ -613,7 +694,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-03-30T20:21:10Z"
   },
   {
     "id": "wc-537348",
@@ -635,7 +719,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537342",
@@ -657,7 +744,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537341",
@@ -679,7 +769,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537347",
@@ -701,7 +794,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-04-01T15:21:07Z"
   },
   {
     "id": "wc-537359",
@@ -723,7 +819,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-04-01T00:21:07Z"
   },
   {
     "id": "wc-537353",
@@ -745,7 +844,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537354",
@@ -767,7 +869,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537360",
@@ -789,7 +894,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-03-30T20:21:10Z"
   },
   {
     "id": "wc-537371",
@@ -811,7 +919,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537365",
@@ -833,7 +944,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537372",
@@ -855,7 +969,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537366",
@@ -877,7 +994,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537399",
@@ -899,7 +1019,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537393",
@@ -921,7 +1044,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537394",
@@ -943,7 +1069,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537400",
@@ -965,7 +1094,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-03-30T20:21:10Z"
   },
   {
     "id": "wc-537405",
@@ -987,7 +1119,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537411",
@@ -1009,7 +1144,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537412",
@@ -1031,7 +1169,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537406",
@@ -1053,7 +1194,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-04-01T10:21:10Z"
   },
   {
     "id": "wc-537337",
@@ -1075,7 +1219,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537338",
@@ -1097,7 +1244,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-04-01T00:21:07Z"
   },
   {
     "id": "wc-537344",
@@ -1119,7 +1269,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537343",
@@ -1141,7 +1294,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537331",
@@ -1163,7 +1319,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-04-01T00:21:07Z"
   },
   {
     "id": "wc-537332",
@@ -1185,7 +1344,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537355",
@@ -1207,7 +1369,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537356",
@@ -1229,7 +1394,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537361",
@@ -1251,7 +1419,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537362",
@@ -1273,7 +1444,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-04-01T00:21:07Z"
   },
   {
     "id": "wc-537349",
@@ -1295,7 +1469,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-04-01T00:21:07Z"
   },
   {
     "id": "wc-537350",
@@ -1317,7 +1494,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537395",
@@ -1339,7 +1519,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537396",
@@ -1361,7 +1544,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-04-01T10:21:10Z"
   },
   {
     "id": "wc-537373",
@@ -1383,7 +1569,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537374",
@@ -1405,7 +1594,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537367",
@@ -1427,7 +1619,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537368",
@@ -1449,7 +1644,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537413",
@@ -1471,7 +1669,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537414",
@@ -1493,7 +1694,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537407",
@@ -1515,7 +1719,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537408",
@@ -1537,7 +1744,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-04-01T10:21:10Z"
   },
   {
     "id": "wc-537401",
@@ -1559,7 +1769,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537402",
@@ -1581,7 +1794,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2025-12-06T20:20:44Z"
   },
   {
     "id": "wc-537417",
@@ -1603,7 +1819,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537423",
@@ -1625,7 +1844,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537415",
@@ -1647,7 +1869,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537418",
@@ -1669,7 +1894,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537424",
@@ -1691,7 +1919,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537416",
@@ -1713,7 +1944,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537425",
@@ -1735,7 +1969,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537426",
@@ -1757,7 +1994,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537422",
@@ -1779,7 +2019,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537421",
@@ -1801,7 +2044,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537420",
@@ -1823,7 +2069,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537419",
@@ -1845,7 +2094,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537429",
@@ -1867,7 +2119,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537428",
@@ -1889,7 +2144,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537427",
@@ -1911,7 +2169,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537430",
@@ -1933,7 +2194,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537376",
@@ -1955,7 +2219,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537375",
@@ -1977,7 +2244,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537377",
@@ -1999,7 +2269,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537378",
@@ -2021,7 +2294,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537379",
@@ -2043,7 +2319,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537380",
@@ -2065,7 +2344,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537381",
@@ -2087,7 +2369,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537382",
@@ -2109,7 +2394,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537383",
@@ -2131,7 +2419,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537384",
@@ -2153,7 +2444,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537385",
@@ -2175,7 +2469,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537386",
@@ -2197,7 +2494,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537387",
@@ -2219,7 +2519,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537388",
@@ -2241,7 +2544,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537389",
@@ -2263,7 +2569,10 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   },
   {
     "id": "wc-537390",
@@ -2285,6 +2594,9 @@
     "duration": "REGULAR",
     "winner": null,
     "homeScore": null,
-    "awayScore": null
+    "awayScore": null,
+    "regularHomeScore": null,
+    "regularAwayScore": null,
+    "lastUpdated": "2026-05-11T05:21:09Z"
   }
 ]
