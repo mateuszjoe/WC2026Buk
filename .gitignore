@@ -7,3 +7,5 @@ npm-debug.log*
 typer2026-93c0a-firebase-adminsdk-*.json
 live-window.flag
 functions/node_modules
+firebase-debug.log
+*firebase-debug.log
