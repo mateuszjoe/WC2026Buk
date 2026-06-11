@@ -8,6 +8,7 @@
 // =============================================================================
 
 import { writeFile, rm } from "node:fs/promises";
+import admin from "firebase-admin";
 
 // Chwilowe bledy (np. "fetch failed: other side closed" — zerwane polaczenie z API)
 // NIE moga psuc joba — inaczej GitHub Actions slalby maile o nieudanym przebiegu.
@@ -325,8 +326,55 @@ try {
   else await rm("live-window.flag", { force: true });
 } catch (_) {}
 
+// Live-wynik -> Firestore (live/state). Frontend nasłuchuje tego dokumentu przez
+// onSnapshot, więc gol pojawia się u graczy NATYCHMIAST (push), bez czekania na
+// commit pliku i przebudowę GitHub Pages. Piszemy tylko mecze w oknie live.
+await writeLiveToFirestore(matches);
+
+async function writeLiveToFirestore(allMatches) {
+  const SA = process.env.FIREBASE_SERVICE_ACCOUNT;
+  if (!SA) {
+    console.log("Brak FIREBASE_SERVICE_ACCOUNT — live do Firestore pominięty.");
+    return;
+  }
+  const now = Date.now();
+  const overlay = {};
+  for (const m of allMatches) {
+    const t = Date.parse(m.kickoffAt);
+    if (!Number.isFinite(t)) continue;
+    if (now < t - LIVE_WINDOW_BEFORE_MS || now > t + LIVE_WINDOW_AFTER_MS) continue;
+    overlay[m.id] = {
+      status: m.status,
+      homeScore: m.homeScore ?? null,
+      awayScore: m.awayScore ?? null,
+      regularHomeScore: m.regularHomeScore ?? null,
+      regularAwayScore: m.regularAwayScore ?? null,
+      duration: m.duration || "REGULAR",
+      winner: m.winner ?? null,
+      liveElapsed: typeof m.liveElapsed === "number" ? m.liveElapsed : null
+    };
+  }
+  try {
+    if (!admin.apps.length) {
+      admin.initializeApp({ credential: admin.credential.cert(JSON.parse(SA)) });
+    }
+    await admin.firestore().doc("live/state").set({
+      matches: overlay,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    console.log(`Live -> Firestore: ${Object.keys(overlay).length} meczów w oknie.`);
+  } catch (e) {
+    console.warn("Zapis live do Firestore pominięty:", e?.message || e);
+  }
+}
+
 const finished = matches.filter((m) => m.status === "FINISHED" || m.status === "AWARDED").length;
 const live = matches.filter((m) => m.status === "IN_PLAY" || m.status === "PAUSED").length;
 console.log(
   `Zapisano ${matches.length} meczów (zakończone: ${finished}, live: ${live}, API-Football: ${liveMerge.merged} dopas., ${liveMerge.live} live).`
 );
+
+// firebase-admin trzyma otwarte połączenie (gRPC), które potrafi blokować
+// wyjście procesu — bez tego krok w GitHub Actions wisiałby do timeoutu, a pętla
+// na żywo by się zatrzymała. Wszystkie zapisy są już zawaitowane, więc kończymy.
+process.exit(0);

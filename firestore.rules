@@ -80,6 +80,14 @@ service cloud.firestore {
       allow delete: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
     }
 
+    // Live-wyniki meczów: PUBLICZNY odczyt (ranking live widoczny też dla
+    // niezalogowanych). Pisze wyłącznie robot przez konto serwisowe (admin SDK
+    // pomija reguły), więc klientom zapis blokujemy.
+    match /live/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // Potwierdzenia odczytu czatu: czyta każdy, pisze tylko właściciel (id = uid).
     match /chatReads/{uid} {
       allow read: if true;

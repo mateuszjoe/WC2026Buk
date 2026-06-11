@@ -66,7 +66,9 @@ const ZRZUTKA_URL = "https://zrzutka.pl/srymk6";
 // --- Stan aplikacji -----------------------------------------------------------
 const state = {
   settings: null, // data/settings.json
-  matches: [], // data/matches.json (posortowane wg daty)
+  matches: [], // data/matches.json + nakładka live (posortowane wg daty) — używane wszędzie
+  baseMatches: [], // surowe data/matches.json (bez nakładki live)
+  live: {}, // matchId -> { status, homeScore, awayScore, ... } z Firestore live/state (real-time)
   predictions: {}, // uid -> { name, email, matches:{matchId:{h,a}}, champion, updatedAt }
   predictionsLoaded: false, // czy snapshot predykcji już dotarł (chroni przed nadpisaniem)
   admin: { results: {}, championTeamId: null }, // dokument admin/state
@@ -3411,7 +3413,42 @@ async function loadStaticData() {
     fetch("./data/matches.json").then((r) => r.json())
   ]);
   state.settings = settings;
-  state.matches = [...matches].sort((a, b) => a.kickoffAt.localeCompare(b.kickoffAt));
+  state.baseMatches = [...matches].sort((a, b) => a.kickoffAt.localeCompare(b.kickoffAt));
+  applyLiveOverlay();
+}
+
+// Nakłada live-wyniki z Firestore (state.live) na surowe dane z pliku
+// (state.baseMatches) i zapisuje wynik do state.matches — z niego korzysta cała
+// reszta apki. Finalnego wyniku z pliku NIE nadpisujemy danymi live (mecz po
+// gwizdku ma już rezultat w matches.json). Dzięki temu gol z API-Football
+// pojawia się u graczy natychmiast (push z Firestore), bez czekania na plik.
+function applyLiveOverlay() {
+  const live = state.live || {};
+  state.matches = state.baseMatches.map((m) => {
+    const patch = live[m.id];
+    if (!patch || isFinalStatus(m)) return m;
+    return { ...m, ...patch };
+  });
+}
+
+// Live-wyniki z Firestore (real-time). Czyta każdy (też niezalogowany — ranking
+// jest publiczny), więc startuje od razu na wejściu, niezależnie od logowania.
+// Robot (GitHub Actions) pisze do live/state świeży wynik z API-Football; tu
+// dostajemy go natychmiast (push), bez pollingu pliku i bez przebudowy Pages.
+let liveUnsub = null;
+function listenToLiveScores() {
+  if (liveUnsub) return;
+  liveUnsub = onSnapshot(
+    doc(db, "live", "state"),
+    (d) => {
+      const data = d.data() || {};
+      state.live = data.matches || {};
+      applyLiveOverlay();
+      checkNotifications();
+      if (state.view === "ranking" || state.view === "matches") render();
+    },
+    (err) => console.error("live/state:", err.message)
+  );
 }
 
 // Reguły Firestore pozwalają czytać tylko zalogowanym, więc listenery startują
@@ -3592,7 +3629,8 @@ function startMatchesPolling() {
   setInterval(async () => {
     try {
       const matches = await fetch(`./data/matches.json?ts=${Date.now()}`).then((r) => r.json());
-      state.matches = [...matches].sort((a, b) => a.kickoffAt.localeCompare(b.kickoffAt));
+      state.baseMatches = [...matches].sort((a, b) => a.kickoffAt.localeCompare(b.kickoffAt));
+      applyLiveOverlay();
       checkNotifications();
       if (state.view === "matches" || state.view === "ranking") render();
     } catch (_) {}
@@ -3604,6 +3642,7 @@ function startMatchesPolling() {
   try {
     await loadStaticData();
     render();
+    listenToLiveScores();
     startMatchesPolling();
   } catch (e) {
     console.error(e);
