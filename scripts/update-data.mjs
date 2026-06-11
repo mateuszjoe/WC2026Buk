@@ -7,7 +7,7 @@
 //  GitHubie). NIE wpisuj tokenu do kodu.
 // =============================================================================
 
-import { writeFile, rm } from "node:fs/promises";
+import { writeFile, readFile, rm } from "node:fs/promises";
 import admin from "firebase-admin";
 
 // Chwilowe bledy (np. "fetch failed: other side closed" — zerwane polaczenie z API)
@@ -122,13 +122,25 @@ function closeKickoff(aIso, bIso) {
 // (było +4 h), żeby oszczędzać dzienny limit zapytań API-Football (free = 100/dzień).
 const LIVE_WINDOW_BEFORE_MS = 15 * 60 * 1000;
 const LIVE_WINDOW_AFTER_MS = 150 * 60 * 1000;
+// ESPN pytamy DŁUŻEJ po meczu (8 h) niż trwa pętla (150 min), żeby na pewno
+// złapać i utrwalić wynik końcowy — football-data.org free nie podaje go w trakcie,
+// a po zamknięciu okna nie wolno cofnąć zakończonego meczu do TIMED (sticky finals).
+const ESPN_WINDOW_AFTER_MS = 8 * 60 * 60 * 1000;
 
+function inWindow(m, afterMs, now) {
+  const t = Date.parse(m.kickoffAt);
+  if (!Number.isFinite(t)) return false;
+  return now >= t - LIVE_WINDOW_BEFORE_MS && now <= t + afterMs;
+}
+
+// Okno pętli/flagi (krótkie): od 15 min przed do 150 min po gwizdku.
 function isInLiveWindow(matches, now = Date.now()) {
-  return matches.some((m) => {
-    const t = Date.parse(m.kickoffAt);
-    if (!Number.isFinite(t)) return false;
-    return now >= t - LIVE_WINDOW_BEFORE_MS && now <= t + LIVE_WINDOW_AFTER_MS;
-  });
+  return matches.some((m) => inWindow(m, LIVE_WINDOW_AFTER_MS, now));
+}
+
+// Okno odpytywania ESPN (długie): do 8 h po gwizdku — żeby utrwalić finał.
+function isInEspnWindow(matches, now = Date.now()) {
+  return matches.some((m) => inWindow(m, ESPN_WINDOW_AFTER_MS, now));
 }
 
 function shouldPollApiFootball(matches) {
@@ -271,17 +283,15 @@ function espnMinute(status) {
 }
 
 async function fetchEspnEvents(matches) {
-  if (!isInLiveWindow(matches)) {
-    console.log("Brak meczu w oknie live — ESPN pominięte.");
+  if (!isInEspnWindow(matches)) {
+    console.log("Brak meczu w oknie ESPN — ESPN pominięte.");
     return [];
   }
   const now = Date.now();
   const dates = new Set();
   for (const m of matches) {
-    const t = Date.parse(m.kickoffAt);
-    if (!Number.isFinite(t)) continue;
-    if (now < t - LIVE_WINDOW_BEFORE_MS || now > t + LIVE_WINDOW_AFTER_MS) continue;
-    dates.add(ymdCompact(new Date(t)));
+    if (!inWindow(m, ESPN_WINDOW_AFTER_MS, now)) continue;
+    dates.add(ymdCompact(new Date(Date.parse(m.kickoffAt))));
   }
   if (!dates.size) dates.add(ymdCompact(new Date(now)));
   const events = [];
@@ -422,10 +432,38 @@ const espnEvents = await fetchEspnEvents(matches);
 const espnMerge = mergeEspnLive(apiMerge.matches, espnEvents);
 const liveMatches = espnMerge.matches; // pełna nakładka live (z minutą) -> Firestore
 
+// STICKY FINALS: nie wolno cofnąć zakończonego meczu do TIMED. Football-data.org
+// free nie podaje wyniku, a ESPN po oknie milknie — bez tego po meczu ranking się
+// zerował. Czytamy poprzedni matches.json i zachowujemy wynik końcowy, jeśli nowy
+// build go nie ma (a stary miał FINISHED/AWARDED z liczbowym wynikiem).
+let prevById = {};
+try {
+  const prev = JSON.parse(await readFile("data/matches.json", "utf8"));
+  for (const m of prev) prevById[m.id] = m;
+} catch (_) {}
+const FINAL_STATUSES = new Set(["FINISHED", "AWARDED"]);
+
 // Do PLIKU bez minuty (liveElapsed) — inaczej matches.json zmieniałby się co minutę
 // i robot commitowałby w kółko. Bez minuty plik zmienia się tylko przy realnej
 // zmianie wyniku/statusu (kilka commitów na mecz). Live "co sekundę" idzie Firestore.
-const matchesForFile = liveMatches.map(({ liveElapsed, liveExtra, ...rest }) => rest);
+const matchesForFile = liveMatches.map(({ liveElapsed, liveExtra, ...rest }) => {
+  if (!FINAL_STATUSES.has(rest.status)) {
+    const p = prevById[rest.id];
+    if (p && FINAL_STATUSES.has(p.status) && typeof p.homeScore === "number") {
+      return {
+        ...rest,
+        status: p.status,
+        homeScore: p.homeScore,
+        awayScore: p.awayScore,
+        regularHomeScore: p.regularHomeScore ?? rest.regularHomeScore,
+        regularAwayScore: p.regularAwayScore ?? rest.regularAwayScore,
+        duration: p.duration || rest.duration,
+        winner: p.winner ?? rest.winner
+      };
+    }
+  }
+  return rest;
+});
 await writeFile("data/matches.json", JSON.stringify(matchesForFile, null, 2) + "\n", "utf8");
 matches = matchesForFile;
 
