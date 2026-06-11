@@ -74,12 +74,18 @@ function timestampMs(value) {
 }
 
 // --- Punktacja (zgodna z aplikacją) ------------------------------------------
+const FINAL_MATCH_STATUSES = new Set(["FINISHED", "AWARDED"]);
+function scorePair(h, a) {
+  if (typeof h === "number" && typeof a === "number") return { h, a };
+  return null;
+}
 function getResult(m) {
   const o = overrideResults[m.id];
   if (o && typeof o.h === "number" && typeof o.a === "number") return o;
-  if (typeof m.homeScore === "number" && typeof m.awayScore === "number")
-    return { h: m.homeScore, a: m.awayScore };
-  return null;
+  if (!FINAL_MATCH_STATUSES.has(m.status)) return null;
+  if (m.duration && m.duration !== "REGULAR")
+    return scorePair(m.regularHomeScore, m.regularAwayScore);
+  return scorePair(m.homeScore, m.awayScore);
 }
 const outcome = (h, a) => (h > a ? "home" : h < a ? "away" : "draw");
 function scoreMatch(pred, r) {
@@ -93,6 +99,8 @@ function championTeamId() {
   if (adminChampion) return adminChampion;
   const fin = matches.find((m) => m.stage === "finał");
   if (!fin) return null;
+  if (fin.winner === "HOME_TEAM") return fin.homeTeam.id;
+  if (fin.winner === "AWAY_TEAM") return fin.awayTeam.id;
   const r = getResult(fin);
   if (!r || r.h === r.a) return null;
   return r.h > r.a ? fin.homeTeam.id : fin.awayTeam.id;

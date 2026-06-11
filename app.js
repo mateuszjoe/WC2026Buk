@@ -76,6 +76,9 @@ const state = {
   chat: [], // wiadomości czatu (najnowsze na dole)
   chatDraft: "", // treść wpisywanej wiadomości
   chatImage: null, // załączone zdjęcie (data URL) do wysłania
+  chatReplyTo: null, // { id, name, text, image } - wiadomość, na którą odpowiadam
+  chatReactionPicker: null, // id wiadomości z otwartym wyborem reakcji
+  chatReactions: {}, // reactionId -> { msgId, uid, emoji, name, avatar, photo }
   chatOpen: false, // czy dymek czatu jest rozwinięty (panel nad aplikacją)
   chatLastRead: 0, // ms ostatnio odczytanej wiadomości (licznik nieprzeczytanych)
   chatReads: {}, // uid -> { name, avatar, photo, lastReadMs } — potwierdzenia odczytu
@@ -100,6 +103,10 @@ const VIEWS = [
   { id: "rules", label: "Regulamin" },
   { id: "admin", label: "Panel admina", adminOnly: true }
 ];
+
+const CHAT_REACTION_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥"];
+const FINAL_MATCH_STATUSES = new Set(["FINISHED", "AWARDED"]);
+const LIVE_MATCH_STATUSES = new Set(["IN_PLAY", "PAUSED"]);
 
 // =============================================================================
 //  PUNKTACJA  (przeniesiona 1:1 z oryginalnej wersji TypeScript)
@@ -210,44 +217,64 @@ function championProgress(teamId) {
   return best;
 }
 
-function calculateLeaderboard() {
+function calculateLeaderboard(options = {}) {
+  const includeLive = options.includeLive === true;
   const { settings, matches, predictions } = state;
   const championTeamId = getChampionTeamId();
   const rows = Object.entries(predictions)
     .filter(([, p]) => isApprovedDoc(p)) // poczekalnia: niezatwierdzeni poza rankingiem
     .map(([uid, p]) => {
-    let exactCount = 0;
-    let outcomeOnlyCount = 0; // trafiony rezultat, ale nie dokładny wynik
-    let advanceCount = 0; // trafione wskazania drużyny awansującej (po remisie w 90')
+      let exactCount = 0;
+      let outcomeOnlyCount = 0; // trafiony rezultat, ale nie dokładny wynik
+      let advanceCount = 0; // trafione wskazania drużyny awansującej (po remisie w 90')
+      let liveExactCount = 0;
+      let liveOutcomeOnlyCount = 0;
+      let liveAdvanceCount = 0;
 
-    for (const match of matches) {
-      const pred = confirmedMatchPrediction(p.matches?.[match.id]);
-      const result = getResult(match);
-      const s = scoreMatch(pred, result, settings);
-      if (s.exact) exactCount += 1;
-      else if (s.correct) outcomeOnlyCount += 1;
-      if (advanceBonus(pred, result, match, settings) > 0) advanceCount += 1;
-    }
+      for (const match of matches) {
+        const pred = confirmedMatchPrediction(p.matches?.[match.id]);
+        const { result, live } = resultForLeaderboard(match, includeLive);
+        const s = scoreMatch(pred, result, settings);
+        if (s.exact) exactCount += 1;
+        else if (s.correct) outcomeOnlyCount += 1;
+        const adv = advanceBonus(pred, result, match, settings) > 0;
+        if (adv) advanceCount += 1;
+        if (live) {
+          if (s.exact) liveExactCount += 1;
+          else if (s.correct) liveOutcomeOnlyCount += 1;
+          if (adv) liveAdvanceCount += 1;
+        }
+      }
 
-    const exactPoints = exactCount * settings.points.exactScore;
-    const outcomePoints = outcomeOnlyCount * settings.points.correctResult;
-    const advancePoints = advanceCount * (settings.points.advanceBonus ?? 1);
-    const championPoints = scoreChampion(p.champion, settings, championTeamId);
+      const exactPoints = exactCount * settings.points.exactScore;
+      const outcomePoints = outcomeOnlyCount * settings.points.correctResult;
+      const advancePoints = advanceCount * (settings.points.advanceBonus ?? 1);
+      const championPoints = scoreChampion(p.champion, settings, championTeamId);
+      const livePoints =
+        liveExactCount * settings.points.exactScore +
+        liveOutcomeOnlyCount * settings.points.correctResult +
+        liveAdvanceCount * (settings.points.advanceBonus ?? 1);
+      const total = exactPoints + outcomePoints + advancePoints + championPoints;
 
-    return {
-      uid,
-      name: p.name || "Gracz",
-      total: exactPoints + outcomePoints + advancePoints + championPoints,
-      exactPoints,
-      outcomePoints,
-      advancePoints,
-      championPoints,
-      exactCount,
-      outcomeOnlyCount,
-      advanceCount,
-      championProgress: championPoints > 0 ? 1000 : championProgress(p.champion)
-    };
-  });
+      return {
+        uid,
+        name: p.name || "Gracz",
+        total,
+        finalTotal: total - livePoints,
+        livePoints,
+        exactPoints,
+        outcomePoints,
+        advancePoints,
+        championPoints,
+        exactCount,
+        outcomeOnlyCount,
+        advanceCount,
+        liveExactCount,
+        liveOutcomeOnlyCount,
+        liveAdvanceCount,
+        championProgress: championPoints > 0 ? 1000 : championProgress(p.champion)
+      };
+    });
 
   // Remis rozstrzyga kolejno: dokładne wyniki → trafiony mistrz →
   // rezultaty → bonusy za awans → jak wysoko zaszedł typ na mistrza → nazwa.
@@ -349,21 +376,67 @@ function champDeadlineText() {
   );
 }
 
-// Wynik meczu: najpierw ręczna korekta admina (Firestore), a jeśli jej nie ma —
-// wynik z pliku data/matches.json (uzupełniany automatycznie przez robota z API).
-function getResult(match) {
+function scorePair(h, a) {
+  if (typeof h === "number" && typeof a === "number") return { h, a };
+  return undefined;
+}
+
+function isFinalStatus(match) {
+  return FINAL_MATCH_STATUSES.has(match?.status);
+}
+
+function isLiveMatch(match) {
+  return LIVE_MATCH_STATUSES.has(match?.status);
+}
+
+function adminResult(match) {
   const override = state.admin.results?.[match.id];
   if (override && typeof override.h === "number" && typeof override.a === "number") {
     return override;
   }
+  return undefined;
+}
+
+function regularTimeResult(match) {
+  return scorePair(match.regularHomeScore, match.regularAwayScore);
+}
+
+function apiFullTimeResult(match) {
+  return scorePair(match.homeScore, match.awayScore);
+}
+
+// Wynik meczu do OSTATECZNEJ punktacji: najpierw ręczna korekta admina
+// (Firestore), potem finalny wynik z pliku data/matches.json. W trakcie meczu
+// score.fullTime z API jest wynikiem bieżącym, więc nie może udawać końca.
+function getResult(match) {
+  const override = adminResult(match);
+  if (override) return override;
+  if (!isFinalStatus(match)) return undefined;
   // Faza pucharowa: do typów liczy się TYLKO czas regulaminowy (90'). Jeśli mecz
   // rozstrzygnięto w dogrywce/karnych (duration != REGULAR), auto-wynik z API
-  // zawiera dogrywkę — nie używamy go; wynik z 90' wpisuje admin w panelu.
-  if (match.duration && match.duration !== "REGULAR") return undefined;
-  if (typeof match.homeScore === "number" && typeof match.awayScore === "number") {
-    return { h: match.homeScore, a: match.awayScore };
+  // zawiera dogrywkę — używamy regularTime, a przy jego braku czekamy na admina.
+  if (match.duration && match.duration !== "REGULAR") return regularTimeResult(match);
+  return apiFullTimeResult(match);
+}
+
+// Wynik do podglądu i rankingu live. Gdy mecz trwa, football-data.org wpisuje
+// bieżący rezultat właśnie do score.fullTime.
+function getLiveResult(match) {
+  const final = getResult(match);
+  if (final) return final;
+  if (!isLiveMatch(match)) return undefined;
+  if (match.duration && match.duration !== "REGULAR") {
+    return regularTimeResult(match) || apiFullTimeResult(match);
   }
-  return undefined;
+  return apiFullTimeResult(match);
+}
+
+function resultForLeaderboard(match, includeLive = false) {
+  const final = getResult(match);
+  if (final) return { result: final, live: false };
+  if (!includeLive) return { result: undefined, live: false };
+  const live = getLiveResult(match);
+  return live ? { result: live, live: true } : { result: undefined, live: false };
 }
 
 function matchFinished(match) {
@@ -779,7 +852,7 @@ function standingsTableHtml(matches) {
 }
 
 // Etykieta punktów dla mojego typu na dany mecz.
-function myPredTag(myPred, result, m) {
+function myPredTag(myPred, result, m, options = {}) {
   if (!myPred) return "";
   if (!isConfirmedMatchPrediction(myPred)) {
     const draftScore =
@@ -793,13 +866,15 @@ function myPredTag(myPred, result, m) {
     m && isKnockout(m) && myPred.adv
       ? ` · awans: ${escapeHtml(myPred.adv === "h" ? m.homeTeam.name : m.awayTeam.name)}`
       : "";
-  const label = result ? `${s.points + bonus} pkt${bonus ? ` (+${bonus} awans 🎯)` : ""}` : "czeka";
+  const livePrefix = options.live ? "na żywo: " : "";
+  const label = result ? `${livePrefix}${s.points + bonus} pkt${bonus ? ` (+${bonus} awans 🎯)` : ""}` : "czeka";
   return `<span class="pts ${cls}">Typ ${myPred.h}:${myPred.a}${advTxt} · ${label}</span>`;
 }
 
 // Status meczu po polsku (na podstawie pola status z API).
 function liveTag(m) {
-  if (m.status === "IN_PLAY" || m.status === "PAUSED") return '<span class="live">● LIVE</span>';
+  if (m.status === "IN_PLAY") return '<span class="live">● LIVE</span>';
+  if (m.status === "PAUSED") return '<span class="live">PRZERWA</span>';
   if (matchFinished(m)) return '<span class="ft">KONIEC</span>';
   return "";
 }
@@ -1117,6 +1192,149 @@ function fmtChatTime(ts) {
   }).format(ts.toDate());
 }
 
+function chatMessageById(id) {
+  return state.chat.find((m) => m.id === id) || null;
+}
+
+function compactChatText(m) {
+  const raw = (m?.text || "").replace(/\s+/g, " ").trim();
+  const text = raw || (m?.image ? "Zdjęcie" : "Wiadomość");
+  return text.length > 90 ? text.slice(0, 87) + "..." : text;
+}
+
+function chatReplySummary(m) {
+  if (!m) return null;
+  return {
+    id: m.id,
+    uid: m.uid || null,
+    name: m.name || "Gracz",
+    text: compactChatText(m),
+    image: Boolean(m.image)
+  };
+}
+
+function chatReplyPreviewHtml(reply, cls = "") {
+  if (!reply) return "";
+  const img = reply.image ? `<span class="chat-reply-img">📷</span>` : "";
+  return `
+    <button type="button" class="chat-reply-preview ${cls}" data-reply-id="${escapeHtml(reply.id || "")}">
+      <span class="chat-reply-bar"></span>
+      <span class="chat-reply-copy">
+        <strong>${escapeHtml(reply.name || "Gracz")}</strong>
+        <span>${img}${escapeHtml(reply.text || "Wiadomość")}</span>
+      </span>
+    </button>`;
+}
+
+function chatComposerReplyHtml() {
+  if (!state.chatReplyTo) return "";
+  return `
+    <div class="chat-reply-composer">
+      ${chatReplyPreviewHtml(state.chatReplyTo, "composer")}
+      <button type="button" id="cw-reply-clear" title="Anuluj odpowiedź">✕</button>
+    </div>`;
+}
+
+function updateChatReplyPreview() {
+  const area = document.getElementById("cw-reply");
+  if (!area) return;
+  area.innerHTML = chatComposerReplyHtml();
+  const clear = document.getElementById("cw-reply-clear");
+  if (clear) clear.addEventListener("click", () => {
+    state.chatReplyTo = null;
+    updateChatReplyPreview();
+  });
+}
+
+function chatReactionsForMessage(msgId) {
+  return Object.values(state.chatReactions || {}).filter(
+    (r) => r && r.msgId === msgId && CHAT_REACTION_EMOJIS.includes(r.emoji)
+  );
+}
+
+function myReactionForMessage(msgId) {
+  if (!state.user) return null;
+  return chatReactionsForMessage(msgId).find((r) => r.uid === state.user.uid) || null;
+}
+
+function chatReactionsHtml(msgId) {
+  const reactions = chatReactionsForMessage(msgId);
+  if (!reactions.length) return "";
+  const grouped = new Map();
+  for (const r of reactions) {
+    if (!grouped.has(r.emoji)) grouped.set(r.emoji, []);
+    grouped.get(r.emoji).push(r);
+  }
+  return `
+    <div class="chat-reactions">
+      ${[...grouped.entries()]
+        .map(([emoji, list]) => {
+          const mine = state.user && list.some((r) => r.uid === state.user.uid);
+          const title = list.map((r) => r.name || "Gracz").join(", ");
+          return `<button type="button" class="chat-reaction-chip ${mine ? "mine" : ""}" data-react-msg="${escapeHtml(msgId)}" data-emoji="${escapeHtml(emoji)}" title="${escapeHtml(title)}">${escapeHtml(emoji)} <span>${list.length}</span></button>`;
+        })
+        .join("")}
+    </div>`;
+}
+
+function chatReactionPickerHtml(msgId) {
+  if (state.chatReactionPicker !== msgId) return "";
+  const mine = myReactionForMessage(msgId);
+  return `
+    <div class="chat-reaction-picker">
+      ${CHAT_REACTION_EMOJIS.map((emoji) => {
+        const active = mine?.emoji === emoji;
+        return `<button type="button" class="${active ? "active" : ""}" data-react-msg="${escapeHtml(msgId)}" data-emoji="${escapeHtml(emoji)}">${escapeHtml(emoji)}</button>`;
+      }).join("")}
+    </div>`;
+}
+
+function scrollToChatMessage(id) {
+  const list = document.querySelector("#chat-widget #chat-messages");
+  if (!list || !id) return;
+  const el = [...list.querySelectorAll(".chat-msg")].find((node) => node.dataset.msgId === id);
+  if (!el) return;
+  el.scrollIntoView({ block: "center", behavior: "smooth" });
+  el.classList.add("pulse");
+  setTimeout(() => el.classList.remove("pulse"), 900);
+}
+
+function setChatReplyFromMessage(id) {
+  const m = chatMessageById(id);
+  if (!m || !state.user) return;
+  state.chatReplyTo = chatReplySummary(m);
+  updateChatReplyPreview();
+  const input = document.getElementById("cw-text");
+  if (input) input.focus();
+}
+
+async function setChatReaction(msgId, emoji) {
+  if (!state.user || !CHAT_REACTION_EMOJIS.includes(emoji)) return;
+  const mp = myProfile();
+  const ref = doc(db, "chatReactions", `${msgId}_${state.user.uid}`);
+  const existing = myReactionForMessage(msgId);
+  try {
+    if (existing?.emoji === emoji) {
+      await deleteDoc(ref);
+    } else {
+      await setDoc(ref, {
+        msgId,
+        uid: state.user.uid,
+        emoji,
+        name: mp.name,
+        avatar: mp.avatar || null,
+        photo: state.user.photoURL || null,
+        updatedAt: serverTimestamp()
+      });
+    }
+    state.chatReactionPicker = null;
+    updateChatWidget();
+  } catch (err) {
+    console.error("chat reaction:", err);
+    alert("Nie udało się zapisać reakcji.");
+  }
+}
+
 // Zamienia tekst na bezpieczny HTML: linki klikalne, a linki do obrazków/GIF-ów
 // renderowane jako podgląd. Bez osadzania wideo.
 function renderMessageText(text) {
@@ -1177,6 +1395,7 @@ function chatMessagesHtml() {
       const mine = state.user && m.uid === state.user.uid;
       const canDel = mine || isAdmin();
       const prof = { name: m.name, avatar: m.avatar, photo: m.photo };
+      const reply = chatReplyPreviewHtml(m.replyTo, "in-message");
       const body =
         (m.text ? `<div class="chat-text">${renderMessageText(m.text)}</div>` : "") +
         (m.image ? `<a href="${m.image}" target="_blank" rel="noopener"><img class="chat-img" src="${m.image}" alt="" loading="lazy" /></a>` : "");
@@ -1186,15 +1405,22 @@ function chatMessagesHtml() {
           ? `<div class="chat-receipts">${seen.slice(0, 8).map(readReceiptAvatar).join("")}${seen.length > 8 ? `<span class="rr-more">+${seen.length - 8}</span>` : ""}</div>`
           : "";
       return `
-        <div class="chat-msg ${mine ? "mine" : ""}">
+        <div class="chat-msg ${mine ? "mine" : ""}" data-msg-id="${escapeHtml(m.id)}">
           ${avatarHtml(prof, "sm")}
           <div class="chat-bubble">
             <div class="chat-head">
               <span class="chat-name">${escapeHtml(m.name || "Gracz")}</span>
               <span class="chat-time">${fmtChatTime(m.createdAt)}</span>
-              ${canDel ? `<button class="chat-del" data-id="${escapeHtml(m.id)}" title="Usuń">✕</button>` : ""}
+              <span class="chat-actions">
+                <button type="button" class="chat-act chat-reply" data-reply="${escapeHtml(m.id)}" title="Odpowiedz">↩</button>
+                <button type="button" class="chat-act chat-react" data-react-toggle="${escapeHtml(m.id)}" title="Dodaj reakcję">☺</button>
+                ${canDel ? `<button class="chat-del" data-id="${escapeHtml(m.id)}" title="Usuń">✕</button>` : ""}
+              </span>
             </div>
+            ${reply}
             ${body}
+            ${chatReactionsHtml(m.id)}
+            ${chatReactionPickerHtml(m.id)}
           </div>
         </div>${seenRow}`;
     })
@@ -1211,6 +1437,7 @@ function chatComposerHtml() {
   }
   return `
     <div id="cw-attach"></div>
+    <div id="cw-reply"></div>
     <div class="chat-input-row">
       <button type="button" class="btn ghost chat-photo" id="cw-photo" title="Dodaj zdjęcie">📷</button>
       <input type="text" id="cw-text" maxlength="1000" autocomplete="off"
@@ -1316,6 +1543,7 @@ function renderChatComposer(w) {
   const login = wrap.querySelector("#cw-login");
   if (login) login.addEventListener("click", doLogin);
   updateChatAttach();
+  updateChatReplyPreview();
 }
 
 // Doczepia pływający dymek czatu do <body> (raz). Niezależny od render() —
@@ -1351,8 +1579,34 @@ function mountChatWidget() {
 
   w.querySelector("#cw-fab").addEventListener("click", () => toggleChat());
   w.querySelector("#cw-close").addEventListener("click", () => toggleChat(false));
-  // Usuwanie wiadomości (delegacja — nie trzeba podpinać po każdym odświeżeniu).
+  // Akcje wiadomości (delegacja — nie trzeba podpinać po każdym odświeżeniu).
   w.querySelector("#chat-messages").addEventListener("click", async (e) => {
+    const reply = e.target.closest && e.target.closest(".chat-reply");
+    if (reply) {
+      setChatReplyFromMessage(reply.dataset.reply);
+      return;
+    }
+
+    const reactToggle = e.target.closest && e.target.closest(".chat-react");
+    if (reactToggle) {
+      const id = reactToggle.dataset.reactToggle;
+      state.chatReactionPicker = state.chatReactionPicker === id ? null : id;
+      updateChatWidget();
+      return;
+    }
+
+    const react = e.target.closest && e.target.closest("[data-react-msg][data-emoji]");
+    if (react) {
+      await setChatReaction(react.dataset.reactMsg, react.dataset.emoji);
+      return;
+    }
+
+    const replyPreview = e.target.closest && e.target.closest(".chat-reply-preview");
+    if (replyPreview) {
+      scrollToChatMessage(replyPreview.dataset.replyId);
+      return;
+    }
+
     const del = e.target.closest && e.target.closest(".chat-del");
     if (!del) return;
     if (!confirm("Usunąć tę wiadomość?")) return;
@@ -1539,16 +1793,19 @@ async function sendChatMessage() {
       photo: state.user.photoURL || null,
       text: text.slice(0, 1000),
       image,
+      replyTo: state.chatReplyTo || null,
       createdAt: serverTimestamp()
     });
     state.chatDraft = "";
     state.chatImage = null;
+    state.chatReplyTo = null;
     const ti = document.getElementById("cw-text");
     if (ti) {
       ti.value = "";
       ti.focus();
     }
     updateChatAttach();
+    updateChatReplyPreview();
     updateChatWidget();
   } catch (e) {
     console.error("chat send:", e);
@@ -1634,8 +1891,39 @@ function playerModalHtml() {
     </div>`;
 }
 
+function liveScoredMatches() {
+  return state.matches.filter((m) => isLiveMatch(m) && getLiveResult(m));
+}
+
+function liveScoreText(m) {
+  const r = getLiveResult(m);
+  if (!r) return "";
+  return `${m.homeTeam.name} ${r.h}:${r.a} ${m.awayTeam.name}`;
+}
+
+function liveRankingNoticeHtml(ms) {
+  if (!ms.length) return "";
+  const text = ms.slice(0, 3).map(liveScoreText).filter(Boolean).join(" · ");
+  const more = ms.length > 3 ? ` · +${ms.length - 3}` : "";
+  return `
+    <div class="live-ranking-note">
+      <span class="live-dot"></span>
+      <strong>Ranking live</strong>
+      <span>${escapeHtml(text + more)}</span>
+      <small>punkty są tymczasowe do końcowego gwizdka</small>
+    </div>`;
+}
+
+function liveDeltaHtml(r, hasLiveRanking) {
+  if (!hasLiveRanking) return "";
+  const cls = r.livePoints > 0 ? "" : " zero";
+  return `<span class="live-delta${cls}">${r.livePoints > 0 ? "+" : ""}${r.livePoints} live</span>`;
+}
+
 function rankingHtml() {
-  const board = calculateLeaderboard();
+  const liveMatches = liveScoredMatches();
+  const hasLiveRanking = liveMatches.length > 0;
+  const board = calculateLeaderboard({ includeLive: hasLiveRanking });
   const p = state.settings.points;
 
   const rows =
@@ -1655,7 +1943,7 @@ function rankingHtml() {
                   <span class="player-name">${escapeHtml(r.name)}${prof.paid ? ' <span class="paid-badge" title="Składka opłacona">💰</span>' : ""}${me ? ' <span class="you">Ty</span>' : ""}</span>
                 </span>
               </td>
-              <td class="total"><strong>${r.total}</strong></td>
+              <td class="total"><strong>${r.total}</strong>${liveDeltaHtml(r, hasLiveRanking)}</td>
               <td>${r.exactPoints}<span class="cnt">×${r.exactCount}</span></td>
               <td>${r.outcomePoints}<span class="cnt">×${r.outcomeOnlyCount}</span></td>
               <td>${r.advancePoints}<span class="cnt">×${r.advanceCount}</span></td>
@@ -1669,12 +1957,13 @@ function rankingHtml() {
       <div class="section-head">
         <div>
           <div class="eyebrow">Klasyfikacja</div>
-          <h2>Ranking</h2>
+          <h2>${hasLiveRanking ? "Ranking live" : "Ranking"}</h2>
         </div>
         <div class="points-legend">
           ${p.exactScore} pkt dokładny wynik · ${p.correctResult} pkt traf. rezultat · 🎯 ${p.advanceBonus ?? 1} pkt awans (puchary) · ${p.tournamentWinner} pkt mistrz
         </div>
       </div>
+      ${liveRankingNoticeHtml(liveMatches)}
       ${
         !state.user && board.length
           ? `<div class="join-cta">
@@ -1706,17 +1995,17 @@ function rankingHtml() {
 
 // Wiersz meczu w stylu Flashscore (tylko podgląd: wynik + mój typ).
 function fsMatchRow(m) {
-  const r = getResult(m);
-  const finished = Boolean(r);
+  const r = getLiveResult(m);
+  const live = isLiveMatch(m) && Boolean(r) && !matchFinished(m);
   const myPred = state.user
     ? confirmedMatchPrediction(state.predictions[state.user.uid]?.matches?.[m.id])
     : null;
   const hs = r ? r.h : "";
   const as = r ? r.a : "";
-  const winH = finished && r.h > r.a;
-  const winA = finished && r.a > r.h;
+  const winH = Boolean(r) && r.h > r.a;
+  const winA = Boolean(r) && r.a > r.h;
   return `
-    <div class="fs-row ${finished ? "fin" : ""}">
+    <div class="fs-row ${matchFinished(m) ? "fin" : ""} ${live ? "live-game" : ""}">
       <div class="fs-meta">
         <span class="fs-time">${fmtShort(m.kickoffAt)}</span>
         ${liveTag(m)}
@@ -1731,7 +2020,7 @@ function fsMatchRow(m) {
           <b class="fs-score">${as}</b>
         </div>
       </div>
-      <div class="fs-side">${myPredTag(myPred, r)}</div>
+      <div class="fs-side">${myPredTag(myPred, r, m, { live })}</div>
     </div>`;
 }
 
@@ -1740,11 +2029,12 @@ function fsMatchRow(m) {
 function betRow(m) {
   const locked = matchLocked(m);
   const pred = state.myDraft.matches[m.id] || {};
-  const r = getResult(m);
-  const finished = Boolean(r);
+  const r = getLiveResult(m);
+  const finished = matchFinished(m);
+  const live = isLiveMatch(m) && Boolean(r) && !finished;
   const hasScore = pred.h !== undefined && pred.a !== undefined;
   const myp = hasScore ? pred : null;
-  const tag = finished ? myPredTag(myp, r, m) : "";
+  const tag = finished || live ? myPredTag(myp, r, m, { live }) : "";
   const isKO = isKnockout(m);
   const hasPick = pred.h !== undefined || pred.a !== undefined || pred.adv;
   const canClear = hasPick && !locked;
@@ -1752,13 +2042,13 @@ function betRow(m) {
 
   const teamLine = (team, side) => {
     const val = pred[side] ?? "";
-    const real = finished ? r[side] : null;
-    const win = finished && (side === "h" ? r.h > r.a : r.a > r.h);
+    const real = finished || live ? r[side] : null;
+    const win = (finished || live) && (side === "h" ? r.h > r.a : r.a > r.h);
     return `
       <div class="bet-team-row ${win ? "win" : ""}">
         <span class="fs-flag">${flagImg(team)}</span>
         <span class="bet-name">${escapeHtml(team.name)}</span>
-        ${finished ? `<b class="real">${real}</b>` : ""}
+        ${finished || live ? `<b class="real">${real}</b>` : ""}
         <span class="score-stepper">
           <button type="button" class="step-btn" data-match="${m.id}" data-side="${side}" data-dir="-1" ${locked ? "disabled" : ""} tabindex="-1" aria-label="mniej">−</button>
           <input type="number" min="0" inputmode="numeric" class="score-in"
@@ -3201,6 +3491,20 @@ function listenToFirestore() {
       (err) => console.error("chatReads:", err.message)
     )
   );
+
+  // Reakcje do wiadomości czatu.
+  unsubscribers.push(
+    onSnapshot(
+      collection(db, "chatReactions"),
+      (snap) => {
+        const next = {};
+        snap.forEach((d) => (next[d.id] = d.data()));
+        state.chatReactions = next;
+        updateChatWidget();
+      },
+      (err) => console.error("chatReactions:", err.message)
+    )
+  );
 }
 
 function stopListening() {
@@ -3257,6 +3561,8 @@ onAuthStateChanged(auth, (user) => {
   state.myDraft = null;
   state.myDraftSeededFor = null;
   state.pushMsg = "";
+  state.chatReplyTo = null;
+  state.chatReactionPicker = null;
 
   // Ranking jest PUBLICZNY — listener startuje też bez logowania (idempotentny).
   listenToFirestore();
@@ -3279,7 +3585,7 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./sw.js").catch((e) => console.warn("SW:", e));
 }
 
-// Cykliczne odświeżanie wyników z pliku (robot aktualizuje go co 30 min),
+// Cykliczne odświeżanie wyników z pliku (robot aktualizuje go co kilka minut),
 // żeby przy otwartej aplikacji wpadały powiadomienia o zakończonych meczach.
 function startMatchesPolling() {
   setInterval(async () => {
@@ -3289,7 +3595,7 @@ function startMatchesPolling() {
       checkNotifications();
       if (state.view === "matches" || state.view === "ranking") render();
     } catch (_) {}
-  }, 5 * 60 * 1000);
+  }, 60 * 1000);
 }
 
 // --- Start --------------------------------------------------------------------

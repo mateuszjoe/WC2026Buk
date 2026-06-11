@@ -74,6 +74,23 @@ function stagePl(stage) {
   return map[stage] || stage;
 }
 
+function scorePart(part) {
+  if (!part) return { home: null, away: null };
+  const home =
+    typeof part.home === "number"
+      ? part.home
+      : typeof part.homeTeam === "number"
+      ? part.homeTeam
+      : null;
+  const away =
+    typeof part.away === "number"
+      ? part.away
+      : typeof part.awayTeam === "number"
+      ? part.awayTeam
+      : null;
+  return { home, away };
+}
+
 const res = await fetch("https://api.football-data.org/v4/competitions/WC/matches", {
   headers: { "X-Auth-Token": TOKEN }
 });
@@ -94,7 +111,8 @@ if (!Array.isArray(data.matches)) {
 
 const matches = data.matches
   .map((m) => {
-    const ft = m.score?.fullTime || {};
+    const ft = scorePart(m.score?.fullTime);
+    const rt = scorePart(m.score?.regularTime);
     return {
       id: "wc-" + m.id,
       stage: stagePl(m.stage),
@@ -118,8 +136,13 @@ const matches = data.matches
       // Faktyczny zwycięzca (też po dogrywce/karnych) — do "kto awansuje" i mistrza.
       winner: m.score?.winner || null,
       // Wynik dopisywany automatycznie, gdy mecz ma rezultat:
-      homeScore: typeof ft.home === "number" ? ft.home : null,
-      awayScore: typeof ft.away === "number" ? ft.away : null
+      // fullTime jest też wynikiem bieżącym w trakcie statusu IN_PLAY/PAUSED.
+      homeScore: ft.home,
+      awayScore: ft.away,
+      // W pucharach do typów liczymy 90', więc zapisujemy regularTime, jeśli API poda.
+      regularHomeScore: rt.home,
+      regularAwayScore: rt.away,
+      lastUpdated: m.lastUpdated || null
     };
   })
   .sort((a, b) => a.kickoffAt.localeCompare(b.kickoffAt));
@@ -138,5 +161,6 @@ if (matches.length < 64) {
 
 await writeFile("data/matches.json", JSON.stringify(matches, null, 2) + "\n", "utf8");
 
-const finished = matches.filter((m) => m.homeScore !== null).length;
-console.log(`Zapisano ${matches.length} meczów (z wynikiem: ${finished}).`);
+const finished = matches.filter((m) => m.status === "FINISHED" || m.status === "AWARDED").length;
+const live = matches.filter((m) => m.status === "IN_PLAY" || m.status === "PAUSED").length;
+console.log(`Zapisano ${matches.length} meczów (zakończone: ${finished}, live: ${live}).`);

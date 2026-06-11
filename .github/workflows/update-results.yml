@@ -1,10 +1,10 @@
 name: Aktualizacja terminarza i wyników MŚ 2026
 
 # Robot pobiera dane z football-data.org i zapisuje je do data/matches.json.
-# Działa automatycznie co 30 minut oraz na żądanie (przycisk "Run workflow").
+# Działa automatycznie co 5 minut oraz na żądanie (przycisk "Run workflow").
 on:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 permissions:

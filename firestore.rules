@@ -57,6 +57,29 @@ service cloud.firestore {
       allow delete: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
     }
 
+    // Reakcje do czatu: osobny dokument na reakcję gracza, bez edycji wiadomości.
+    match /chatReactions/{reactionId} {
+      allow read: if true;
+      allow create: if isSignedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.msgId is string
+        && request.resource.data.msgId.size() > 0
+        && request.resource.data.msgId.size() < 100
+        && request.resource.data.emoji is string
+        && request.resource.data.emoji.size() > 0
+        && request.resource.data.emoji.size() <= 8;
+      allow update: if isSignedIn()
+        && resource.data.uid == request.auth.uid
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.msgId is string
+        && request.resource.data.msgId.size() > 0
+        && request.resource.data.msgId.size() < 100
+        && request.resource.data.emoji is string
+        && request.resource.data.emoji.size() > 0
+        && request.resource.data.emoji.size() <= 8;
+      allow delete: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
+    }
+
     // Potwierdzenia odczytu czatu: czyta każdy, pisze tylko właściciel (id = uid).
     match /chatReads/{uid} {
       allow read: if true;
