@@ -455,6 +455,8 @@ async function writeLiveToFirestore(allMatches) {
     if (now < t - LIVE_WINDOW_BEFORE_MS || now > t + LIVE_WINDOW_AFTER_MS) continue;
     overlay[m.id] = {
       status: m.status,
+      homeName: m.homeTeam?.name ?? null,
+      awayName: m.awayTeam?.name ?? null,
       homeScore: m.homeScore ?? null,
       awayScore: m.awayScore ?? null,
       regularHomeScore: m.regularHomeScore ?? null,

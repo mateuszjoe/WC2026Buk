@@ -256,29 +256,12 @@ async function sendTo(entry, payload) {
 
 const jobs = [];
 
-// Nowe wiadomości na czacie — jedno neutralne powiadomienie na osobę.
+// Czat: powiadomienia o nowych wiadomościach wysyła teraz natychmiastowo Cloud
+// Function onChatMessage (functions/index.js) — robot ich NIE dubluje. Tu tylko
+// przesuwamy znacznik, żeby stan był spójny.
 if (hasChatState) {
-  const newChatMessages = [];
   for (const msg of chatMessages) {
-    const t = timestampMs(msg.createdAt);
-    if (!t || t <= lastChatMs) continue;
-    lastChatMs = Math.max(lastChatMs, t);
-    newChatMessages.push(msg);
-  }
-
-  if (newChatMessages.length) {
-    for (const entry of subs) {
-      const hasMessageFromOther = newChatMessages.some((msg) => msg.uid !== entry.uid);
-      if (!hasMessageFromOther) continue;
-      jobs.push(
-        sendTo(entry, {
-          title: "💬 Nowa wiadomość w czacie",
-          body: "Otwórz czat w Typerze.",
-          tag: "chat-new",
-          url: "./#chat"
-        })
-      );
-    }
+    lastChatMs = Math.max(lastChatMs, timestampMs(msg.createdAt));
   }
 }
 

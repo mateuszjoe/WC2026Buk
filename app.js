@@ -3298,55 +3298,8 @@ function rand(arr) {
   return arr[(state.notifiedFinished.size + state.matches.length) % arr.length];
 }
 
-function notifyMatchFinished(m) {
-  const r = getResult(m);
-  if (!r) return;
-  const score = `${r.h}:${r.a}`;
-  const title = `⚽ ${m.homeTeam.name} ${r.h}:${r.a} ${m.awayTeam.name}`;
-
-  // Komentarz dotyczy TWOJEGO typu na ten mecz.
-  const mine = state.user
-    ? confirmedMatchPrediction(state.predictions[state.user.uid]?.matches?.[m.id])
-    : null;
-  let body;
-  if (!state.user) {
-    body = `Wynik: ${score}. Zaloguj się i typuj, bo tracisz zabawę!`;
-  } else if (!mine) {
-    body = rand([
-      `Wynik ${score}, a Ty nawet nie obstawiłeś. Wstyd, mordo.`,
-      `${score} po gwizdku. Twojego typu brak — śpisz czy co?`
-    ]);
-  } else {
-    const s = scoreMatch(mine, r, state.settings);
-    if (s.exact) {
-      body = rand([
-        `JA PIERDOLĘ! Dokładny wynik ${score} trafiony! +${s.points} pkt, ty jasnowidzu!`,
-        `Co za nos! Strzeliłeś ${score} co do bramki. +${s.points} pkt, gratulacje!`
-      ]);
-    } else if (s.correct) {
-      body = rand([
-        `Rezultat trafiony, +${s.points} pkt do kieszeni. Mogło być lepiej, ale jest.`,
-        `Nieźle — rezultat siadł, +${s.points} pkt. Dokładny wynik następnym razem.`
-      ]);
-    } else {
-      body = rand([
-        `Chuja trafiłeś i chuja dostałeś. 0 pkt. Następnym razem rusz głową.`,
-        `Pudło na całej linii. 0 pkt. Może rzut monetą zadziała lepiej?`
-      ]);
-    }
-  }
-  notify(title, body);
-}
-
-function notifyNewLeader(row) {
-  if (!row) return;
-  const me = state.user && row.uid === state.user.uid;
-  const title = "👑 Nowy lider rankingu!";
-  const body = me
-    ? `Jesteś nowym liderem, ${row.name}! Tylko tego nie spierdol.`
-    : `${row.name} wskakuje na 1. miejsce i depcze wam po pysku. Ktoś to ogarnie?`;
-  notify(title, body);
-}
+// (Powiadomienia in-app o końcu meczu i nowym liderze zdjęte — wysyła je teraz
+// web push z robota/Functions, żeby nie dublować i nie wyskakiwać po odświeżeniu.)
 
 // Po każdej aktualizacji danych: sprawdź, czy jest o czym powiadomić.
 // Powiadom admina, gdy ktoś nowy wpadnie do poczekalni (po pierwszym wczytaniu).
@@ -3378,16 +3331,15 @@ function checkNotifications() {
     return;
   }
 
+  // Koniec meczu i nowy lider: powiadomienia wysyła teraz web push (instant, też
+  // gdy apka jest w tle/zamknięta) — robot + Cloud Functions. NIE dublujemy ich
+  // powiadomieniem in-app, bo wyskakiwały hurtem po każdym odświeżeniu aplikacji.
+  // Aktualizujemy tylko stan, żeby liczniki/odznaki były spójne.
   for (const m of state.matches) {
-    if (matchFinished(m) && !state.notifiedFinished.has(m.id)) {
-      state.notifiedFinished.add(m.id);
-      notifyMatchFinished(m);
-    }
+    if (matchFinished(m)) state.notifiedFinished.add(m.id);
   }
-
   if (leader && leader !== state.lastLeaderUid) {
     state.lastLeaderUid = leader;
-    notifyNewLeader(board[0]);
   }
 }
 
