@@ -73,6 +73,9 @@ function timestampMs(value) {
   return 0;
 }
 
+// Losowy tekst z puli — żeby powiadomienia się nie powtarzały (kultura: bez wulgaryzmów).
+const pickMsg = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
 // --- Punktacja (zgodna z aplikacją) ------------------------------------------
 const FINAL_MATCH_STATUSES = new Set(["FINISHED", "AWARDED"]);
 function scorePair(h, a) {
@@ -286,30 +289,61 @@ for (const m of matches) {
     const pred = predictions[entry.uid]?.matches?.[m.id];
     let body;
     if (!pred) {
-      body = `Wynik ${r.h}:${r.a}, a Ty nawet nie obstawiłeś. Wstyd, mordo.`;
+      body = pickMsg([
+        `Wynik ${r.h}:${r.a}, a Ty nawet nie obstawiłeś. Następnym razem wbijaj typ!`,
+        `Padło ${r.h}:${r.a} — a Twojego typu brak. Szkoda punktów!`,
+        `${r.h}:${r.a} po gwizdku, a Ty bez typu. Nie odpuszczaj kolejnych meczów!`
+      ]);
     } else {
       const s = scoreMatch(pred, r);
       body = s.exact
-        ? `JA PIERDOLĘ! Dokładny wynik ${r.h}:${r.a} trafiony! +${s.points} pkt, ty jasnowidzu!`
+        ? pickMsg([
+            `Dokładny wynik ${r.h}:${r.a} trafiony! +${s.points} pkt, ty jasnowidzu! 🎯`,
+            `Co do bramki! ${r.h}:${r.a} i +${s.points} pkt. Mistrzostwo! 🔥`,
+            `Strzał w dziesiątkę — ${r.h}:${r.a}! +${s.points} pkt. Brawo! 👏`
+          ])
         : s.correct
-        ? `Rezultat trafiony, +${s.points} pkt do kieszeni. Mogło być lepiej, ale jest.`
-        : `Chuja trafiłeś i chuja dostałeś. 0 pkt. Następnym razem rusz głową.`;
+        ? pickMsg([
+            `Rezultat trafiony, +${s.points} pkt do kieszeni. Solidnie!`,
+            `Dobry typ — rezultat siadł, +${s.points} pkt. Dokładny wynik następnym razem!`,
+            `+${s.points} pkt za trafiony rezultat. Jest dobrze!`
+          ])
+        : pickMsg([
+            `Pudło. 0 pkt tym razem — odkujesz się w kolejnym meczu!`,
+            `Nie tym razem. 0 pkt, ale przed Tobą jeszcze sporo meczów!`,
+            `Tym razem nie wyszło. 0 pkt — głowa do góry, gramy dalej!`
+          ]);
     }
     jobs.push(sendTo(entry, { title, body }));
   }
 }
 
-// Nowy lider rankingu
+// Nowy lider rankingu — pule losowanych tekstów (żeby się nie powtarzały).
 if (leader && leader !== lastLeader && board[0].total > 0) {
   lastLeader = leader;
+  const youLead = pickMsg([
+    "Jesteś nowym liderem! Teraz tylko utrzymaj fotel. 👑",
+    "Wskakujesz na 1. miejsce! Reszta patrzy w górę. 🔝",
+    "Prowadzisz w rankingu! Trzymaj tempo. 🚀",
+    "Pierwsze miejsce należy do Ciebie. Brawo! 🏆",
+    "Jesteś na szczycie! Smakuje ten widok? 😎",
+    "Nowy lider to Ty! Czas bronić korony. 👑"
+  ]);
+  const someoneLeads = pickMsg([
+    `${board[0].name} wskakuje na 1. miejsce! Ktoś to odbije? 🔥`,
+    `Nowy lider: ${board[0].name}. Reszta ma robotę. 💪`,
+    `${board[0].name} obejmuje prowadzenie! Goń, kto żyw. 🏃`,
+    `Uwaga — ${board[0].name} jest nowym liderem! ⚡`,
+    `${board[0].name} przejmuje fotel lidera. Kto go zdetronizuje? 👀`,
+    `${board[0].name} na czele stawki! Czas na kontrę. 🥊`,
+    `Zmiana na szczycie — prowadzi ${board[0].name}! 📈`
+  ]);
   for (const entry of subs) {
     const me = entry.uid === leader;
     jobs.push(
       sendTo(entry, {
         title: "👑 Nowy lider rankingu!",
-        body: me
-          ? "Jesteś nowym liderem! Tylko tego nie spierdol."
-          : `${board[0].name} wskakuje na 1. miejsce i depcze wam po pysku. Ktoś to ogarnie?`
+        body: me ? youLead : someoneLeads
       })
     );
   }
