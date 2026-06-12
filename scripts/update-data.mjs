@@ -289,9 +289,14 @@ async function fetchEspnEvents(matches) {
   }
   const now = Date.now();
   const dates = new Set();
+  const DAY = 24 * 60 * 60 * 1000;
   for (const m of matches) {
     if (!inWindow(m, ESPN_WINDOW_AFTER_MS, now)) continue;
-    dates.add(ymdCompact(new Date(Date.parse(m.kickoffAt))));
+    const t = Date.parse(m.kickoffAt);
+    // ESPN grupuje mecze wg daty US (strefa za UTC), więc mecz nocny UTC (np. 02:00)
+    // trafia u nich pod POPRZEDNI dzień. Pytamy więc o dzień meczu I dzień wcześniej.
+    dates.add(ymdCompact(new Date(t)));
+    dates.add(ymdCompact(new Date(t - DAY)));
   }
   if (!dates.size) dates.add(ymdCompact(new Date(now)));
   const events = [];
