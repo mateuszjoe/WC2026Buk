@@ -140,14 +140,14 @@
       "name": "Maroko",
       "crest": "https://crests.football-data.org/morocco.svg"
     },
-    "status": "IN_PLAY",
+    "status": "PAUSED",
     "duration": "REGULAR",
     "winner": "DRAW",
     "homeScore": 1,
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-13T22:53:05Z"
+    "lastUpdated": "2026-06-13T22:53:38Z"
   },
   {
     "id": "wc-537340",
