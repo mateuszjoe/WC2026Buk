@@ -218,7 +218,7 @@
     "status": "IN_PLAY",
     "duration": "REGULAR",
     "winner": "HOME_TEAM",
-    "homeScore": 5,
+    "homeScore": 6,
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
