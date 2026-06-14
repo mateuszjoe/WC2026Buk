@@ -215,7 +215,7 @@
       "name": "Curaçao",
       "crest": "https://crests.football-data.org/curacao.svg"
     },
-    "status": "IN_PLAY",
+    "status": "PAUSED",
     "duration": "REGULAR",
     "winner": "HOME_TEAM",
     "homeScore": 3,
