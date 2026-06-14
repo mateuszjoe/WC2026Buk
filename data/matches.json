@@ -218,11 +218,11 @@
     "status": "IN_PLAY",
     "duration": "REGULAR",
     "winner": "HOME_TEAM",
-    "homeScore": 4,
+    "homeScore": 5,
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-14T18:31:08Z"
+    "lastUpdated": "2026-06-14T18:32:11Z"
   },
   {
     "id": "wc-537357",
