@@ -344,10 +344,10 @@
     "duration": "REGULAR",
     "winner": "DRAW",
     "homeScore": 0,
-    "awayScore": 0,
+    "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-15T19:20:16Z"
+    "lastUpdated": "2026-06-15T19:20:52Z"
   },
   {
     "id": "wc-537370",
