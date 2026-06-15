@@ -849,7 +849,10 @@ details.mini-standings[open] summary { color: var(--text); }
 .fs-side { margin-left: auto; flex-shrink: 0; }
 
 /* Wiersz do obstawiania (Moje typy) — drużyna + wynik + pole w jednym rzędzie */
-.bet-row { gap: 0.6rem; align-items: center; }
+/* flex-wrap zawsze: akcje (Zatwierdź/wyczyść, flex-basis:100%) muszą spaść do
+   własnego wiersza także w wąskiej kolumnie (2 grupy obok siebie ~360px), inaczej
+   zjadają miejsce i nazwa drużyny kurczy się do zera. */
+.bet-row { gap: 0.6rem; align-items: center; flex-wrap: wrap; }
 .bet-meta {
   width: 54px; flex-shrink: 0;
   display: flex; flex-direction: column; gap: 0.1rem; align-items: flex-start;
