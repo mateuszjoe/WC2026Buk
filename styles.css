@@ -340,7 +340,8 @@ table.leaderboard { width: 100%; border-collapse: collapse; font-size: 0.92rem; 
   border-radius: 999px; background: var(--panel-2); color: var(--muted);
   font-size: 0.72rem; font-weight: 800; text-align: center;
 }
-.pm-tabs .vt.active .pm-tab-count { background: rgba(0, 0, 0, 0.18); color: inherit; }
+.view-toggle .vt.active .pm-tab-count { background: rgba(0, 0, 0, 0.18); color: inherit; }
+.mine-tabs { margin-bottom: 0.5rem; }
 
 /* ---------- Matches ---------- */
 .match-grid {

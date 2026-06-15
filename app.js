@@ -75,6 +75,7 @@ const state = {
   user: null, // zalogowany użytkownik lub null
   view: "ranking", // aktywna zakładka
   matchView: "groups", // układ meczów: "groups" (wg grup) | "dates" (wg dat)
+  mineTab: "open", // filtr w "Moje typy": "open" (do typowania) | "locked" (rozegrane/trwające)
   chat: [], // wiadomości czatu (najnowsze na dole)
   chatDraft: "", // treść wpisywanej wiadomości
   chatImage: null, // załączone zdjęcie (data URL) do wysłania
@@ -2164,12 +2165,15 @@ function matchViewToggle() {
 }
 
 // Bloki "wg dat" — jeden card na dzień, mecze posortowane chronologicznie.
-function dateBlocksHtml(rowFn, listClass) {
-  const list = allKnownMatchesSorted();
+function dateBlocksHtml(rowFn, listClass, opts = {}) {
+  let list = allKnownMatchesSorted();
+  if (opts.filter) list = list.filter(opts.filter);
   if (!list.length) {
     return `<p class="muted">Brak meczów z ustalonymi drużynami — pojawią się, gdy znane będą pary.</p>`;
   }
-  return matchesByDate(list)
+  let blocks = matchesByDate(list);
+  if (opts.reverse) blocks = blocks.slice().reverse();
+  return blocks
     .map(
       ([key, label, ms]) => `
       <div class="card group-block">
@@ -2246,6 +2250,19 @@ function capitalize(s) {
 }
 
 // --- Widok: Moje typy ---------------------------------------------------------
+function mineTabToggle(openCount, lockedCount) {
+  const t = state.mineTab === "locked" ? "locked" : "open";
+  return `
+    <div class="view-toggle mine-tabs" role="tablist" aria-label="Filtr typów">
+      <button class="vt ${t === "open" ? "active" : ""}" data-minetab="open">
+        📝 Do typowania <span class="pm-tab-count">${openCount}</span>
+      </button>
+      <button class="vt ${t === "locked" ? "active" : ""}" data-minetab="locked">
+        🔒 Rozegrane / trwające <span class="pm-tab-count">${lockedCount}</span>
+      </button>
+    </div>`;
+}
+
 function mineHtml() {
   if (!state.user) {
     return `
@@ -2278,6 +2295,17 @@ function mineHtml() {
   }
   const champLocked = championLocked();
 
+  // Podział na podzakładki: "do typowania" (jeszcze edytowalne) vs
+  // "rozegrane / trwające" (zablokowane — typu już nie zmienisz).
+  const mineTab = state.mineTab === "locked" ? "locked" : "open";
+  const inTab = (m) => (mineTab === "locked" ? matchLocked(m) : !matchLocked(m));
+  // W zakładce zablokowanych pokazujemy od najświeższego, w "do typowania" od najbliższego.
+  const orderForTab = (arr) => (mineTab === "locked" ? arr.slice().reverse() : arr);
+  const knownSorted = allKnownMatchesSorted();
+  const openCount = knownSorted.filter((m) => !matchLocked(m)).length;
+  const lockedCount = knownSorted.filter((m) => matchLocked(m)).length;
+  const activeCount = mineTab === "locked" ? lockedCount : openCount;
+
   const teamOptions = getTeams()
     .map(
       (t) =>
@@ -2289,6 +2317,8 @@ function mineHtml() {
   const groupBlocks = Object.keys(groups)
     .sort()
     .map((g) => {
+      const ms = orderForTab(groups[g].filter(inTab));
+      if (!ms.length) return "";
       const standings = standingsTableHtml(groups[g]);
       return `
       <div class="card group-block">
@@ -2297,14 +2327,16 @@ function mineHtml() {
           <summary>📊 Tabela grupy</summary>
           ${standings || '<p class="muted small">Brak rozegranych meczów.</p>'}
         </details>
-        <div class="bet-list">${groups[g].map(betRow).join("")}</div>
+        <div class="bet-list">${ms.map(betRow).join("")}</div>
       </div>`;
     })
     .join("");
 
   const koBlocks = knockoutByStage()
     .map(([stage, ms]) => {
-      const known = ms.filter((m) => isRealTeam(m.homeTeam) && isRealTeam(m.awayTeam));
+      const known = orderForTab(
+        ms.filter((m) => isRealTeam(m.homeTeam) && isRealTeam(m.awayTeam) && inTab(m))
+      );
       if (!known.length) return "";
       return `
       <div class="card group-block">
@@ -2341,10 +2373,20 @@ function mineHtml() {
         ${champLocked ? '<span class="lock-tag">🔒</span>' : ""}
       </div>
 
+      ${mineTabToggle(openCount, lockedCount)}
       ${matchViewToggle()}
       ${
-        state.matchView === "dates"
-          ? `<div class="stack">${dateBlocksHtml(betRow, "bet-list")}</div>`
+        !activeCount
+          ? `<div class="card"><p class="muted center">${
+              mineTab === "locked"
+                ? "Żaden mecz jeszcze się nie zaczął — tutaj pojawią się mecze rozegrane i trwające (typów już nie zmienisz)."
+                : "Brak meczów do typowania — wszystkie dostępne mecze już ruszyły. Zajrzyj do zakładki „Rozegrane / trwające”."
+            }</p></div>`
+          : state.matchView === "dates"
+          ? `<div class="stack">${dateBlocksHtml(betRow, "bet-list", {
+              filter: inTab,
+              reverse: mineTab === "locked",
+            })}</div>`
           : `<div class="phase-label">Faza grupowa</div>
              <div class="group-grid">${groupBlocks}</div>
              ${koBlocks ? `<div class="phase-label">Faza pucharowa</div><div class="group-grid">${koBlocks}</div>` : ""}`
@@ -2776,6 +2818,14 @@ function wireEvents() {
   appRoot.querySelectorAll("[data-matchview]").forEach((b) =>
     b.addEventListener("click", () => {
       state.matchView = b.dataset.matchview;
+      render();
+    })
+  );
+
+  // Podzakładki "Moje typy": Do typowania / Rozegrane / trwające
+  appRoot.querySelectorAll("[data-minetab]").forEach((b) =>
+    b.addEventListener("click", () => {
+      state.mineTab = b.dataset.minetab;
       render();
     })
   );
