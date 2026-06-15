@@ -220,6 +220,22 @@ table.leaderboard { width: 100%; border-collapse: collapse; font-size: 0.92rem; 
   text-transform: uppercase;
 }
 .live-delta.zero { color: var(--muted); }
+/* Typy graczy na trwające mecze, obok nicku w rankingu live */
+.live-picks {
+  display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.25rem;
+  margin-left: 0.1rem; vertical-align: middle;
+}
+.live-pick {
+  display: inline-flex; align-items: center; gap: 0.15rem;
+  font-weight: 800; font-size: 0.72rem; line-height: 1;
+  padding: 0.12rem 0.4rem; border-radius: 999px;
+  background: var(--panel-2); color: var(--text); border: 1px solid var(--line);
+}
+.live-pick .flag { width: 0.95rem; height: auto; }
+.live-pick.exact { background: var(--gold); color: #3a2c00; border-color: transparent; }
+.live-pick.ok { background: var(--accent); color: #06210f; border-color: transparent; }
+.live-pick.miss { background: rgba(255, 123, 123, 0.16); color: #ff9d9d; border-color: rgba(255, 123, 123, 0.3); }
+.live-pick.none { color: var(--muted); }
 .live-ranking-note {
   display: flex;
   align-items: center;
@@ -317,6 +333,14 @@ table.leaderboard { width: 100%; border-collapse: collapse; font-size: 0.92rem; 
 .pp-adv { color: var(--gold); font-size: 0.7rem; }
 .pp-hidden { color: var(--muted); font-size: 0.8rem; }
 .pp-foot { margin: 0.8rem 0 0; text-align: center; }
+/* Zakładki w modalu profilu: Widoczne / Niewidoczne */
+.pm-tabs { margin: 0 0 0.4rem; }
+.pm-tab-count {
+  display: inline-block; min-width: 1.1rem; padding: 0 0.3rem; margin-left: 0.15rem;
+  border-radius: 999px; background: var(--panel-2); color: var(--muted);
+  font-size: 0.72rem; font-weight: 800; text-align: center;
+}
+.pm-tabs .vt.active .pm-tab-count { background: rgba(0, 0, 0, 0.18); color: inherit; }
 
 /* ---------- Matches ---------- */
 .match-grid {

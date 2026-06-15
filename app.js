@@ -85,6 +85,7 @@ const state = {
   chatLastRead: 0, // ms ostatnio odczytanej wiadomości (licznik nieprzeczytanych)
   chatReads: {}, // uid -> { name, avatar, photo, lastReadMs } — potwierdzenia odczytu
   playerModalUid: null, // uid gracza, którego profil oglądamy (modal), albo null
+  playerModalTab: "visible", // zakładka w modalu profilu: "visible" | "hidden"
   myDraft: null, // lokalna kopia MOICH typów (edytowana w formularzu)
   myDraftSeededFor: null, // uid, dla którego zasialiśmy myDraft
   saveMsg: "", // komunikat o zapisie w widoku "Moje typy"
@@ -1810,7 +1811,38 @@ async function sendChatMessage() {
 // końcu 1. kolejki.
 function openPlayerProfile(uid) {
   state.playerModalUid = uid;
+  state.playerModalTab = "visible";
   render();
+}
+
+// Pojedynczy wiersz typu w modalu profilu gracza. Typy na mecze, które jeszcze
+// się nie zaczęły, są zamaskowane (uczciwa gra) — pokazujemy tylko, że typ istnieje.
+function playerPickRowHtml(p, m) {
+  const pk = confirmedMatchPrediction(p.matches[m.id]);
+  const revealed = matchLocked(m) || matchFinished(m);
+  const r = getResult(m);
+  let right;
+  if (!revealed) {
+    right = `<span class="pp-hidden">🔒 ukryte do startu</span>`;
+  } else {
+    const s = r ? scoreMatch(pk, r, state.settings) : null;
+    const bonus = r ? advanceBonus(pk, r, m, state.settings) : 0;
+    const cls = r ? (bonus > 0 || s.exact ? "exact" : s.correct ? "ok" : "miss") : "pending";
+    const label = r ? `${s.points + bonus} pkt${bonus ? " 🎯" : ""}` : "czeka";
+    const advTxt =
+      isKnockout(m) && pk.adv
+        ? `<span class="pp-adv">awans: ${escapeHtml(pk.adv === "h" ? m.homeTeam.name : m.awayTeam.name)}</span>`
+        : "";
+    right = `<span class="pp-pick">${pk.h ?? "–"}:${pk.a ?? "–"}</span>${advTxt}<span class="pts ${cls}">${label}</span>`;
+  }
+  return `
+    <div class="pp-row">
+      <div class="pp-match">
+        <span class="pp-teams">${flagImg(m.homeTeam)} ${escapeHtml(m.homeTeam.name)} – ${escapeHtml(m.awayTeam.name)} ${flagImg(m.awayTeam)}</span>
+        <span class="pp-when">${fmtShort(m.kickoffAt)}${matchFinished(m) && r ? ` · było ${r.h}:${r.a}` : ""}</span>
+      </div>
+      <div class="pp-pickwrap">${right}</div>
+    </div>`;
 }
 function playerModalHtml() {
   const uid = state.playerModalUid;
@@ -1825,44 +1857,40 @@ function playerModalHtml() {
   const champTeam = teamById(p.champion);
   const champRevealed = championLocked();
 
-  const picks = state.matches
-    .filter((m) => {
-      const pk = confirmedMatchPrediction(p.matches?.[m.id]);
-      return pk && (pk.h !== undefined || pk.a !== undefined);
-    })
+  const allPicks = state.matches.filter((m) => {
+    const pk = confirmedMatchPrediction(p.matches?.[m.id]);
+    return pk && (pk.h !== undefined || pk.a !== undefined);
+  });
+  const isRevealed = (m) => matchLocked(m) || matchFinished(m);
+  // Widoczne: mecze już rozpoczęte — od najświeższego do najstarszego.
+  const visiblePicks = allPicks
+    .filter(isRevealed)
+    .sort((a, b) => b.kickoffAt.localeCompare(a.kickoffAt));
+  // Niewidoczne: mecze jeszcze nierozpoczęte (typ zamaskowany) — od najbliższego.
+  const hiddenPicks = allPicks
+    .filter((m) => !isRevealed(m))
     .sort((a, b) => a.kickoffAt.localeCompare(b.kickoffAt));
 
-  const pickRows = picks.length
-    ? picks
-        .map((m) => {
-          const pk = confirmedMatchPrediction(p.matches[m.id]);
-          const revealed = matchLocked(m) || matchFinished(m);
-          const r = getResult(m);
-          let right;
-          if (!revealed) {
-            right = `<span class="pp-hidden">🔒 ukryte do startu</span>`;
-          } else {
-            const s = r ? scoreMatch(pk, r, state.settings) : null;
-            const bonus = r ? advanceBonus(pk, r, m, state.settings) : 0;
-            const cls = r ? (bonus > 0 || s.exact ? "exact" : s.correct ? "ok" : "miss") : "pending";
-            const label = r ? `${s.points + bonus} pkt${bonus ? " 🎯" : ""}` : "czeka";
-            const advTxt =
-              isKnockout(m) && pk.adv
-                ? `<span class="pp-adv">awans: ${escapeHtml(pk.adv === "h" ? m.homeTeam.name : m.awayTeam.name)}</span>`
-                : "";
-            right = `<span class="pp-pick">${pk.h ?? "–"}:${pk.a ?? "–"}</span>${advTxt}<span class="pts ${cls}">${label}</span>`;
-          }
-          return `
-            <div class="pp-row">
-              <div class="pp-match">
-                <span class="pp-teams">${flagImg(m.homeTeam)} ${escapeHtml(m.homeTeam.name)} – ${escapeHtml(m.awayTeam.name)} ${flagImg(m.awayTeam)}</span>
-                <span class="pp-when">${fmtShort(m.kickoffAt)}${matchFinished(m) && r ? ` · było ${r.h}:${r.a}` : ""}</span>
-              </div>
-              <div class="pp-pickwrap">${right}</div>
-            </div>`;
-        })
-        .join("")
-    : `<p class="muted small">Ten gracz nie wpisał jeszcze żadnych typów.</p>`;
+  const tab = state.playerModalTab === "hidden" ? "hidden" : "visible";
+  const activePicks = tab === "hidden" ? hiddenPicks : visiblePicks;
+
+  const pickRows = !allPicks.length
+    ? `<p class="muted small">Ten gracz nie wpisał jeszcze żadnych typów.</p>`
+    : activePicks.length
+    ? activePicks.map((m) => playerPickRowHtml(p, m)).join("")
+    : tab === "hidden"
+    ? `<p class="muted small">Brak ukrytych typów — wszystkie obstawione mecze już ruszyły.</p>`
+    : `<p class="muted small">Brak widocznych typów — żaden obstawiony mecz jeszcze się nie zaczął.</p>`;
+
+  const tabsHtml = `
+    <div class="view-toggle pm-tabs" role="tablist" aria-label="Typy gracza">
+      <button class="vt ${tab === "visible" ? "active" : ""}" data-pmtab="visible">
+        👁️ Widoczne <span class="pm-tab-count">${visiblePicks.length}</span>
+      </button>
+      <button class="vt ${tab === "hidden" ? "active" : ""}" data-pmtab="hidden">
+        🔒 Niewidoczne <span class="pm-tab-count">${hiddenPicks.length}</span>
+      </button>
+    </div>`;
 
   return `
     <div class="player-modal-overlay">
@@ -1876,8 +1904,13 @@ function playerModalHtml() {
           </div>
         </div>
         <div class="pm-champ">👑 Mistrz: ${champRevealed ? (champTeam ? `${flagImg(champTeam)} ${escapeHtml(champTeam.name)}` : "—") : "🔒 ukryte do końca 1. kolejki"}</div>
+        ${tabsHtml}
         <div class="pm-picks">${pickRows}</div>
-        <p class="muted small pp-foot">Cudze typy na mecz odkrywają się dopiero po jego rozpoczęciu (uczciwa gra).</p>
+        <p class="muted small pp-foot">${
+          tab === "hidden"
+            ? "Niewidoczne (od najbliższego meczu): cudze typy odkrywają się dopiero po rozpoczęciu meczu (uczciwa gra)."
+            : "Widoczne (od najświeższego meczu): typy odkryte po rozpoczęciu meczu."
+        }</p>
       </div>
     </div>`;
 }
@@ -1911,6 +1944,29 @@ function liveDeltaHtml(r, hasLiveRanking) {
   return `<span class="live-delta${cls}">${r.livePoints > 0 ? "+" : ""}${r.livePoints} live</span>`;
 }
 
+// Typy gracza na trwające mecze — pokazywane obok nicku w rankingu live.
+// Mecz już się zaczął, więc cudze typy są jawne (uczciwa gra zachowana).
+function livePickChipsHtml(uid, liveMatches) {
+  if (!liveMatches.length) return "";
+  const pred = state.predictions[uid];
+  const multi = liveMatches.length > 1;
+  const chips = liveMatches
+    .map((m) => {
+      const pk = confirmedMatchPrediction(pred?.matches?.[m.id]);
+      const flags = multi ? `${flagImg(m.homeTeam)}${flagImg(m.awayTeam)} ` : "";
+      const pair = `${m.homeTeam.name} – ${m.awayTeam.name}`;
+      if (!pk || pk.h === undefined || pk.a === undefined) {
+        return `<span class="live-pick none" title="${escapeHtml(pair + ": brak typu")}">${flags}—</span>`;
+      }
+      const res = getLiveResult(m);
+      const s = res ? scoreMatch(pk, res, state.settings) : null;
+      const cls = s ? (s.exact ? "exact" : s.correct ? "ok" : "miss") : "";
+      return `<span class="live-pick ${cls}" title="${escapeHtml(`${pair}: typ ${pk.h}:${pk.a}`)}">${flags}${pk.h}:${pk.a}</span>`;
+    })
+    .join("");
+  return `<span class="live-picks">${chips}</span>`;
+}
+
 function rankingHtml() {
   const liveMatches = liveScoredMatches();
   const hasLiveRanking = liveMatches.length > 0;
@@ -1932,6 +1988,7 @@ function rankingHtml() {
                 <span class="player-cell clickable" data-player="${escapeHtml(r.uid)}" title="Zobacz typy">
                   ${avatarHtml(prof)}
                   <span class="player-name">${escapeHtml(r.name)}${prof.paid ? ' <span class="paid-badge" title="Składka opłacona">💰</span>' : ""}${me ? ' <span class="you">Ty</span>' : ""}</span>
+                  ${livePickChipsHtml(r.uid, liveMatches)}
                 </span>
               </td>
               <td class="total"><strong>${r.total}</strong>${liveDeltaHtml(r, hasLiveRanking)}</td>
@@ -2741,6 +2798,13 @@ function wireEvents() {
         render();
       }
     });
+  // Przełącznik zakładek w modalu profilu: Widoczne / Niewidoczne
+  appRoot.querySelectorAll("[data-pmtab]").forEach((b) =>
+    b.addEventListener("click", () => {
+      state.playerModalTab = b.dataset.pmtab;
+      render();
+    })
+  );
 
   const login = document.getElementById("login");
   const login2 = document.getElementById("login-2");
