@@ -147,7 +147,7 @@
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-14T02:05:33Z"
+    "lastUpdated": "2026-06-14T00:10:33Z"
   },
   {
     "id": "wc-537340",
@@ -268,7 +268,7 @@
     "status": "IN_PLAY",
     "duration": "REGULAR",
     "winner": null,
-    "homeScore": 0,
+    "homeScore": 1,
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
