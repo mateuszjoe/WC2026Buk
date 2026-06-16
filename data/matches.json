@@ -418,11 +418,11 @@
     "status": "IN_PLAY",
     "duration": "REGULAR",
     "winner": "DRAW",
-    "homeScore": 0,
+    "homeScore": 1,
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-16T20:29:52Z"
+    "lastUpdated": "2026-06-16T20:31:04Z"
   },
   {
     "id": "wc-537392",
