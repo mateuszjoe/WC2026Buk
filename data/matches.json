@@ -444,7 +444,7 @@
     "duration": "REGULAR",
     "winner": "DRAW",
     "homeScore": 0,
-    "awayScore": 0,
+    "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
     "lastUpdated": "2026-06-16T22:29:34Z"
