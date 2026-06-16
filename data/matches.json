@@ -440,7 +440,7 @@
       "name": "Norwegia",
       "crest": "https://crests.football-data.org/813.svg"
     },
-    "status": "IN_PLAY",
+    "status": "PAUSED",
     "duration": "REGULAR",
     "winner": "AWAY_TEAM",
     "homeScore": 1,
