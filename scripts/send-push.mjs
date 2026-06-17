@@ -240,7 +240,7 @@ if (!stateDoc.exists) {
   const alreadyOpen = phases
     .filter((ph) => NOW >= Date.parse(ph.first.kickoffAt) - PHASE_LEAD_MS)
     .map((ph) => ph.key);
-  await stateRef.set({ notified: finished, lastLeader: leader, lastChatMs, announcedPhases: alreadyOpen, typeReminders: {} });
+  await stateRef.set({ notified: finished, lastLeader: leader, lastChatMs, announcedPhases: alreadyOpen, match24Reminders: {} });
   console.log("Pierwszy przebieg — zapamiętano stan, bez wysyłki.");
   process.exit(0);
 }
@@ -363,37 +363,57 @@ for (const ph of phases) {
   }
 }
 
-// --- Poranne przypomnienie o nietypowanych meczach na dziś (per gracz) -------
+// --- Przypomnienie o nietypowanych meczach w ciągu najbliższych 24h (per gracz)
+// Rolujące okno 24h: łapie zarówno dzisiejsze, jak i nocne/jutrzejsze mecze, które
+// wpadają w okno. Wysyłamy tylko w dzień (8:00–21:59, by nie budzić nocą) i najwyżej
+// raz dziennie na gracza; o danym meczu nie przypominamy dwa razy (dedup po ID meczu,
+// czyszczonym z meczów, które wypadły z okna). Stan: push/state.match24Reminders =
+// { uid: { day: "YYYY-MM-DD", ids: [...] } }.
+const DAY_MS = 24 * 60 * 60 * 1000;
 const today = plDate(new Date(NOW));
-const typeReminders = { ...(pstate.typeReminders || {}) };
-if (plHour(new Date(NOW)) >= 8) {
-  const todaysMatches = matches.filter(
+const hourNow = plHour(new Date(NOW));
+const match24Reminders = { ...(pstate.match24Reminders || {}) };
+if (hourNow >= 8 && hourNow < 22) {
+  const upcoming24 = matches.filter(
     (m) =>
       realTeam(m.homeTeam) &&
       realTeam(m.awayTeam) &&
-      plDate(new Date(m.kickoffAt)) === today &&
-      Date.parse(m.kickoffAt) > NOW // jeszcze się nie zaczął — można typować
+      Date.parse(m.kickoffAt) > NOW && // jeszcze się nie zaczął — można typować
+      Date.parse(m.kickoffAt) <= NOW + DAY_MS // startuje w ciągu 24h
   );
-  if (todaysMatches.length) {
-    for (const entry of subs) {
-      const p = predictions[entry.uid];
-      if (!p || p.approved === false) continue; // poczekalnia nie typuje
-      if (typeReminders[entry.uid] === today) continue; // już dziś przypomniano
-      const untyped = todaysMatches.filter((m) => {
-        const pk = p.matches?.[m.id];
-        return !(pk && pk.h != null && pk.a != null);
-      });
-      if (!untyped.length) continue;
-      typeReminders[entry.uid] = today;
-      jobs.push(
-        sendTo(entry, {
-          title: "⏰ Wytypuj dzisiejsze mecze!",
-          body: `Masz ${untyped.length} ${untyped.length === 1 ? "nieobstawiony mecz" : "nieobstawionych meczów"} na dziś. Zdążysz przed gwizdkiem — wbijaj!`,
-          tag: "type-reminder",
-          url: "./#mine"
-        })
-      );
+  const windowIds = new Set(upcoming24.map((m) => m.id));
+  for (const entry of subs) {
+    const prev = match24Reminders[entry.uid] || { day: null, ids: [] };
+    // przytnij zapamiętane ID do meczów wciąż w oknie (sprzątanie starych wpisów)
+    const reminded = new Set((prev.ids || []).filter((id) => windowIds.has(id)));
+    const p = predictions[entry.uid];
+    if (!p || p.approved === false) {
+      // poczekalnia nie typuje — tylko utrzymaj przycięty stan
+      match24Reminders[entry.uid] = { day: prev.day, ids: [...reminded] };
+      continue;
     }
+    const untyped = upcoming24.filter((m) => {
+      const pk = p.matches?.[m.id];
+      return !(pk && pk.h != null && pk.a != null);
+    });
+    const hasFresh = untyped.some((m) => !reminded.has(m.id)); // nowy mecz w oknie
+    const alreadyToday = prev.day === today; // już dziś pingnęliśmy tego gracza
+    if (!untyped.length || !hasFresh || alreadyToday) {
+      match24Reminders[entry.uid] = { day: prev.day, ids: [...reminded] };
+      continue;
+    }
+    const n = untyped.length;
+    match24Reminders[entry.uid] = { day: today, ids: untyped.map((m) => m.id) };
+    jobs.push(
+      sendTo(entry, {
+        title: "⏰ Masz mecze do wytypowania!",
+        body: `${
+          n === 1 ? "Masz 1 nieobstawiony mecz startujący" : `Masz ${n} nieobstawionych meczów startujących`
+        } w ciągu najbliższych 24h. Wbijaj typ, zanim padnie gwizdek! ⚽`,
+        tag: "type-24h",
+        url: "./#mine"
+      })
+    );
   }
 }
 
@@ -401,7 +421,7 @@ const settled = await Promise.allSettled(jobs);
 const sent = settled.filter((r) => r.status === "fulfilled" && r.value?.ok).length;
 const failed = settled.length - sent;
 await stateRef.set(
-  { notified: [...notified], lastLeader, lastChatMs, announcedPhases: [...announced], typeReminders },
+  { notified: [...notified], lastLeader, lastChatMs, announcedPhases: [...announced], match24Reminders },
   { merge: true }
 );
 console.log(`Wysłano ${sent}/${jobs.length} powiadomień (błędy: ${failed}, subskrypcji: ${subs.length}).`);
