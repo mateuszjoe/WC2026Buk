@@ -565,14 +565,14 @@
       "name": "Panama",
       "crest": "https://crests.football-data.org/panama.svg"
     },
-    "status": "TIMED",
+    "status": "PAUSED",
     "duration": "REGULAR",
-    "winner": null,
-    "homeScore": null,
-    "awayScore": null,
+    "winner": "DRAW",
+    "homeScore": 0,
+    "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-16T15:20:15Z"
+    "lastUpdated": "2026-06-17T23:53:55Z"
   },
   {
     "id": "wc-537404",
