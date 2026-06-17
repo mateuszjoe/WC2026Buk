@@ -1230,6 +1230,7 @@ details.mini-standings[open] summary { color: var(--text); }
   -webkit-overflow-scrolling: touch;
 }
 .chat-empty { text-align: center; padding: 1.6rem 0.6rem; }
+.chat-history-start { text-align: center; padding: 0.6rem 0.6rem 0.9rem; font-size: 0.85rem; opacity: 0.7; }
 .chat-msg { display: flex; gap: 0.5rem; align-items: flex-start; }
 .chat-msg.mine { flex-direction: row-reverse; }
 .chat-bubble {

@@ -29,6 +29,7 @@ import {
   where,
   orderBy,
   limit,
+  startAfter,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
@@ -78,7 +79,11 @@ const state = {
   view: "ranking", // aktywna zakładka
   matchView: "groups", // układ meczów: "groups" (wg grup) | "dates" (wg dat)
   mineTab: "open", // filtr w "Moje typy": "open" (do typowania) | "locked" (rozegrane/trwające)
-  chat: [], // wiadomości czatu (najnowsze na dole)
+  chat: [], // wiadomości czatu do wyświetlenia (najnowsze na dole) = chatOlder + chatLive
+  chatLive: [], // najnowsze wiadomości z listenera realtime (rosnąco)
+  chatOlder: [], // starsze wiadomości doczytane scrollem w górę (rosnąco)
+  chatHasMore: true, // czy są jeszcze starsze wiadomości do doczytania
+  chatLoadingOlder: false, // czy trwa doczytywanie starszych (blokada przed dublami)
   chatDraft: "", // treść wpisywanej wiadomości
   chatImage: null, // załączone zdjęcie (data URL) do wysłania
   chatReplyTo: null, // { id, name, text, image } - wiadomość, na którą odpowiadam
@@ -1398,12 +1403,83 @@ function computeReadReceipts() {
   return byMsg;
 }
 
+// Ile najnowszych wiadomości trzymamy na żywo (okno listenera) i po ile
+// doczytujemy starsze przy scrollu w górę (jak w Messengerze).
+const CHAT_LIVE_LIMIT = 50;
+const CHAT_OLDER_BATCH = 30;
+
+const chatMs = (m) => (m && m.createdAt && m.createdAt.toMillis ? m.createdAt.toMillis() : 0);
+
+// Składa listę do wyświetlenia: starsze (doczytane) + najnowsze (live), bez dubli.
+// chatOlder są starsze od okna live (gwarantuje to paginacja), więc sama konkatenacja
+// zachowuje porządek rosnący — nie sortujemy (by nie psuć kolejności świeżo wysłanej
+// wiadomości z jeszcze nieustalonym serverTimestamp).
+function rebuildChatList() {
+  const seen = new Set();
+  const out = [];
+  for (const m of [...state.chatOlder, ...state.chatLive]) {
+    if (seen.has(m.id)) continue;
+    seen.add(m.id);
+    out.push(m);
+  }
+  state.chat = out;
+}
+
+// Doczytuje starszą partię wiadomości (scroll w górę). Kursor = najstarsza znana
+// wiadomość z prawdziwym timestampem. Zachowuje pozycję scrolla po doklejeniu.
+async function loadOlderChat() {
+  if (state.chatLoadingOlder || !state.chatHasMore) return;
+  const oldest = state.chat.find((m) => m.createdAt && m.createdAt.toMillis);
+  if (!oldest) return;
+  state.chatLoadingOlder = true;
+  try {
+    const snap = await getDocs(
+      query(
+        collection(db, "chat"),
+        orderBy("createdAt", "desc"),
+        startAfter(oldest.createdAt),
+        limit(CHAT_OLDER_BATCH)
+      )
+    );
+    const older = [];
+    snap.forEach((d) => older.push({ id: d.id, ...d.data() }));
+    older.reverse(); // rosnąco
+    if (older.length < CHAT_OLDER_BATCH) state.chatHasMore = false;
+    if (older.length) {
+      state.chatOlder = [...older, ...state.chatOlder];
+      rebuildChatList();
+      renderChatPreservingTop();
+    } else {
+      // brak starszych — odśwież, by pokazać „początek czatu"
+      renderChatPreservingTop();
+    }
+  } catch (e) {
+    console.error("chat older:", e);
+  }
+  state.chatLoadingOlder = false;
+}
+
+// Przerysowanie listy z zachowaniem pozycji scrolla względem GÓRY (po doklejeniu
+// starszych u góry widok nie skacze — kotwiczymy na dotychczasowej zawartości).
+function renderChatPreservingTop() {
+  const w = document.getElementById("chat-widget");
+  const list = w && w.querySelector("#chat-messages");
+  if (!list) return;
+  const prevH = list.scrollHeight;
+  const prevTop = list.scrollTop;
+  list.innerHTML = chatMessagesHtml();
+  list.scrollTop = list.scrollHeight - prevH + prevTop;
+}
+
 function chatMessagesHtml() {
   if (!state.chat.length) {
     return `<p class="chat-empty muted">Cisza jak makiem zasiał… Rzuć pierwszym tekstem. 💬</p>`;
   }
+  const startLine = !state.chatHasMore
+    ? `<div class="chat-history-start muted">⚽ To początek czatu</div>`
+    : "";
   const receipts = computeReadReceipts();
-  return state.chat
+  return startLine + state.chat
     .map((m) => {
       const mine = state.user && m.uid === state.user.uid;
       const canDel = mine || isAdmin();
@@ -1592,6 +1668,10 @@ function mountChatWidget() {
 
   w.querySelector("#cw-fab").addEventListener("click", () => toggleChat());
   w.querySelector("#cw-close").addEventListener("click", () => toggleChat(false));
+  // Scroll w górę (jak w Messengerze) — przy zbliżeniu do góry doczytaj starsze.
+  w.querySelector("#chat-messages").addEventListener("scroll", (e) => {
+    if (e.target.scrollTop < 60) loadOlderChat();
+  });
   // Akcje wiadomości (delegacja — nie trzeba podpinać po każdym odświeżeniu).
   w.querySelector("#chat-messages").addEventListener("click", async (e) => {
     const reply = e.target.closest && e.target.closest(".chat-reply");
@@ -1730,8 +1810,11 @@ function updateChatWidget() {
     const list = w.querySelector("#chat-messages");
     if (list) {
       const nearBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 90;
+      const prevTop = list.scrollTop;
       list.innerHTML = chatMessagesHtml();
-      if (nearBottom) list.scrollTop = list.scrollHeight;
+      // Przy dole — trzymaj się dołu (nowa wiadomość). Gdy czytasz historię wyżej —
+      // zostań w miejscu (nowe wiadomości dochodzą u dołu, nie wyrzucaj na górę).
+      list.scrollTop = nearBottom ? list.scrollHeight : prevTop;
     }
     markChatRead();
   } else {
@@ -3574,15 +3657,17 @@ function listenToFirestore() {
     )
   );
 
-  // Czat — ostatnie wiadomości (najnowsze na dole).
+  // Czat — najnowsze wiadomości na żywo (okno „live"). Starsze doczytuje się
+  // scrollem w górę (loadOlderChat) — patrz CHAT_LIVE_LIMIT / rebuildChatList.
   unsubscribers.push(
     onSnapshot(
-      query(collection(db, "chat"), orderBy("createdAt", "desc"), limit(80)),
+      query(collection(db, "chat"), orderBy("createdAt", "desc"), limit(CHAT_LIVE_LIMIT)),
       (snap) => {
         const arr = [];
         snap.forEach((d) => arr.push({ id: d.id, ...d.data() }));
         arr.reverse(); // najstarsze na górze
-        state.chat = arr;
+        state.chatLive = arr;
+        rebuildChatList();
         updateChatWidget();
       },
       (err) => console.error("chat:", err.message)
