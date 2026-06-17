@@ -32,8 +32,15 @@ service cloud.firestore {
       // edytować swój wpis, ale NIE może sam zmienić pola "approved" (poczekalnia).
       // .get(...,false): starzy gracze nie mają pola "approved" — bez tego reguła
       // sięgała po nieistniejące pole i Firestore ODRZUCAŁ im każdy zapis typów.
+      // Scalone konta: właściciel wpisu może dodać na białą listę (aliasEmails)
+      // inne swoje adresy Google. Posiadacz takiego adresu może edytować ten wpis
+      // (typy/profil), ale tak jak właściciel NIE może sam zmienić "approved".
       allow update: if isAdmin()
         || (isSignedIn() && request.auth.uid == uid
+            && request.resource.data.get('approved', false) == resource.data.get('approved', false))
+        || (isSignedIn()
+            && resource.data.get('aliasEmails', []).hasAny([request.auth.token.email])
+            && request.resource.data.get('aliasEmails', []) == resource.data.get('aliasEmails', [])
             && request.resource.data.get('approved', false) == resource.data.get('approved', false));
       allow delete: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
     }

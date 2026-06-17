@@ -17,6 +17,7 @@ import {
   getFirestore,
   doc,
   getDoc,
+  getDocs,
   setDoc,
   addDoc,
   updateDoc,
@@ -25,6 +26,7 @@ import {
   onSnapshot,
   collection,
   query,
+  where,
   orderBy,
   limit,
   serverTimestamp
@@ -311,9 +313,27 @@ function isAdmin() {
 function isApprovedDoc(p) {
   return Boolean(p) && p.approved !== false;
 }
+// Scalanie kont: gracz może mieć na białej liście (aliasEmails) dodatkowe adresy
+// Google. Jeśli zalogowany e-mail jest na czyjejś liście, wszystkie jego typy,
+// profil i zapisy idą na TEN dokument (kanoniczny) — niezależnie od tego, którym
+// kontem Google się zalogował. Dzięki temu jedna osoba = jeden wpis w rankingu.
+function predUid() {
+  const u = state.user;
+  if (!u) return null;
+  const email = (u.email || "").toLowerCase();
+  if (email) {
+    for (const [uid, p] of Object.entries(state.predictions)) {
+      if (uid === u.uid) continue;
+      const aliases = p && p.aliasEmails;
+      if (Array.isArray(aliases) && aliases.some((e) => (e || "").toLowerCase() === email))
+        return uid;
+    }
+  }
+  return u.uid;
+}
 function myPending() {
   if (!state.user || isAdmin()) return false;
-  const mine = state.predictions[state.user.uid];
+  const mine = state.predictions[predUid()];
   return Boolean(mine) && mine.approved === false;
 }
 function pendingPlayers() {
@@ -708,7 +728,7 @@ function buildCropper(img, objectUrl) {
 // Profil zalogowanego gracza (z bazy lub domyślny z konta Google).
 function myProfile() {
   if (!state.user) return { name: "", avatar: null, photo: null, champion: null };
-  const mine = state.predictions[state.user.uid] || {};
+  const mine = state.predictions[predUid()] || {};
   return {
     name: mine.name || state.user.displayName || state.user.email,
     avatar: mine.avatar || null,
@@ -904,7 +924,7 @@ function saveMyPredictionsDebounced() {
   saveTimer = setTimeout(async () => {
     try {
       await setDoc(
-        doc(db, "predictions", state.user.uid),
+        doc(db, "predictions", predUid()),
         {
           name: (state.myDraft?.name || "").trim() || state.user.displayName || state.user.email,
           email: state.user.email,
@@ -929,11 +949,11 @@ function saveMyPredictionsDebounced() {
 async function clearMatchPrediction(id) {
   clearTimeout(saveTimer); // anuluj zaległy merge-zapis, by nie przywrócił klucza
   if (state.myDraft?.matches) delete state.myDraft.matches[id];
-  const mine = state.predictions[state.user?.uid];
+  const mine = state.predictions[predUid()];
   if (mine?.matches) delete mine.matches[id];
   if (!state.user || !state.predictionsLoaded) return;
   try {
-    await updateDoc(doc(db, "predictions", state.user.uid), {
+    await updateDoc(doc(db, "predictions", predUid()), {
       ["matches." + id]: deleteField(),
       updatedAt: serverTimestamp()
     });
@@ -947,12 +967,12 @@ async function clearMatchPrediction(id) {
 
 function applyMyDraftLocally() {
   if (!state.user || !state.myDraft) return;
-  state.predictions[state.user.uid] = {
-    ...(state.predictions[state.user.uid] || {}),
+  state.predictions[predUid()] = {
+    ...(state.predictions[predUid()] || {}),
     name: (state.myDraft.name || "").trim() || state.user.displayName || state.user.email,
     email: state.user.email,
     photo: state.user.photoURL || null,
-    avatar: state.myDraft.avatar || state.predictions[state.user.uid]?.avatar || null,
+    avatar: state.myDraft.avatar || state.predictions[predUid()]?.avatar || null,
     nameSet: !!state.myDraft.nameSet,
     matches: structuredClone(state.myDraft.matches || {}),
     champion: state.myDraft.champion || null
@@ -964,7 +984,7 @@ async function saveProfile() {
   if (!state.user || !state.predictionsLoaded || !state.myDraft) return;
   try {
     await setDoc(
-      doc(db, "predictions", state.user.uid),
+      doc(db, "predictions", predUid()),
       {
         name: (state.myDraft.name || "").trim() || state.user.displayName || state.user.email,
         nameSet: !!state.myDraft.nameSet,
@@ -1073,7 +1093,7 @@ function inAppWarningHtml() {
 
 // Czy zalogowany gracz ma już oznaczoną opłaconą składkę (ustawia admin).
 function myPaid() {
-  return !!(state.user && state.predictions[state.user.uid]?.paid);
+  return !!(state.user && state.predictions[predUid()]?.paid);
 }
 
 // Baner "Wpłać składkę" pod zakładkami. NIE zamykany na stałe — tylko zwijany
@@ -2047,7 +2067,7 @@ function fsMatchRow(m) {
   const r = getLiveResult(m);
   const live = isLiveMatch(m) && Boolean(r) && !matchFinished(m);
   const myPred = state.user
-    ? confirmedMatchPrediction(state.predictions[state.user.uid]?.matches?.[m.id])
+    ? confirmedMatchPrediction(state.predictions[predUid()]?.matches?.[m.id])
     : null;
   const hs = r ? r.h : "";
   const as = r ? r.a : "";
@@ -3282,7 +3302,7 @@ function seedMyDraft() {
   // Nie zasiewaj, dopóki nie wczytano predykcji — inaczej nadpiszemy nick/typy.
   if (!state.predictionsLoaded) return;
   if (state.myDraftSeededFor === state.user.uid && state.myDraft) return;
-  const mine = state.predictions[state.user.uid];
+  const mine = state.predictions[predUid()];
   state.myDraft = {
     name: mine?.name || state.user.displayName || state.user.email,
     nameSet: !!mine?.nameSet,
@@ -3612,6 +3632,15 @@ async function ensureProfileDoc(user) {
     const ref = doc(db, "predictions", user.uid);
     const snap = await getDoc(ref);
     if (snap.exists()) return;
+    // Konto scalone: jeśli e-mail jest na czyjejś białej liście (aliasEmails),
+    // NIE twórz osobnego wpisu — typy idą na konto główne (zob. predUid()).
+    const email = (user.email || "").toLowerCase();
+    if (email) {
+      const aliasSnap = await getDocs(
+        query(collection(db, "predictions"), where("aliasEmails", "array-contains", email))
+      );
+      if (!aliasSnap.empty) return;
+    }
     // Lista zamknięta: nowy gracz trafia do poczekalni (approved:false).
     // Admin (Ty) wpada od razu jako zatwierdzony.
     const autoApproved = user.email === state.settings?.adminEmail;
