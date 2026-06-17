@@ -2659,16 +2659,15 @@ function rulesHtml() {
         <div class="podium">
           <div class="prize gold">
             <div class="prize-place">🥇 I miejsce</div>
-            <div class="prize-amount">70% puli</div>
+            <div class="prize-amount">1000 zł</div>
           </div>
           <div class="prize silver">
             <div class="prize-place">🥈 II miejsce</div>
-            <div class="prize-amount">30% puli</div>
-            <div class="prize-note">minus koszt Harnasia zakapslowanego</div>
+            <div class="prize-amount">500 zł</div>
           </div>
           <div class="prize bronze">
             <div class="prize-place">🥉 III miejsce</div>
-            <div class="prize-amount">🍺 Harnaś zakapslowany</div>
+            <div class="prize-amount">200 zł</div>
           </div>
         </div>
         <p class="muted small">Gra toczy się o punkty i pulę ustaloną w grupie — bez prawdziwego bukmachera,
@@ -3720,11 +3719,58 @@ function startMatchesPolling() {
   }, 60 * 1000);
 }
 
+// --- Popup powitalny ----------------------------------------------------------
+// Pokazujemy najwyżej przy 3 pierwszych otwarciach apki/strony (licznik w
+// localStorage, osobny klucz na każdą wersję ogłoszenia). Zamknięcie: przycisk ×,
+// przycisk "Zrozumiałem", klik w tło albo Esc.
+function maybeShowIntroPopup() {
+  const KEY = "wc2026:popup:nagrody-v1";
+  let shows = 0;
+  try {
+    shows = parseInt(localStorage.getItem(KEY) || "0", 10) || 0;
+  } catch (_) {}
+  if (shows >= 3) return;
+  try {
+    localStorage.setItem(KEY, String(shows + 1));
+  } catch (_) {}
+
+  const overlay = document.createElement("div");
+  overlay.className = "intro-overlay";
+  overlay.innerHTML = `
+    <div class="intro-box" role="dialog" aria-modal="true" aria-labelledby="intro-title">
+      <button class="intro-close" type="button" data-intro="close" aria-label="Zamknij">×</button>
+      <div class="intro-emoji">🏆💰</div>
+      <h3 id="intro-title">Nowy podział puli!</h3>
+      <p>Od teraz gramy o realne nagrody:</p>
+      <ul class="intro-prizes">
+        <li><span>🥇 I miejsce</span><strong>1000 zł</strong></li>
+        <li><span>🥈 II miejsce</span><strong>500 zł</strong></li>
+        <li><span>🥉 III miejsce</span><strong>200 zł</strong></li>
+      </ul>
+      <p class="muted small">Szczegóły w zakładce <strong>Regulamin</strong>. Powodzenia! ⚽</p>
+      <button class="btn primary intro-ok" type="button" data-intro="close">Zrozumiałem</button>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  const close = () => {
+    overlay.remove();
+    document.removeEventListener("keydown", onKey);
+  };
+  const onKey = (e) => {
+    if (e.key === "Escape") close();
+  };
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay || e.target.closest("[data-intro='close']")) close();
+  });
+  document.addEventListener("keydown", onKey);
+}
+
 // --- Start --------------------------------------------------------------------
 (async function start() {
   try {
     await loadStaticData();
     render();
+    maybeShowIntroPopup();
     listenToLiveScores();
     startMatchesPolling();
   } catch (e) {

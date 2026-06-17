@@ -1072,6 +1072,69 @@ details.mini-standings[open] summary { color: var(--text); }
 .cropper-actions { display: flex; gap: 0.6rem; justify-content: center; }
 .cropper-actions .btn { flex: 1; justify-content: center; }
 
+/* ---------- Popup powitalny (3 pierwsze otwarcia) ---------- */
+.intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: intro-fade 0.18s ease-out;
+}
+@keyframes intro-fade { from { opacity: 0; } to { opacity: 1; } }
+.intro-box {
+  position: relative;
+  background: linear-gradient(180deg, var(--panel), var(--bg-2));
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem 1.3rem 1.3rem;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+}
+.intro-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.6rem;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 50%;
+}
+.intro-close:hover { background: rgba(255, 255, 255, 0.08); color: var(--text); }
+.intro-emoji { font-size: 2.2rem; }
+.intro-box h3 { margin: 0.3rem 0 0.5rem; }
+.intro-box > p { margin: 0.3rem 0; }
+.intro-prizes {
+  list-style: none;
+  margin: 0.9rem 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.intro-prizes li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.85rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.intro-prizes strong { font-size: 1.05rem; color: var(--accent); }
+.intro-ok { width: 100%; justify-content: center; margin-top: 0.4rem; }
+
 /* ---------- Jednorazowy popup o powiadomieniach ---------- */
 .notify-pop-overlay {
   position: fixed;
