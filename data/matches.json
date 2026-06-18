@@ -122,7 +122,7 @@
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-13T21:09:44Z"
+    "lastUpdated": "2026-06-13T23:07:33Z"
   },
   {
     "id": "wc-537339",
@@ -594,7 +594,7 @@
     "duration": "REGULAR",
     "winner": "DRAW",
     "homeScore": 0,
-    "awayScore": 0,
+    "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
     "lastUpdated": "2026-06-18T02:40:52Z"
