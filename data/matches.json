@@ -640,11 +640,11 @@
       "name": "Bośnia i Hercegowina",
       "crest": "https://crests.football-data.org/bosnia.svg"
     },
-    "status": "TIMED",
+    "status": "PAUSED",
     "duration": "REGULAR",
     "winner": null,
-    "homeScore": null,
-    "awayScore": null,
+    "homeScore": 0,
+    "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
     "lastUpdated": "2026-06-17T15:20:15Z"
