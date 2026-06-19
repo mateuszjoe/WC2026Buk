@@ -715,11 +715,11 @@
       "name": "Australia",
       "crest": "https://crests.football-data.org/779.svg"
     },
-    "status": "TIMED",
+    "status": "IN_PLAY",
     "duration": "REGULAR",
     "winner": null,
-    "homeScore": null,
-    "awayScore": null,
+    "homeScore": 0,
+    "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
     "lastUpdated": "2026-06-18T15:20:16Z"
