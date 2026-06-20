@@ -767,12 +767,12 @@
     },
     "status": "IN_PLAY",
     "duration": "REGULAR",
-    "winner": null,
+    "winner": "DRAW",
     "homeScore": 0,
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-16T15:20:15Z"
+    "lastUpdated": "2026-06-20T00:35:58Z"
   },
   {
     "id": "wc-537347",
