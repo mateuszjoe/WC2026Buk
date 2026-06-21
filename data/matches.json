@@ -940,14 +940,14 @@
       "name": "Iran",
       "crest": "https://crests.football-data.org/iran.svg"
     },
-    "status": "IN_PLAY",
+    "status": "FINISHED",
     "duration": "REGULAR",
     "winner": "DRAW",
     "homeScore": 0,
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-21T21:00:01Z"
+    "lastUpdated": "2026-06-21T21:01:49Z"
   },
   {
     "id": "wc-537372",
