@@ -722,7 +722,7 @@
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-20T08:25:00Z"
+    "lastUpdated": "2026-06-20T08:25:01Z"
   },
   {
     "id": "wc-537342",
@@ -990,14 +990,14 @@
       "name": "Egipt",
       "crest": "https://crests.football-data.org/825.svg"
     },
-    "status": "TIMED",
+    "status": "IN_PLAY",
     "duration": "REGULAR",
-    "winner": null,
-    "homeScore": null,
-    "awayScore": null,
+    "winner": "HOME_TEAM",
+    "homeScore": 1,
+    "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-16T15:20:15Z"
+    "lastUpdated": "2026-06-22T01:43:58Z"
   },
   {
     "id": "wc-537399",
