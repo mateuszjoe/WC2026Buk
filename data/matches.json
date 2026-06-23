@@ -1140,14 +1140,14 @@
       "name": "Ghana",
       "crest": "https://crests.football-data.org/ghana.svg"
     },
-    "status": "TIMED",
+    "status": "IN_PLAY",
     "duration": "REGULAR",
-    "winner": null,
-    "homeScore": null,
-    "awayScore": null,
+    "winner": "DRAW",
+    "homeScore": 0,
+    "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-23T19:24:04Z"
+    "lastUpdated": "2026-06-23T20:30:16Z"
   },
   {
     "id": "wc-537412",
