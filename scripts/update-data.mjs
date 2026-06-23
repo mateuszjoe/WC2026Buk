@@ -437,10 +437,12 @@ const espnEvents = await fetchEspnEvents(matches);
 const espnMerge = mergeEspnLive(apiMerge.matches, espnEvents);
 const liveMatches = espnMerge.matches; // pełna nakładka live (z minutą) -> Firestore
 
-// STICKY FINALS: nie wolno cofnąć zakończonego meczu do TIMED. Football-data.org
-// free nie podaje wyniku, a ESPN po oknie milknie — bez tego po meczu ranking się
-// zerował. Czytamy poprzedni matches.json i zachowujemy wynik końcowy, jeśli nowy
-// build go nie ma (a stary miał FINISHED/AWARDED z liczbowym wynikiem).
+// STICKY FINALS: nie wolno cofnąć zakończonego meczu ani skasować jego wyniku.
+// Football-data.org free bywa niestabilne i dla zakończonego meczu zwraca raz
+// FINISHED z wynikiem, raz cofa do TIMED, a raz FINISHED z PUSTYM wynikiem
+// (score=null). Każdy z tych przypadków zerował punkty za mecz w rankingu
+// ("czasem nierozegrany"). Czytamy poprzedni matches.json i przywracamy wynik
+// końcowy, gdy nowy build (a) cofa status do nie-finalnego, ALBO (b) gubi wynik.
 let prevById = {};
 try {
   const prev = JSON.parse(await readFile("data/matches.json", "utf8"));
@@ -452,9 +454,22 @@ const FINAL_STATUSES = new Set(["FINISHED", "AWARDED"]);
 // i robot commitowałby w kółko. Bez minuty plik zmienia się tylko przy realnej
 // zmianie wyniku/statusu (kilka commitów na mecz). Live "co sekundę" idzie Firestore.
 const matchesForFile = liveMatches.map(({ liveElapsed, liveExtra, ...rest }) => {
-  if (!FINAL_STATUSES.has(rest.status)) {
-    const p = prevById[rest.id];
-    if (p && FINAL_STATUSES.has(p.status) && typeof p.homeScore === "number") {
+  const p = prevById[rest.id];
+  // Czy poprzednia (dobra) wersja miała zakończony mecz z liczbowym wynikiem?
+  const prevHasFinalScore =
+    p &&
+    FINAL_STATUSES.has(p.status) &&
+    typeof p.homeScore === "number" &&
+    typeof p.awayScore === "number";
+  if (prevHasFinalScore) {
+    // (a) nowy build cofa zakończony mecz do nie-finalnego statusu (np. TIMED),
+    // (b) nowy build ma finalny status, ale BEZ wyniku (FINISHED + score=null).
+    const newStatusNotFinal = !FINAL_STATUSES.has(rest.status);
+    const newScoreMissing =
+      typeof rest.homeScore !== "number" || typeof rest.awayScore !== "number";
+    if (newStatusNotFinal || newScoreMissing) {
+      // Korekta wyniku (np. 1:1 -> 2:1) przejdzie normalnie — blokujemy tylko
+      // cofnięcie statusu i nadpisanie znanego wyniku pustką (null).
       return {
         ...rest,
         status: p.status,
