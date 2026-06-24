@@ -1628,9 +1628,26 @@ html.vv-mobile .pred-inputs { justify-content: flex-end; }
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 0.9rem;
+  align-items: start; /* zwinięte karty nie rozciągają się do wysokości rozwiniętej */
 }
 .stat-table { padding: 0.9rem 0.95rem; }
 .stat-table .card-title { margin-bottom: 0.5rem; }
+/* Zwijane tabele faz (domyślnie zwinięte). Nagłówek = klikalny summary. */
+details.stat-table > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  user-select: none;
+}
+details.stat-table > summary::-webkit-details-marker { display: none; }
+.stat-summary-title { font-size: 1.05rem; font-weight: 700; }
+.stat-chev { color: var(--muted); font-size: 1.1rem; line-height: 1; transition: transform 0.2s; }
+details.stat-table[open] > summary .stat-chev { transform: rotate(180deg); }
+details.stat-table[open] > .leaderboard { margin-top: 0.7rem; }
+.stat-table.empty .stat-summary-title { font-size: 1.05rem; font-weight: 700; }
 table.leaderboard.mini { font-size: 0.88rem; }
 table.leaderboard.mini td { padding: 0.45rem 0.5rem; }
 table.leaderboard.mini th { padding: 0.4rem 0.5rem; }

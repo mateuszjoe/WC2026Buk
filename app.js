@@ -2954,6 +2954,10 @@ function adminHtml() {
 
 const ROMAN = ["", "I", "II", "III", "IV", "V"];
 
+// Które tabele faz są rozwinięte (domyślnie wszystkie zwinięte). Trzymane poza
+// state, żeby render (np. po odświeżeniu live) nie zwijał otwartej tabeli.
+const statsOpen = new Set();
+
 // Gracze w rankingu (zatwierdzeni) w wygodnej formie.
 function rankedPlayers() {
   return Object.entries(state.predictions)
@@ -3045,32 +3049,40 @@ function roundBuckets() {
   return [...buckets.values()];
 }
 
-// Najlepszy pojedynczy "urobek" w jednej kolejce/rundzie (gracz + ile pkt).
+// Najlepszy pojedynczy "urobek" w jednej kolejce/rundzie. Zwraca WSZYSTKICH
+// rekordzistów przy remisie (np. dwóch graczy po 28 pkt w różnych kolejkach).
 function bestSingleRound() {
-  let best = null;
+  let bestPts = 0;
+  const holders = [];
   const buckets = roundBuckets();
   for (const p of rankedPlayers()) {
     for (const b of buckets) {
-      let pts = 0, exact = 0;
-      for (const m of b.matches) {
-        const r = playerMatchScore(p, m);
-        pts += r.pts;
-        if (r.exact) exact++;
+      let pts = 0;
+      for (const m of b.matches) pts += playerMatchScore(p, m).pts;
+      if (pts <= 0) continue;
+      if (pts > bestPts) {
+        bestPts = pts;
+        holders.length = 0;
+        holders.push({ name: p.name, label: b.label });
+      } else if (pts === bestPts) {
+        holders.push({ name: p.name, label: b.label });
       }
-      if (pts > 0 && (!best || pts > best.pts)) best = { name: p.name, label: b.label, pts, exact };
     }
   }
-  return best;
+  return bestPts > 0 ? { pts: bestPts, holders } : null;
 }
 
 // Tabela: punkty graczy w danej fazie (filterFn) — pełna lista wszystkich graczy.
 function phaseTableHtml(label, filterFn) {
   const phaseMatches = state.matches.filter((m) => filterFn(m) && getResult(m));
+  const countLabel = phaseMatches.length
+    ? `${phaseMatches.length} mecz${phaseMatches.length === 1 ? "" : phaseMatches.length < 5 ? "e" : "ów"}`
+    : "";
   if (!phaseMatches.length) {
     return `
-      <div class="card stat-table">
-        <h3 class="card-title">${label}</h3>
-        <p class="muted small center" style="margin:.4rem 0">Jeszcze nie rozegrano.</p>
+      <div class="card stat-table empty">
+        <div class="stat-summary"><span class="stat-summary-title">${label}</span></div>
+        <p class="muted small center" style="margin:.4rem 0 0">Jeszcze nie rozegrano.</p>
       </div>`;
   }
   const rows = rankedPlayers()
@@ -3099,13 +3111,16 @@ function phaseTableHtml(label, filterFn) {
     .join("");
 
   return `
-    <div class="card stat-table">
-      <h3 class="card-title">${label} <span class="muted small">· ${phaseMatches.length} mecz${phaseMatches.length === 1 ? "" : phaseMatches.length < 5 ? "e" : "ów"}</span></h3>
+    <details class="card stat-table" data-stat="${escapeHtml(label)}" ${statsOpen.has(label) ? "open" : ""}>
+      <summary class="stat-summary">
+        <span class="stat-summary-title">${label} <span class="muted small">· ${countLabel} · ${rows.length} graczy</span></span>
+        <span class="stat-chev" aria-hidden="true">⌄</span>
+      </summary>
       <table class="leaderboard mini">
         <thead><tr><th>#</th><th>Gracz</th><th>Pkt</th><th title="Dokładne wyniki">Dokł.</th></tr></thead>
         <tbody>${body}</tbody>
       </table>
-    </div>`;
+    </details>`;
 }
 
 // Popularność typów na mistrza — ujawniamy dopiero po zamknięciu (koniec 1. kol.),
@@ -3198,7 +3213,13 @@ function statsHtml() {
     recordCard("🔥", "Najdłuższa seria trafionych rezultatów", hitRec.value, hitRec.holders, " z rzędu"),
     recordCard("🎯", "Najdłuższa seria dokładnych wyników", exactStreakRec.value, exactStreakRec.holders, " z rzędu"),
     bestRound
-      ? recordCard("💰", "Najlepsza pojedyncza kolejka", bestRound.pts, [bestRound.name], " pkt", bestRound.label)
+      ? recordCard(
+          "💰",
+          "Najlepsza pojedyncza kolejka",
+          bestRound.pts,
+          bestRound.holders.map((h) => `${h.name} · ${h.label}`),
+          " pkt"
+        )
       : "",
     recordCard("🏆", "Najwięcej dokładnych wyników", exactTotalRec.value, exactTotalRec.holders, "×"),
     advRec.value > 0
@@ -3290,6 +3311,14 @@ function wireEvents() {
         render();
       }
     });
+  // Ciekawostki: zapamiętaj rozwinięcie tabel faz (żeby render live nie zwijał).
+  appRoot.querySelectorAll("details[data-stat]").forEach((d) =>
+    d.addEventListener("toggle", () => {
+      if (d.open) statsOpen.add(d.dataset.stat);
+      else statsOpen.delete(d.dataset.stat);
+    })
+  );
+
   // Przełącznik zakładek w modalu profilu: Widoczne / Niewidoczne
   appRoot.querySelectorAll("[data-pmtab]").forEach((b) =>
     b.addEventListener("click", () => {
