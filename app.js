@@ -106,14 +106,16 @@ const state = {
   notifiedFinished: new Set() // mecze, o których już powiadomiono
 };
 
+// icon: pokazywana TYLKO na mobile (zamiast tekstu, żeby zakładki się mieściły);
+// na desktopie widać label (CSS: .tab-ico / .tab-txt w styles.css).
 const VIEWS = [
-  { id: "ranking", label: "Ranking" },
-  { id: "matches", label: "Mecze" },
-  { id: "mine", label: "Moje typy" },
-  { id: "stats", label: "Ciekawostki" },
-  { id: "profile", label: "Profil", authOnly: true },
-  { id: "rules", label: "Regulamin" },
-  { id: "admin", label: "Panel admina", adminOnly: true }
+  { id: "ranking", label: "Ranking", icon: "🏆" },
+  { id: "matches", label: "Mecze", icon: "⚽" },
+  { id: "mine", label: "Moje typy", icon: "📝" },
+  { id: "stats", label: "Ciekawostki", icon: "💡" },
+  { id: "profile", label: "Profil", icon: "👤", authOnly: true },
+  { id: "rules", label: "Regulamin", icon: "📜" },
+  { id: "admin", label: "Panel admina", icon: "⚙️", adminOnly: true }
 ];
 
 const CHAT_REACTION_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥"];
@@ -1175,7 +1177,8 @@ function headerHtml() {
     .map((v) => {
       const badge =
         v.id === "admin" && pendCount > 0 ? ` <span class="tab-badge">${pendCount}</span>` : "";
-      return `<button class="tab ${state.view === v.id ? "active" : ""}" data-view="${v.id}">${v.label}${badge}</button>`;
+      // Na mobile pokazujemy ikonę (.tab-ico), na desktopie tekst (.tab-txt) — przełącza CSS.
+      return `<button class="tab ${state.view === v.id ? "active" : ""}" data-view="${v.id}" aria-label="${escapeHtml(v.label)}" title="${escapeHtml(v.label)}"><span class="tab-ico" aria-hidden="true">${v.icon || ""}</span><span class="tab-txt">${v.label}</span>${badge}</button>`;
     })
     .join("");
 

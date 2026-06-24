@@ -128,6 +128,8 @@ body {
 }
 .tab:hover { color: var(--text); background: var(--panel); }
 .tab.active { color: #06210f; background: var(--accent); }
+/* Domyślnie (desktop) zakładki pokazują tekst; ikonki tylko na mobile. */
+.tab-ico { display: none; }
 
 /* ---------- Buttons ---------- */
 .btn {
@@ -1538,8 +1540,22 @@ html.vv-mobile .bet-team-row input[type="number"] {
   padding: 0.35rem 0.15rem;
 }
 html.vv-mobile .bet-actions { justify-content: space-between; }
-html.vv-mobile .tabs { gap: 0.1rem; }
-html.vv-mobile .tab { padding: 0.5rem 0.5rem; font-size: 0.84rem; white-space: nowrap; }
+html.vv-mobile .tabs { gap: 0.15rem; }
+/* Mobile: zakładki jako ikonki — chowamy tekst, pokazujemy emoji, rozkładamy
+   równo na całą szerokość (bez przewijania). */
+html.vv-mobile .tab {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0.5rem 0.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  white-space: nowrap;
+}
+html.vv-mobile .tab-txt { display: none; }
+html.vv-mobile .tab-ico { display: inline-block; font-size: 1.25rem; line-height: 1; }
+html.vv-mobile .tab .tab-badge { position: static; margin-left: 0.05rem; }
 html.vv-mobile .bet-row { flex-wrap: wrap; gap: 0.3rem 0.6rem; }
 html.vv-mobile .bet-meta { width: auto; flex-direction: row; gap: 0.5rem; align-items: center; }
 html.vv-mobile .bet-grid { flex-basis: 100%; }
