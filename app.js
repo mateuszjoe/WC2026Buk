@@ -270,6 +270,12 @@ function calculateLeaderboard(options = {}) {
         liveAdvanceCount * (settings.points.advanceBonus ?? 1);
       const total = exactPoints + outcomePoints + advancePoints + championPoints;
 
+      // Rozbicie BEZ live (utrwalone) — kolumny Dokł./Rez./awans pokazują tylko
+      // zaksięgowane punkty; live wchodzi wyłącznie do SUMY jako delta "+x LIVE".
+      const finalExactCount = exactCount - liveExactCount;
+      const finalOutcomeOnlyCount = outcomeOnlyCount - liveOutcomeOnlyCount;
+      const finalAdvanceCount = advanceCount - liveAdvanceCount;
+
       return {
         uid,
         name: p.name || "Gracz",
@@ -286,6 +292,13 @@ function calculateLeaderboard(options = {}) {
         liveExactCount,
         liveOutcomeOnlyCount,
         liveAdvanceCount,
+        // Wartości utrwalone (bez live) do kolumn rozbicia w rankingu.
+        finalExactCount,
+        finalOutcomeOnlyCount,
+        finalAdvanceCount,
+        finalExactPoints: finalExactCount * settings.points.exactScore,
+        finalOutcomePoints: finalOutcomeOnlyCount * settings.points.correctResult,
+        finalAdvancePoints: finalAdvanceCount * (settings.points.advanceBonus ?? 1),
         championProgress: championPoints > 0 ? 1000 : championProgress(p.champion)
       };
     });
@@ -2129,9 +2142,9 @@ function rankingHtml() {
                 </span>
               </td>
               <td class="total"><strong>${r.total}</strong>${liveDeltaHtml(r, hasLiveRanking)}</td>
-              <td>${r.exactPoints}<span class="cnt">×${r.exactCount}</span></td>
-              <td>${r.outcomePoints}<span class="cnt">×${r.outcomeOnlyCount}</span></td>
-              <td>${r.advancePoints}<span class="cnt">×${r.advanceCount}</span></td>
+              <td>${r.finalExactPoints}<span class="cnt">×${r.finalExactCount}</span></td>
+              <td>${r.finalOutcomePoints}<span class="cnt">×${r.finalOutcomeOnlyCount}</span></td>
+              <td>${r.finalAdvancePoints}<span class="cnt">×${r.finalAdvanceCount}</span></td>
               <td>${r.championPoints}</td>
             </tr>`;
           })
