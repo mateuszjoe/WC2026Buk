@@ -110,6 +110,7 @@ const VIEWS = [
   { id: "ranking", label: "Ranking" },
   { id: "matches", label: "Mecze" },
   { id: "mine", label: "Moje typy" },
+  { id: "stats", label: "Ciekawostki" },
   { id: "profile", label: "Profil", authOnly: true },
   { id: "rules", label: "Regulamin" },
   { id: "admin", label: "Panel admina", adminOnly: true }
@@ -1214,6 +1215,8 @@ function viewHtml() {
       return matchesHtml();
     case "mine":
       return mineHtml();
+    case "stats":
+      return statsHtml();
     case "profile":
       return profileHtml();
     case "rules":
@@ -2922,6 +2925,301 @@ function adminHtml() {
           o awansie decyduje pole „winner" z API (typy „kto awansuje" liczą się same).</p>
         <div class="pred-list">${rows}</div>
       </div>
+    </section>`;
+}
+
+// =============================================================================
+//  CIEKAWOSTKI / STATYSTYKI  (zakładka "Ciekawostki")
+// =============================================================================
+//  Nietypowe statystyki dla zaangażowania: mini-tabele wg kolejek i fazy
+//  pucharowej, rekordy serii (trafione rezultaty / dokładne wyniki / sucha
+//  passa), najlepsza pojedyncza kolejka, popularność typów na mistrza i kilka
+//  zbiorczych ciekawostek. Wszystko liczone z tych samych danych co ranking.
+
+const ROMAN = ["", "I", "II", "III", "IV", "V"];
+
+// Gracze w rankingu (zatwierdzeni) w wygodnej formie.
+function rankedPlayers() {
+  return Object.entries(state.predictions)
+    .filter(([, p]) => isApprovedDoc(p))
+    .map(([uid, p]) => ({
+      uid,
+      name: p.name || "Gracz",
+      matches: p.matches || {},
+      champion: p.champion || null
+    }));
+}
+
+// Punkty gracza za pojedynczy mecz (rezultat + ew. bonus za awans). Zwraca też
+// flagi exact/correct, żeby liczyć serie i mini-tabele.
+function playerMatchScore(p, m) {
+  const result = getResult(m);
+  if (!result) return { played: false, pts: 0, exact: false, correct: false, adv: false };
+  const pred = confirmedMatchPrediction(p.matches?.[m.id]);
+  const has = pred && pred.h !== undefined && pred.a !== undefined;
+  if (!has) return { played: false, pts: 0, exact: false, correct: false, adv: false };
+  const s = scoreMatch(pred, result, state.settings);
+  const advPts = advanceBonus(pred, result, m, state.settings);
+  return {
+    played: true,
+    pts: s.points + advPts,
+    exact: s.exact,
+    correct: s.correct,
+    adv: advPts > 0
+  };
+}
+
+// Mecze rozegrane, chronologicznie (state.matches jest już sortowane wg gwizdka).
+function finishedMatchesChrono() {
+  return state.matches.filter((m) => getResult(m));
+}
+
+// Agregaty per gracz: serie (najdłuższe) + sumy. Liczone tylko po meczach, które
+// gracz REALNIE obstawił (brak typu nie psuje serii — po prostu pomijamy mecz).
+function statsPerPlayer() {
+  const finished = finishedMatchesChrono();
+  return rankedPlayers().map((p) => {
+    let curHit = 0, bestHit = 0;
+    let curExact = 0, bestExact = 0;
+    let curDry = 0, bestDry = 0;
+    let exactTotal = 0, correctTotal = 0, advTotal = 0, ptsTotal = 0, predicted = 0;
+    for (const m of finished) {
+      const r = playerMatchScore(p, m);
+      if (!r.played) continue;
+      predicted++;
+      ptsTotal += r.pts;
+      if (r.exact) exactTotal++;
+      else if (r.correct) correctTotal++;
+      if (r.adv) advTotal++;
+      if (r.correct) { curHit++; if (curHit > bestHit) bestHit = curHit; } else curHit = 0;
+      if (r.exact) { curExact++; if (curExact > bestExact) bestExact = curExact; } else curExact = 0;
+      if (r.pts === 0) { curDry++; if (curDry > bestDry) bestDry = curDry; } else curDry = 0;
+    }
+    return {
+      uid: p.uid, name: p.name, champion: p.champion,
+      bestHit, bestExact, bestDry, exactTotal, correctTotal, advTotal, ptsTotal, predicted
+    };
+  });
+}
+
+// Lider(zy) wg metryki (remisy => kilku posiadaczy rekordu). value<=0 => brak.
+function leadersBy(arr, key) {
+  let best = 0;
+  for (const r of arr) if (r[key] > best) best = r[key];
+  const holders = best > 0 ? arr.filter((r) => r[key] === best).map((r) => r.name) : [];
+  return { value: best, holders };
+}
+
+// Kubełki "kolejek": I/II/III kolejka grupowa + każda runda pucharowa osobno.
+function roundBuckets() {
+  const buckets = new Map();
+  for (const m of finishedMatchesChrono()) {
+    let key, label;
+    if (m.stage === "group") {
+      const md = m.matchday || 1;
+      key = "g" + md;
+      label = (ROMAN[md] || md) + " kolejka";
+    } else {
+      key = "ko-" + m.stage;
+      label = m.stage.charAt(0).toUpperCase() + m.stage.slice(1);
+    }
+    if (!buckets.has(key)) buckets.set(key, { key, label, matches: [] });
+    buckets.get(key).matches.push(m);
+  }
+  return [...buckets.values()];
+}
+
+// Najlepszy pojedynczy "urobek" w jednej kolejce/rundzie (gracz + ile pkt).
+function bestSingleRound() {
+  let best = null;
+  const buckets = roundBuckets();
+  for (const p of rankedPlayers()) {
+    for (const b of buckets) {
+      let pts = 0, exact = 0;
+      for (const m of b.matches) {
+        const r = playerMatchScore(p, m);
+        pts += r.pts;
+        if (r.exact) exact++;
+      }
+      if (pts > 0 && (!best || pts > best.pts)) best = { name: p.name, label: b.label, pts, exact };
+    }
+  }
+  return best;
+}
+
+// Mini-tabela: punkty graczy w danej fazie (filterFn) — top kilku.
+function phaseTableHtml(label, filterFn, limit = 6) {
+  const phaseMatches = state.matches.filter((m) => filterFn(m) && getResult(m));
+  if (!phaseMatches.length) {
+    return `
+      <div class="card stat-table">
+        <h3 class="card-title">${label}</h3>
+        <p class="muted small center" style="margin:.4rem 0">Jeszcze nie rozegrano.</p>
+      </div>`;
+  }
+  const rows = rankedPlayers()
+    .map((p) => {
+      let pts = 0, exact = 0, correct = 0;
+      for (const m of phaseMatches) {
+        const r = playerMatchScore(p, m);
+        pts += r.pts;
+        if (r.exact) exact++;
+        else if (r.correct) correct++;
+      }
+      return { name: p.name, pts, exact, correct };
+    })
+    .sort((a, b) => b.pts - a.pts || b.exact - a.exact || a.name.localeCompare(b.name, "pl"))
+    .slice(0, limit);
+
+  const body = rows
+    .map((r, i) => {
+      const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1;
+      return `<tr>
+        <td class="rank">${medal}</td>
+        <td class="name">${escapeHtml(r.name)}</td>
+        <td class="total"><strong>${r.pts}</strong></td>
+        <td>${r.exact}<span class="cnt">dokł.</span></td>
+      </tr>`;
+    })
+    .join("");
+
+  return `
+    <div class="card stat-table">
+      <h3 class="card-title">${label} <span class="muted small">· ${phaseMatches.length} mecz${phaseMatches.length === 1 ? "" : phaseMatches.length < 5 ? "e" : "ów"}</span></h3>
+      <table class="leaderboard mini">
+        <thead><tr><th>#</th><th>Gracz</th><th>Pkt</th><th title="Dokładne wyniki">Dokł.</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>
+    </div>`;
+}
+
+// Popularność typów na mistrza — ujawniamy dopiero po zamknięciu (koniec 1. kol.),
+// żeby nie zdradzać typów przed terminem (jak w profilach graczy).
+function championPopularityHtml() {
+  if (!championLocked()) {
+    return `
+      <div class="card">
+        <h3 class="card-title">👑 Faworyci na mistrza</h3>
+        <p class="muted small center" style="margin:.4rem 0">🔒 Odkryjemy po końcu 1. kolejki.</p>
+      </div>`;
+  }
+  const counts = new Map();
+  let withPick = 0;
+  for (const p of rankedPlayers()) {
+    if (!p.champion) continue;
+    withPick++;
+    counts.set(p.champion, (counts.get(p.champion) || 0) + 1);
+  }
+  if (!counts.size) return "";
+  const entries = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  const max = entries[0][1];
+  const list = entries
+    .map(([id, n]) => {
+      const t = teamById(id);
+      const pct = Math.round((n / max) * 100);
+      return `
+        <div class="champ-bar-row">
+          <span class="champ-bar-team">${t ? flagImg(t) : ""} ${escapeHtml(t?.name || "—")}</span>
+          <span class="champ-bar-track"><span class="champ-bar-fill" style="width:${pct}%"></span></span>
+          <span class="champ-bar-n">${n}</span>
+        </div>`;
+    })
+    .join("");
+  return `
+    <div class="card">
+      <h3 class="card-title">👑 Faworyci na mistrza <span class="muted small">· ${withPick} typ${withPick === 1 ? "" : "ów"}</span></h3>
+      <div class="champ-bars">${list}</div>
+    </div>`;
+}
+
+function recordCard(emoji, title, value, holders, suffix, hint) {
+  const who =
+    holders && holders.length
+      ? holders.slice(0, 3).map(escapeHtml).join(", ") +
+        (holders.length > 3 ? ` <span class="muted">+${holders.length - 3}</span>` : "")
+      : '<span class="muted">—</span>';
+  return `
+    <div class="record-card">
+      <div class="rec-emoji">${emoji}</div>
+      <div class="rec-body">
+        <div class="rec-title">${title}</div>
+        <div class="rec-value">${value}${suffix || ""}</div>
+        <div class="rec-who">${who}</div>
+        ${hint ? `<div class="rec-hint muted">${hint}</div>` : ""}
+      </div>
+    </div>`;
+}
+
+function statsHtml() {
+  const finished = finishedMatchesChrono();
+  if (!finished.length || !rankedPlayers().length) {
+    return `
+      <section class="stack">
+        <div class="section-head">
+          <div><div class="eyebrow">Ciekawostki</div><h2>Statystyki</h2></div>
+        </div>
+        <div class="card"><p class="muted center" style="margin:.6rem 0">
+          Statystyki pojawią się, gdy rozegrane zostaną pierwsze mecze. Wpisuj typy! 🔥
+        </p></div>
+      </section>`;
+  }
+
+  const per = statsPerPlayer();
+  const hitRec = leadersBy(per, "bestHit");
+  const exactStreakRec = leadersBy(per, "bestExact");
+  const dryRec = leadersBy(per, "bestDry");
+  const exactTotalRec = leadersBy(per, "exactTotal");
+  const advRec = leadersBy(per, "advTotal");
+  const bestRound = bestSingleRound();
+
+  // Zbiorcze ciekawostki turnieju.
+  const totalExact = per.reduce((s, r) => s + r.exactTotal, 0);
+  const totalCorrect = per.reduce((s, r) => s + r.correctTotal, 0);
+  const avgPts = per.length
+    ? Math.round((per.reduce((s, r) => s + r.ptsTotal, 0) / per.length) * 10) / 10
+    : 0;
+
+  const records = [
+    recordCard("🔥", "Najdłuższa seria trafionych rezultatów", hitRec.value, hitRec.holders, " z rzędu"),
+    recordCard("🎯", "Najdłuższa seria dokładnych wyników", exactStreakRec.value, exactStreakRec.holders, " z rzędu"),
+    bestRound
+      ? recordCard("💰", "Najlepsza pojedyncza kolejka", bestRound.pts, [bestRound.name], " pkt", bestRound.label)
+      : "",
+    recordCard("🏆", "Najwięcej dokładnych wyników", exactTotalRec.value, exactTotalRec.holders, "×"),
+    advRec.value > 0
+      ? recordCard("🧭", "Najwięcej bonusów za awans", advRec.value, advRec.holders, "×")
+      : "",
+    recordCard("🧊", "Najdłuższa sucha passa (0 pkt)", dryRec.value, dryRec.holders, " z rzędu", "im mniej, tym lepiej 😅")
+  ]
+    .filter(Boolean)
+    .join("");
+
+  return `
+    <section class="stack">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Ciekawostki</div>
+          <h2>Statystyki</h2>
+        </div>
+        <div class="points-legend">📊 ${totalExact} dokł. · ${totalCorrect} rezultatów · śr. ${avgPts} pkt/gracz</div>
+      </div>
+
+      <div class="record-grid">${records}</div>
+
+      <div class="section-head compact"><div><div class="eyebrow">Klasyfikacje</div><h3 style="margin:.1rem 0">Tabele wg faz</h3></div></div>
+      <div class="stat-grid">
+        ${phaseTableHtml("I kolejka", (m) => m.stage === "group" && m.matchday === 1)}
+        ${phaseTableHtml("II kolejka", (m) => m.stage === "group" && m.matchday === 2)}
+        ${phaseTableHtml("III kolejka", (m) => m.stage === "group" && m.matchday === 3)}
+        ${phaseTableHtml("Faza pucharowa", (m) => isKnockout(m))}
+      </div>
+
+      ${championPopularityHtml()}
+
+      <p class="muted small" style="margin:0 .2rem">
+        Serie liczone po kolei z rozegranych meczów, które obstawiłeś — brak typu nie przerywa serii.
+        Rezultat = trafione 1/X/2, dokładny wynik = trafiony wynik co do gola.
+      </p>
     </section>`;
 }
 
