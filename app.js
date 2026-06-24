@@ -4178,7 +4178,8 @@ function startMatchesPolling() {
 // localStorage, osobny klucz na każdą wersję ogłoszenia). Zamknięcie: przycisk ×,
 // przycisk "Zrozumiałem", klik w tło albo Esc.
 function maybeShowIntroPopup() {
-  const KEY = "wc2026:popup:nagrody-v1";
+  // Nowy klucz wersji = popup pokazuje się od nowa (najwyżej 3 razy na urządzenie).
+  const KEY = "wc2026:popup:nowosci-ciekawostki-v1";
   let shows = 0;
   try {
     shows = parseInt(localStorage.getItem(KEY) || "0", 10) || 0;
@@ -4193,16 +4194,14 @@ function maybeShowIntroPopup() {
   overlay.innerHTML = `
     <div class="intro-box" role="dialog" aria-modal="true" aria-labelledby="intro-title">
       <button class="intro-close" type="button" data-intro="close" aria-label="Zamknij">×</button>
-      <div class="intro-emoji">🏆💰</div>
-      <h3 id="intro-title">Nowy podział puli!</h3>
-      <p>Od teraz gramy o realne nagrody:</p>
-      <ul class="intro-prizes">
-        <li><span>🥇 I miejsce</span><strong>1000 zł</strong></li>
-        <li><span>🥈 II miejsce</span><strong>500 zł</strong></li>
-        <li><span>🥉 III miejsce</span><strong>200 zł</strong></li>
+      <div class="intro-emoji">🆕💡</div>
+      <h3 id="intro-title">Co nowego w typerze?</h3>
+      <ul class="intro-news">
+        <li><span class="news-ico">💡</span><span><strong>Nowa zakładka „Ciekawostki"</strong> — statystyki, rekordy serii (trafione rezultaty, dokładne wyniki), tabele wg kolejek i faza pucharowa oraz faworyci na mistrza.</span></li>
+        <li><span class="news-ico">📱</span><span><strong>Odświeżony wygląd na telefonie</strong> — zakładki jako czytelne ikonki, żeby wszystko się mieściło.</span></li>
       </ul>
-      <p class="muted small">Szczegóły w zakładce <strong>Regulamin</strong>. Powodzenia! ⚽</p>
-      <button class="btn primary intro-ok" type="button" data-intro="close">Zrozumiałem</button>
+      <p class="muted small">Zajrzyj do <strong>Ciekawostek</strong> i sprawdź, jak wypadasz na tle innych! ⚽</p>
+      <button class="btn primary intro-ok" type="button" data-intro="close">Zobaczę!</button>
     </div>`;
   document.body.appendChild(overlay);
 

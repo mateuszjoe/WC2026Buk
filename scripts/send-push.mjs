@@ -232,6 +232,21 @@ function buildPhases() {
 }
 const phases = buildPhases();
 
+// --- Ręczne ogłoszenia (np. nowości w apce) ----------------------------------
+// Jednorazowy push do WSZYSTKICH subskrybentów. Wysyłany raz — klucz zapamiętany
+// w push/state.announcedCustom. Żeby ogłosić coś nowego: dopisz wpis z NOWYM
+// kluczem. Stare wpisy można zostawić (i tak się nie powtórzą).
+const CUSTOM_ANNOUNCEMENTS = [
+  {
+    key: "nowosci-ciekawostki-mobile-2026-06",
+    title: "🆕 Nowości w typerze!",
+    body:
+      "Dodaliśmy zakładkę „Ciekawostki” (statystyki, rekordy serii, tabele wg kolejek) " +
+      "i odświeżyliśmy wygląd na telefonie. Zajrzyj! ⚽",
+    url: "./#stats"
+  }
+];
+
 // --- Pierwszy przebieg: ustal punkt odniesienia, nie spamuj -------------------
 if (!stateDoc.exists) {
   const finished = matches.filter((m) => getResult(m)).map((m) => m.id);
@@ -240,7 +255,15 @@ if (!stateDoc.exists) {
   const alreadyOpen = phases
     .filter((ph) => NOW >= Date.parse(ph.first.kickoffAt) - PHASE_LEAD_MS)
     .map((ph) => ph.key);
-  await stateRef.set({ notified: finished, lastLeader: leader, lastChatMs, announcedPhases: alreadyOpen, match24Reminders: {} });
+  await stateRef.set({
+    notified: finished,
+    lastLeader: leader,
+    lastChatMs,
+    announcedPhases: alreadyOpen,
+    // Na świeżym stanie NIE wysyłamy zaległych ogłoszeń — od razu je oznaczamy.
+    announcedCustom: CUSTOM_ANNOUNCEMENTS.map((a) => a.key),
+    match24Reminders: {}
+  });
   console.log("Pierwszy przebieg — zapamiętano stan, bez wysyłki.");
   process.exit(0);
 }
@@ -363,6 +386,16 @@ for (const ph of phases) {
   }
 }
 
+// --- Ręczne ogłoszenia (nowości) — raz do wszystkich subskrybentów ------------
+const announcedCustom = new Set(pstate.announcedCustom || []);
+for (const ann of CUSTOM_ANNOUNCEMENTS) {
+  if (announcedCustom.has(ann.key)) continue;
+  announcedCustom.add(ann.key); // oznacz raz, niezależnie od wyniku wysyłki
+  for (const entry of subs) {
+    jobs.push(sendTo(entry, { title: ann.title, body: ann.body, tag: ann.key, url: ann.url || "./" }));
+  }
+}
+
 // --- Przypomnienie o nietypowanych meczach w ciągu najbliższych 24h (per gracz)
 // Rolujące okno 24h: łapie zarówno dzisiejsze, jak i nocne/jutrzejsze mecze, które
 // wpadają w okno. Wysyłamy tylko w dzień (8:00–21:59, by nie budzić nocą) i najwyżej
@@ -421,7 +454,14 @@ const settled = await Promise.allSettled(jobs);
 const sent = settled.filter((r) => r.status === "fulfilled" && r.value?.ok).length;
 const failed = settled.length - sent;
 await stateRef.set(
-  { notified: [...notified], lastLeader, lastChatMs, announcedPhases: [...announced], match24Reminders },
+  {
+    notified: [...notified],
+    lastLeader,
+    lastChatMs,
+    announcedPhases: [...announced],
+    announcedCustom: [...announcedCustom],
+    match24Reminders
+  },
   { merge: true }
 );
 console.log(`Wysłano ${sent}/${jobs.length} powiadomień (błędy: ${failed}, subskrypcji: ${subs.length}).`);
