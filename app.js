@@ -931,11 +931,15 @@ function saveMyPredictionsDebounced() {
       await setDoc(
         doc(db, "predictions", predUid()),
         {
-          name: (state.myDraft?.name || "").trim() || state.user.displayName || state.user.email,
+          // UWAGA: NIE zapisujemy tu „name" ani „champion". Mają własne ścieżki
+          // zapisu (saveProfile / saveChampion). Gdy draft nie zdążył się zasiać
+          // z bazy (wyścig: pierwszy snapshot Firestore potrafi przyjść pusty z
+          // cache), zapis typu na MECZ kasował dobry nick (ustawiał domyślny z
+          // Google) i typ na MISTRZA (null). To była przyczyna „zmienił mi się
+          // nick i zniknął typ na mistrza".
           email: state.user.email,
           photo: state.user.photoURL || null,
           matches: state.myDraft.matches,
-          champion: state.myDraft.champion || null,
           updatedAt: serverTimestamp()
         },
         { merge: true }
@@ -1005,6 +1009,29 @@ async function saveProfile() {
     console.error(e);
     state.saveMsg = "Błąd zapisu — sprawdź reguły Firestore.";
   }
+}
+
+// Zapis typu na mistrza — OSOBNO od typów na mecze. Dzięki temu zapis meczu nie
+// może skasować typu na mistrza (i odwrotnie). Wywoływane tylko po świadomej
+// zmianie selecta, więc champion jest tu zawsze realnie wybrany.
+async function saveChampion() {
+  if (!state.user || !state.predictionsLoaded || !state.myDraft) return;
+  try {
+    await setDoc(
+      doc(db, "predictions", predUid()),
+      {
+        champion: state.myDraft.champion || null,
+        email: state.user.email,
+        updatedAt: serverTimestamp()
+      },
+      { merge: true }
+    );
+    state.saveMsg = "Zapisano ✓";
+  } catch (e) {
+    console.error(e);
+    state.saveMsg = "Błąd zapisu — sprawdź reguły Firestore.";
+  }
+  updateSaveIndicator();
 }
 
 let adminSaveTimer = null;
@@ -3186,7 +3213,7 @@ function wireEvents() {
   if (champSelect)
     champSelect.addEventListener("change", () => {
       state.myDraft.champion = champSelect.value || null;
-      saveMyPredictionsDebounced();
+      saveChampion();
     });
 
   // Panel admina
