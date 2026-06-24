@@ -3063,8 +3063,8 @@ function bestSingleRound() {
   return best;
 }
 
-// Mini-tabela: punkty graczy w danej fazie (filterFn) — top kilku.
-function phaseTableHtml(label, filterFn, limit = 6) {
+// Tabela: punkty graczy w danej fazie (filterFn) — pełna lista wszystkich graczy.
+function phaseTableHtml(label, filterFn) {
   const phaseMatches = state.matches.filter((m) => filterFn(m) && getResult(m));
   if (!phaseMatches.length) {
     return `
@@ -3084,8 +3084,7 @@ function phaseTableHtml(label, filterFn, limit = 6) {
       }
       return { name: p.name, pts, exact, correct };
     })
-    .sort((a, b) => b.pts - a.pts || b.exact - a.exact || a.name.localeCompare(b.name, "pl"))
-    .slice(0, limit);
+    .sort((a, b) => b.pts - a.pts || b.exact - a.exact || a.name.localeCompare(b.name, "pl"));
 
   const body = rows
     .map((r, i) => {
