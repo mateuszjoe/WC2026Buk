@@ -4223,7 +4223,8 @@ function maybeShowIntroPopup() {
   try {
     await loadStaticData();
     render();
-    maybeShowIntroPopup();
+    // Popup „Co nowego?" wyłączony na życzenie (wyskakiwał za często).
+    // maybeShowIntroPopup();
     listenToLiveScores();
     startMatchesPolling();
   } catch (e) {
