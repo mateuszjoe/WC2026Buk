@@ -1315,14 +1315,14 @@
       "name": "Meksyk",
       "crest": "https://crests.football-data.org/769.svg"
     },
-    "status": "IN_PLAY",
+    "status": "FINISHED",
     "duration": "REGULAR",
     "winner": "AWAY_TEAM",
     "homeScore": 0,
     "awayScore": 3,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-25T02:57:08Z"
+    "lastUpdated": "2026-06-25T02:57:39Z"
   },
   {
     "id": "wc-537332",
@@ -1340,14 +1340,14 @@
       "name": "Korea Płd.",
       "crest": "https://crests.football-data.org/772.png"
     },
-    "status": "IN_PLAY",
+    "status": "FINISHED",
     "duration": "REGULAR",
     "winner": "HOME_TEAM",
     "homeScore": 1,
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-25T02:56:51Z"
+    "lastUpdated": "2026-06-25T02:57:59Z"
   },
   {
     "id": "wc-537355",
