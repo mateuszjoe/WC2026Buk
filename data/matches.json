@@ -1515,7 +1515,7 @@
       "name": "Francja",
       "crest": "https://crests.football-data.org/773.svg"
     },
-    "status": "PAUSED",
+    "status": "IN_PLAY",
     "duration": "REGULAR",
     "winner": "AWAY_TEAM",
     "homeScore": 1,
@@ -1547,7 +1547,7 @@
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-26T20:03:11Z"
+    "lastUpdated": "2026-06-26T20:03:10Z"
   },
   {
     "id": "wc-537373",
