@@ -1422,7 +1422,7 @@
     "awayScore": 3,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-26T00:58:20Z"
+    "lastUpdated": "2026-06-26T00:58:43Z"
   },
   {
     "id": "wc-537362",
@@ -1440,14 +1440,14 @@
       "name": "Szwecja",
       "crest": "https://crests.football-data.org/792.svg"
     },
-    "status": "IN_PLAY",
+    "status": "FINISHED",
     "duration": "REGULAR",
     "winner": "DRAW",
     "homeScore": 1,
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-26T00:57:53Z"
+    "lastUpdated": "2026-06-26T00:58:53Z"
   },
   {
     "id": "wc-537349",
