@@ -1522,7 +1522,7 @@
     "awayScore": 3,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-26T19:56:32Z"
+    "lastUpdated": "2026-06-26T19:57:22Z"
   },
   {
     "id": "wc-537396",
@@ -1540,14 +1540,14 @@
       "name": "Irak",
       "crest": "https://crests.football-data.org/iraq.svg"
     },
-    "status": "IN_PLAY",
+    "status": "PAUSED",
     "duration": "REGULAR",
     "winner": "HOME_TEAM",
     "homeScore": 1,
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-26T19:56:22Z"
+    "lastUpdated": "2026-06-26T19:57:22Z"
   },
   {
     "id": "wc-537373",
