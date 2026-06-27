@@ -207,10 +207,15 @@ table.leaderboard { width: 100%; border-collapse: collapse; font-size: 0.92rem; 
   border-bottom: 1px solid var(--line);
 }
 .leaderboard th:nth-child(1), .leaderboard th:nth-child(2) { text-align: left; }
+/* Nagłówki sortowalne — klikalne, z podświetleniem aktywnej kolumny. */
+.leaderboard th.sortable { cursor: pointer; user-select: none; white-space: nowrap; transition: color 0.15s; }
+.leaderboard th.sortable:hover { color: var(--text); }
+.leaderboard th.sortable.active { color: var(--accent); }
 .leaderboard td { padding: 0.7rem; text-align: right; border-bottom: 1px solid rgba(42, 54, 102, 0.5); }
 .leaderboard td.rank, .leaderboard td.name { text-align: left; }
 .leaderboard td.rank { font-weight: 700; width: 3rem; }
 .leaderboard td.total strong { color: var(--accent); font-size: 1.05rem; }
+.leaderboard td.hits strong { color: var(--gold); font-size: 1.02rem; }
 .leaderboard tr:last-child td { border-bottom: 0; }
 .leaderboard tr.me { background: rgba(54, 211, 153, 0.08); }
 .live-delta {
@@ -1494,10 +1499,11 @@ details.mini-standings[open] summary { color: var(--text); }
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
 
-  /* ranking: na telefonie tylko # · gracz · suma (rozbicie na większym ekranie) */
-  .leaderboard th:nth-child(4), .leaderboard td:nth-child(4),
+  /* ranking: na telefonie # · gracz · suma · trafienia (reszta na większym ekranie) */
   .leaderboard th:nth-child(5), .leaderboard td:nth-child(5),
-  .leaderboard th:nth-child(6), .leaderboard td:nth-child(6) { display: none; }
+  .leaderboard th:nth-child(6), .leaderboard td:nth-child(6),
+  .leaderboard th:nth-child(7), .leaderboard td:nth-child(7),
+  .leaderboard th:nth-child(8), .leaderboard td:nth-child(8) { display: none; }
   .leaderboard td, .leaderboard th { padding: 0.6rem 0.5rem; }
   .leaderboard .cnt { display: none; }
 
@@ -1606,12 +1612,14 @@ html.vv-mobile .standings th.t {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-html.vv-mobile .leaderboard th:nth-child(4),
-html.vv-mobile .leaderboard td:nth-child(4),
 html.vv-mobile .leaderboard th:nth-child(5),
 html.vv-mobile .leaderboard td:nth-child(5),
 html.vv-mobile .leaderboard th:nth-child(6),
-html.vv-mobile .leaderboard td:nth-child(6) { display: none; }
+html.vv-mobile .leaderboard td:nth-child(6),
+html.vv-mobile .leaderboard th:nth-child(7),
+html.vv-mobile .leaderboard td:nth-child(7),
+html.vv-mobile .leaderboard th:nth-child(8),
+html.vv-mobile .leaderboard td:nth-child(8) { display: none; }
 html.vv-mobile .leaderboard td,
 html.vv-mobile .leaderboard th { padding: 0.6rem 0.5rem; }
 html.vv-mobile .leaderboard .cnt { display: none; }

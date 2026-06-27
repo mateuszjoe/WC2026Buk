@@ -77,6 +77,7 @@ const state = {
   admin: { results: {}, championTeamId: null }, // dokument admin/state
   user: null, // zalogowany użytkownik lub null
   view: "ranking", // aktywna zakładka
+  rankingSort: null, // { key, dir } — sortowanie tabeli rankingu (null = domyślne)
   matchView: "groups", // układ meczów: "groups" (wg grup) | "dates" (wg dat)
   mineTab: "open", // filtr w "Moje typy": "open" (do typowania) | "locked" (rozegrane/trwające)
   chat: [], // wiadomości czatu do wyświetlenia (najnowsze na dole) = chatOlder + chatLive
@@ -296,6 +297,8 @@ function calculateLeaderboard(options = {}) {
         finalExactCount,
         finalOutcomeOnlyCount,
         finalAdvanceCount,
+        // Trafienia ogółem = dokładne wyniki + trafione rezultaty (utrwalone).
+        finalHitsCount: finalExactCount + finalOutcomeOnlyCount,
         finalExactPoints: finalExactCount * settings.points.exactScore,
         finalOutcomePoints: finalOutcomeOnlyCount * settings.points.correctResult,
         finalAdvancePoints: finalAdvanceCount * (settings.points.advanceBonus ?? 1),
@@ -2117,15 +2120,50 @@ function livePickChipsHtml(uid, liveMatches) {
   return `<span class="live-picks">${chips}</span>`;
 }
 
+// Klucze kolumn rankingu, po których można sortować (klik w nagłówek).
+const RANKING_SORT_KEYS = {
+  total: (r) => r.total,
+  hits: (r) => r.finalHitsCount,
+  exact: (r) => r.finalExactCount,
+  outcome: (r) => r.finalOutcomeOnlyCount,
+  advance: (r) => r.finalAdvanceCount,
+  champion: (r) => r.championPoints,
+  name: (r) => r.name
+};
+
+// Zwraca tablicę graczy w kolejności wybranej przez użytkownika (lub domyślnej).
+// Pozycja "#" (rank) zostaje z prawdziwej klasyfikacji — sortowanie to tylko widok.
+function sortBoard(board) {
+  const sort = state.rankingSort;
+  if (!sort || !RANKING_SORT_KEYS[sort.key]) return board;
+  const val = RANKING_SORT_KEYS[sort.key];
+  const factor = sort.dir === "asc" ? 1 : -1;
+  return [...board].sort((a, b) => {
+    const av = val(a);
+    const bv = val(b);
+    let c = typeof av === "string" ? av.localeCompare(bv, "pl") : av - bv;
+    c *= factor;
+    return c || a.rank - b.rank; // remis → wg pozycji w rankingu (stabilnie)
+  });
+}
+
+// Nagłówek kolumny z sortowaniem (strzałka pokazuje aktywny kierunek).
+function sortTh(key, label, title) {
+  const s = state.rankingSort;
+  const active = s && s.key === key;
+  const arrow = active ? (s.dir === "desc" ? " ▼" : " ▲") : "";
+  return `<th class="sortable${active ? " active" : ""}" data-sort="${key}"${title ? ` title="${escapeHtml(title)} — kliknij, by sortować"` : ' title="Kliknij, by sortować"'}>${label}${arrow}</th>`;
+}
+
 function rankingHtml() {
   const liveMatches = liveScoredMatches();
   const hasLiveRanking = liveMatches.length > 0;
-  const board = calculateLeaderboard({ includeLive: hasLiveRanking });
+  const board = sortBoard(calculateLeaderboard({ includeLive: hasLiveRanking }));
   const p = state.settings.points;
 
   const rows =
     board.length === 0
-      ? `<tr><td colspan="7" class="muted center">Brak typów. Bądź pierwszy — zaloguj się i wpisz typy!</td></tr>`
+      ? `<tr><td colspan="8" class="muted center">Brak typów. Bądź pierwszy — zaloguj się i wpisz typy!</td></tr>`
       : board
           .map((r) => {
             const me = state.user && r.uid === state.user.uid;
@@ -2142,6 +2180,7 @@ function rankingHtml() {
                 </span>
               </td>
               <td class="total"><strong>${r.total}</strong>${liveDeltaHtml(r, hasLiveRanking)}</td>
+              <td class="hits"><strong>${r.finalHitsCount}</strong></td>
               <td>${r.finalExactPoints}<span class="cnt">×${r.finalExactCount}</span></td>
               <td>${r.finalOutcomePoints}<span class="cnt">×${r.finalOutcomeOnlyCount}</span></td>
               <td>${r.finalAdvancePoints}<span class="cnt">×${r.finalAdvanceCount}</span></td>
@@ -2174,17 +2213,22 @@ function rankingHtml() {
         <table class="leaderboard">
           <thead>
             <tr>
-              <th>#</th><th>Gracz</th><th>Suma</th>
-              <th title="Punkty za dokładne wyniki">Dokł.</th>
-              <th title="Punkty za trafione rezultaty (1/X/2)">Rez.</th>
-              <th title="Bonus za wskazanie drużyny awansującej (po remisie w 90')">🎯</th>
-              <th title="Punkty za zwycięzcę turnieju">Mistrz</th>
+              <th>#</th>
+              ${sortTh("name", "Gracz")}
+              ${sortTh("total", "Suma")}
+              ${sortTh("hits", "Traf.", "Trafienia ogółem (dokładne + rezultaty)")}
+              ${sortTh("exact", "Dokł.", "Punkty za dokładne wyniki")}
+              ${sortTh("outcome", "Rez.", "Punkty za trafione rezultaty (1/X/2)")}
+              ${sortTh("advance", "🎯", "Bonus za wskazanie drużyny awansującej (po remisie w 90')")}
+              ${sortTh("champion", "Mistrz", "Punkty za zwycięzcę turnieju")}
             </tr>
           </thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
       <p class="muted small" style="margin:0 0.2rem">
+        💡 Kliknij nagłówek kolumny, aby posortować tabelę (kolejny klik zmienia kierunek,
+        trzeci wraca do domyślnej kolejności). Numer „#" to zawsze miejsce w klasyfikacji.
         Przy remisie decyduje kolejno: więcej dokładnych wyników → trafiony mistrz →
         więcej rezultatów → jak daleko zaszedł typowany mistrz.
       </p>
@@ -2257,9 +2301,12 @@ function betRow(m) {
       </div>`;
   };
 
-  // Faza pucharowa: dodatkowo wskaż, kto awansuje (liczy się tylko przy remisie w 90').
-  const advPick = isKO
-    ? `<div class="adv-pick">
+  // Faza pucharowa: wybór "kto awansuje" pokazujemy TYLKO, gdy gracz wytypował
+  // remis (bo bonus liczy się jedynie przy remisie w 90'). Bez remisu opcja znika.
+  const predictedDraw = hasScore && pred.h === pred.a;
+  const advPick =
+    isKO && predictedDraw
+      ? `<div class="adv-pick">
          <span class="adv-label">🎯 Jeśli remis — kto awansuje? <span class="muted">(+${state.settings.points.advanceBonus ?? 1} pkt)</span></span>
          <div class="adv-btns">
            <button type="button" class="adv-btn ${pred.adv === "h" ? "sel" : ""}" data-match="${m.id}" data-adv="h" ${locked ? "disabled" : ""}>${escapeHtml(m.homeTeam.name)}</button>
@@ -3277,6 +3324,23 @@ function wireEvents() {
     })
   );
 
+  // Sortowanie tabeli rankingu po kliknięciu w nagłówek kolumny.
+  // Cykl: domyślne → malejąco → rosnąco → domyślne (dla nazwy: rosnąco → malejąco).
+  appRoot.querySelectorAll("th[data-sort]").forEach((th) =>
+    th.addEventListener("click", () => {
+      const key = th.dataset.sort;
+      const numeric = key !== "name";
+      const s = state.rankingSort;
+      if (s && s.key === key) {
+        if (numeric) state.rankingSort = s.dir === "desc" ? { key, dir: "asc" } : null;
+        else state.rankingSort = s.dir === "asc" ? { key, dir: "desc" } : null;
+      } else {
+        state.rankingSort = { key, dir: numeric ? "desc" : "asc" };
+      }
+      render();
+    })
+  );
+
   // Przełącznik układu meczów: Wg grup / Wg dat
   appRoot.querySelectorAll("[data-matchview]").forEach((b) =>
     b.addEventListener("click", () => {
@@ -3479,16 +3543,21 @@ function wireEvents() {
       const id = input.dataset.match;
       const side = input.dataset.side;
       if (!state.myDraft.matches[id]) state.myDraft.matches[id] = {};
+      const cur = state.myDraft.matches[id];
+      const wasDraw = cur.h !== undefined && cur.h === cur.a;
       const n = Number(input.value);
       const v = input.value === "" || isNaN(n) ? undefined : Math.max(0, Math.trunc(n));
-      const cur = state.myDraft.matches[id];
       cur[side] = v;
       cur.c = false; // zmiana = trzeba zatwierdzić ponownie
+      const isDraw = cur.h !== undefined && cur.h === cur.a;
       // Pusty typ (oba pola puste i bez awansu) — skasuj realnie z bazy.
       if (cur.h === undefined && cur.a === undefined && !cur.adv) {
         clearMatchPrediction(id);
       } else {
         saveMyPredictionsDebounced();
+        // Puchary: gdy typ stał się (nie)remisowy, pokaż/ukryj wybór "kto awansuje".
+        const m = state.matches.find((x) => x.id === id);
+        if (m && isKnockout(m) && wasDraw !== isDraw) render();
       }
     });
   });
