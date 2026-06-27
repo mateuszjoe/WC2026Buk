@@ -1517,12 +1517,12 @@
     },
     "status": "FINISHED",
     "duration": "REGULAR",
-    "winner": "AWAY_TEAM",
+    "winner": null,
     "homeScore": 1,
     "awayScore": 4,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-26T21:05:47Z"
+    "lastUpdated": "2026-06-26T07:48:25Z"
   },
   {
     "id": "wc-537396",
@@ -1542,12 +1542,12 @@
     },
     "status": "FINISHED",
     "duration": "REGULAR",
-    "winner": "HOME_TEAM",
+    "winner": null,
     "homeScore": 5,
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-26T21:10:58Z"
+    "lastUpdated": "2026-06-26T07:48:25Z"
   },
   {
     "id": "wc-537373",
@@ -1567,12 +1567,12 @@
     },
     "status": "IN_PLAY",
     "duration": "REGULAR",
-    "winner": "AWAY_TEAM",
+    "winner": null,
     "homeScore": 0,
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-27T01:32:35Z"
+    "lastUpdated": "2026-06-27T01:33:22Z"
   },
   {
     "id": "wc-537374",
@@ -1592,12 +1592,12 @@
     },
     "status": "IN_PLAY",
     "duration": "REGULAR",
-    "winner": "DRAW",
+    "winner": null,
     "homeScore": 0,
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-27T01:32:22Z"
+    "lastUpdated": "2026-06-27T01:33:04Z"
   },
   {
     "id": "wc-537367",
