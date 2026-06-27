@@ -1615,14 +1615,14 @@
       "name": "Belgia",
       "crest": "https://crests.football-data.org/805.svg"
     },
-    "status": "TIMED",
+    "status": "IN_PLAY",
     "duration": "REGULAR",
-    "winner": null,
-    "homeScore": null,
-    "awayScore": null,
+    "winner": "AWAY_TEAM",
+    "homeScore": 0,
+    "awayScore": 2,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-26T07:48:25Z"
+    "lastUpdated": "2026-06-27T04:28:53Z"
   },
   {
     "id": "wc-537368",
@@ -1640,14 +1640,14 @@
       "name": "Iran",
       "crest": "https://crests.football-data.org/iran.svg"
     },
-    "status": "TIMED",
+    "status": "IN_PLAY",
     "duration": "REGULAR",
-    "winner": null,
-    "homeScore": null,
-    "awayScore": null,
+    "winner": "DRAW",
+    "homeScore": 1,
+    "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-26T07:48:25Z"
+    "lastUpdated": "2026-06-27T04:28:53Z"
   },
   {
     "id": "wc-537413",
