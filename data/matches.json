@@ -1722,7 +1722,7 @@
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-27T23:52:27Z"
+    "lastUpdated": "2026-06-27T23:53:11Z"
   },
   {
     "id": "wc-537408",
@@ -1742,12 +1742,12 @@
     },
     "status": "IN_PLAY",
     "duration": "REGULAR",
-    "winner": "AWAY_TEAM",
+    "winner": "DRAW",
     "homeScore": 0,
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-27T23:52:22Z"
+    "lastUpdated": "2026-06-27T23:53:22Z"
   },
   {
     "id": "wc-537401",
