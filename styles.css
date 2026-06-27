@@ -1504,8 +1504,18 @@ details.mini-standings[open] summary { color: var(--text); }
   .leaderboard th:nth-child(6), .leaderboard td:nth-child(6),
   .leaderboard th:nth-child(7), .leaderboard td:nth-child(7),
   .leaderboard th:nth-child(8), .leaderboard td:nth-child(8) { display: none; }
-  .leaderboard td, .leaderboard th { padding: 0.6rem 0.5rem; }
+  .leaderboard td, .leaderboard th { padding: 0.6rem 0.4rem; }
   .leaderboard .cnt { display: none; }
+  /* Stała szerokość kolumn = tabela ZAWSZE mieści się w ekranie, a typy live
+     (chipy) zawijają się pod nick zamiast rozpychać tabelę poza ramkę. */
+  .leaderboard { table-layout: fixed; width: 100%; }
+  .leaderboard th:nth-child(1), .leaderboard td:nth-child(1) { width: 1.9rem; }
+  .leaderboard th:nth-child(3), .leaderboard td:nth-child(3) { width: 3.5rem; }
+  .leaderboard th:nth-child(4), .leaderboard td:nth-child(4) { width: 2.8rem; }
+  .leaderboard td.name { white-space: normal; }
+  .leaderboard .player-cell { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .leaderboard .player-name { min-width: 0; overflow-wrap: anywhere; }
+  .leaderboard .live-picks { flex-basis: 100%; margin-left: 0; }
 
   .pred-row { flex-direction: column; align-items: stretch; }
   .pred-inputs { justify-content: flex-end; }
@@ -1621,8 +1631,17 @@ html.vv-mobile .leaderboard td:nth-child(7),
 html.vv-mobile .leaderboard th:nth-child(8),
 html.vv-mobile .leaderboard td:nth-child(8) { display: none; }
 html.vv-mobile .leaderboard td,
-html.vv-mobile .leaderboard th { padding: 0.6rem 0.5rem; }
+html.vv-mobile .leaderboard th { padding: 0.6rem 0.4rem; }
 html.vv-mobile .leaderboard .cnt { display: none; }
+/* j.w. — stała szerokość kolumn, chipy live zawijają się pod nick */
+html.vv-mobile .leaderboard { table-layout: fixed; width: 100%; }
+html.vv-mobile .leaderboard th:nth-child(1), html.vv-mobile .leaderboard td:nth-child(1) { width: 1.9rem; }
+html.vv-mobile .leaderboard th:nth-child(3), html.vv-mobile .leaderboard td:nth-child(3) { width: 3.5rem; }
+html.vv-mobile .leaderboard th:nth-child(4), html.vv-mobile .leaderboard td:nth-child(4) { width: 2.8rem; }
+html.vv-mobile .leaderboard td.name { white-space: normal; }
+html.vv-mobile .leaderboard .player-cell { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+html.vv-mobile .leaderboard .player-name { min-width: 0; overflow-wrap: anywhere; }
+html.vv-mobile .leaderboard .live-picks { flex-basis: 100%; margin-left: 0; }
 html.vv-mobile .pred-row { flex-direction: column; align-items: stretch; }
 html.vv-mobile .pred-inputs { justify-content: flex-end; }
 
