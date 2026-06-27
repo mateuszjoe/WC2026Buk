@@ -4017,11 +4017,49 @@ async function loadStaticData() {
 // gwizdku ma już rezultat w matches.json). Dzięki temu gol z API-Football
 // pojawia się u graczy natychmiast (push z Firestore), bez czekania na plik.
 function applyLiveOverlay() {
-  const live = state.live || {};
+  const live = DEMO_LIVE ? { ...(state.live || {}) } : state.live || {};
+  if (DEMO_LIVE) injectDemoLive(live);
   state.matches = state.baseMatches.map((m) => {
     const patch = live[m.id];
     if (!patch || isFinalStatus(m)) return m;
     return { ...m, ...patch };
+  });
+}
+
+// === SYMULACJA LIVE (tymczasowa — do robienia screenów widoku „Ranking live") =
+// Włącz dodając ?demolive do adresu, np. https://mateuszjoe.github.io/WC2026Buk/?demolive=1
+// Działa TYLKO na tym urządzeniu (nie pisze do Firestore), więc inni gracze nie
+// widzą fejkowego live. USUNĄĆ po zrobieniu screenów (3 fragmenty oznaczone DEMO_LIVE).
+const DEMO_LIVE = (() => {
+  try {
+    return new URLSearchParams(location.search).has("demolive");
+  } catch (_) {
+    return false;
+  }
+})();
+
+function injectDemoLive(live) {
+  // Bierzemy 2 najbliższe nierozegrane mecze i udajemy, że trwają, z przykładowym
+  // wynikiem i minutą — żeby pokazać tabelę w trybie live (delta, chipy, baner).
+  const upcoming = state.baseMatches
+    .filter((m) => !FINAL_MATCH_STATUSES.has(m.status) && !live[m.id])
+    .slice(0, 2);
+  const demo = [
+    { h: 1, a: 0, min: 63 },
+    { h: 2, a: 2, min: 78 }
+  ];
+  upcoming.forEach((m, i) => {
+    const s = demo[i] || { h: 1, a: 1, min: 55 };
+    live[m.id] = {
+      status: "IN_PLAY",
+      homeScore: s.h,
+      awayScore: s.a,
+      regularHomeScore: null,
+      regularAwayScore: null,
+      duration: "REGULAR",
+      winner: null,
+      liveElapsed: s.min
+    };
   });
 }
 
