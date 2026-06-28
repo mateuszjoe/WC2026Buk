@@ -1522,7 +1522,7 @@
     "awayScore": 4,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-27T07:23:05Z"
+    "lastUpdated": "2026-06-26T23:00:47Z"
   },
   {
     "id": "wc-537396",
@@ -1547,7 +1547,7 @@
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-27T07:23:05Z"
+    "lastUpdated": "2026-06-26T23:05:58Z"
   },
   {
     "id": "wc-537373",
@@ -1572,7 +1572,7 @@
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-27T07:23:05Z"
+    "lastUpdated": "2026-06-27T04:02:59Z"
   },
   {
     "id": "wc-537374",
@@ -1597,7 +1597,7 @@
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-27T07:23:05Z"
+    "lastUpdated": "2026-06-27T04:00:59Z"
   },
   {
     "id": "wc-537367",
@@ -1622,7 +1622,7 @@
     "awayScore": 5,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-27T07:23:05Z"
+    "lastUpdated": "2026-06-27T06:58:41Z"
   },
   {
     "id": "wc-537368",
@@ -1647,7 +1647,7 @@
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-27T07:23:05Z"
+    "lastUpdated": "2026-06-27T07:04:41Z"
   },
   {
     "id": "wc-537413",
@@ -1667,12 +1667,12 @@
     },
     "status": "FINISHED",
     "duration": "REGULAR",
-    "winner": "AWAY_TEAM",
+    "winner": null,
     "homeScore": 0,
     "awayScore": 2,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-27T23:05:20Z"
+    "lastUpdated": "2026-06-26T15:20:14Z"
   },
   {
     "id": "wc-537414",
@@ -1692,12 +1692,12 @@
     },
     "status": "FINISHED",
     "duration": "REGULAR",
-    "winner": "HOME_TEAM",
+    "winner": null,
     "homeScore": 2,
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-27T23:04:51Z"
+    "lastUpdated": "2026-06-26T15:20:14Z"
   },
   {
     "id": "wc-537407",
@@ -1772,7 +1772,7 @@
     "awayScore": 2,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-28T02:36:41Z"
+    "lastUpdated": "2026-06-28T02:37:18Z"
   },
   {
     "id": "wc-537402",
