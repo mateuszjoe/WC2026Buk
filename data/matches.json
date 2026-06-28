@@ -1522,7 +1522,7 @@
     "awayScore": 4,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-26T23:00:47Z"
+    "lastUpdated": "2026-06-27T07:23:05Z"
   },
   {
     "id": "wc-537396",
@@ -1547,7 +1547,7 @@
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-26T23:05:58Z"
+    "lastUpdated": "2026-06-27T07:23:05Z"
   },
   {
     "id": "wc-537373",
@@ -1572,7 +1572,7 @@
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-27T04:02:59Z"
+    "lastUpdated": "2026-06-27T07:23:05Z"
   },
   {
     "id": "wc-537374",
@@ -1597,7 +1597,7 @@
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-27T04:00:59Z"
+    "lastUpdated": "2026-06-27T07:23:05Z"
   },
   {
     "id": "wc-537367",
@@ -1622,7 +1622,7 @@
     "awayScore": 5,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-27T06:58:41Z"
+    "lastUpdated": "2026-06-27T07:23:05Z"
   },
   {
     "id": "wc-537368",
@@ -1647,7 +1647,7 @@
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-27T07:04:41Z"
+    "lastUpdated": "2026-06-27T07:23:05Z"
   },
   {
     "id": "wc-537413",
@@ -1667,12 +1667,12 @@
     },
     "status": "FINISHED",
     "duration": "REGULAR",
-    "winner": null,
+    "winner": "AWAY_TEAM",
     "homeScore": 0,
     "awayScore": 2,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-26T15:20:14Z"
+    "lastUpdated": "2026-06-27T23:05:20Z"
   },
   {
     "id": "wc-537414",
@@ -1692,12 +1692,12 @@
     },
     "status": "FINISHED",
     "duration": "REGULAR",
-    "winner": null,
+    "winner": "HOME_TEAM",
     "homeScore": 2,
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-26T15:20:14Z"
+    "lastUpdated": "2026-06-27T23:04:51Z"
   },
   {
     "id": "wc-537407",
