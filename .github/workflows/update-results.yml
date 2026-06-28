@@ -72,15 +72,19 @@ jobs:
             # Powiadomienia push (gole/koniec meczu). send-push sam pilnuje duplikatów.
             node scripts/send-push.mjs || echo "send-push pominięty (błąd nie psuje joba)."
 
-            # Pętla tylko w oknie meczu — poza nim kończymy po jednym przebiegu.
-            if [ ! -f live-window.flag ]; then
-              echo "Brak meczu w oknie live — kończę przebieg."
+            # Pętla działa, dopóki robot prosi (next-poll.flag): okno meczu LIVE
+            # albo okno DRABINKI (zbliża się mecz z drużyną TBD). Treść flagi =
+            # zalecany odstęp w sekundach (30 s live / 300 s drabinka). Brak flagi
+            # = poza oknem, kończymy po jednym przebiegu (czeka na cron).
+            if [ ! -f next-poll.flag ]; then
+              echo "Poza oknem (brak live i brak oczekiwania na drabinkę) — kończę przebieg."
               break
             fi
             if [ "$(date +%s)" -ge "$LOOP_DEADLINE" ]; then
-              echo "Limit czasu pętli — kończę (kolejny przebieg wznowi, jeśli mecz trwa)."
+              echo "Limit czasu pętli — kończę (kolejny przebieg wznowi, jeśli okno trwa)."
               break
             fi
-            echo "Mecz w toku — następne sprawdzenie za ${LIVE_POLL_SECONDS}s."
-            sleep "${LIVE_POLL_SECONDS}"
+            SLEEP="$(cat next-poll.flag 2>/dev/null || echo "${LIVE_POLL_SECONDS}")"
+            echo "W oknie — następne sprawdzenie za ${SLEEP}s."
+            sleep "${SLEEP}"
           done

@@ -487,11 +487,38 @@ const matchesForFile = liveMatches.map(({ liveElapsed, liveExtra, ...rest }) => 
 await writeFile("data/matches.json", JSON.stringify(matchesForFile, null, 2) + "\n", "utf8");
 matches = matchesForFile;
 
-// Flaga dla workflow: gdy trwa okno meczu, pętla w GitHub Actions odpytuje co
-// kilka minut (cron */5 bywa dławiony przez GitHub do co 2-3 h — za rzadko na live).
+// Sterowanie pętlą robota (GitHub Actions). Plik next-poll.flag istnieje => pętla
+// pollująca ma sens, a jego TREŚĆ = zalecany odstęp snu w sekundach. Brak pliku =>
+// poza oknem, kończymy przebieg (czeka na cron). Dwa okna:
+//  - LIVE: trwa mecz -> gęsto (LIVE_POLL_SECONDS, domyślnie 30 s).
+//  - DRABINKA: zbliża się mecz (≤36 h) wciąż z drużyną "TBD" -> źródło lada chwila
+//    dopisze pary po zakończonej rundzie; pollujemy co 5 min, żeby zaciągnąć je od
+//    razu, a nie czekać na zdławiony cron (to ratuje "brak meczów do typowania"
+//    po końcu fazy grupowej / między rundami pucharowymi).
+const LIVE_POLL_SECONDS = Number(process.env.LIVE_POLL_SECONDS) || 30;
+const BRACKET_POLL_SECONDS = 300;
+const BRACKET_PENDING_AHEAD_MS = 36 * 60 * 60 * 1000;
+
+function teamKnown(t) {
+  return Boolean(t && t.id && !String(t.id).startsWith("tbd-") && t.name && t.name !== "TBD");
+}
+function bracketPending(ms, now = Date.now()) {
+  return ms.some((m) => {
+    const t = Date.parse(m.kickoffAt);
+    if (!Number.isFinite(t) || t < now || t > now + BRACKET_PENDING_AHEAD_MS) return false;
+    return !teamKnown(m.homeTeam) || !teamKnown(m.awayTeam);
+  });
+}
+
+let pollSeconds = null;
+if (isInLiveWindow(matches)) pollSeconds = LIVE_POLL_SECONDS;
+else if (bracketPending(matches)) {
+  pollSeconds = BRACKET_POLL_SECONDS;
+  console.log("Okno drabinki: zbliża się mecz z drużyną TBD — pollowanie co 5 min, aż źródło dopisze pary.");
+}
 try {
-  if (isInLiveWindow(matches)) await writeFile("live-window.flag", "1");
-  else await rm("live-window.flag", { force: true });
+  if (pollSeconds) await writeFile("next-poll.flag", String(pollSeconds));
+  else await rm("next-poll.flag", { force: true });
 } catch (_) {}
 
 // Live-wynik -> Firestore (live/state). Frontend nasłuchuje tego dokumentu przez
