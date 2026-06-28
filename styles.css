@@ -1516,6 +1516,10 @@ details.mini-standings[open] summary { color: var(--text); }
   .leaderboard .player-cell { display: flex; flex-wrap: wrap; gap: 0.4rem; }
   .leaderboard .player-name { min-width: 0; overflow-wrap: anywhere; }
   .leaderboard .live-picks { flex-basis: 100%; margin-left: 0; }
+  /* Mini-tabele (statystyki) mają własny układ — NIE chowamy ich kolumn ani nie
+     wymuszamy stałych szerokości z dużego rankingu (inaczej znika kolumna Rez.). */
+  .leaderboard.mini { table-layout: auto; }
+  .leaderboard.mini th, .leaderboard.mini td { display: table-cell !important; width: auto !important; padding: 0.45rem 0.35rem; }
 
   .pred-row { flex-direction: column; align-items: stretch; }
   .pred-inputs { justify-content: flex-end; }
@@ -1642,6 +1646,9 @@ html.vv-mobile .leaderboard td.name { white-space: normal; }
 html.vv-mobile .leaderboard .player-cell { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 html.vv-mobile .leaderboard .player-name { min-width: 0; overflow-wrap: anywhere; }
 html.vv-mobile .leaderboard .live-picks { flex-basis: 100%; margin-left: 0; }
+/* Mini-tabele statystyk — własny układ, nie chowamy kolumn (patrz @media wyżej). */
+html.vv-mobile .leaderboard.mini { table-layout: auto; }
+html.vv-mobile .leaderboard.mini th, html.vv-mobile .leaderboard.mini td { display: table-cell !important; width: auto !important; padding: 0.45rem 0.35rem; }
 html.vv-mobile .pred-row { flex-direction: column; align-items: stretch; }
 html.vv-mobile .pred-inputs { justify-content: flex-end; }
 

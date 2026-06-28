@@ -3153,6 +3153,7 @@ function phaseTableHtml(label, filterFn) {
         <td class="name">${escapeHtml(r.name)}</td>
         <td class="total"><strong>${r.pts}</strong></td>
         <td>${r.exact}<span class="cnt">dokł.</span></td>
+        <td>${r.correct}<span class="cnt">rez.</span></td>
       </tr>`;
     })
     .join("");
@@ -3164,7 +3165,7 @@ function phaseTableHtml(label, filterFn) {
         <span class="stat-chev" aria-hidden="true">⌄</span>
       </summary>
       <table class="leaderboard mini">
-        <thead><tr><th>#</th><th>Gracz</th><th>Pkt</th><th title="Dokładne wyniki">Dokł.</th></tr></thead>
+        <thead><tr><th>#</th><th>Gracz</th><th>Pkt</th><th title="Dokładne wyniki">Dokł.</th><th title="Trafione rezultaty (1/X/2)">Rez.</th></tr></thead>
         <tbody>${body}</tbody>
       </table>
     </details>`;
@@ -3256,6 +3257,11 @@ function statsHtml() {
     ? Math.round((per.reduce((s, r) => s + r.ptsTotal, 0) / per.length) * 10) / 10
     : 0;
 
+  // Grupy obecne w terminarzu (A, B, … L) — do statystyk grupowych.
+  const groupKeys = [
+    ...new Set(state.matches.filter((m) => m.stage === "group" && m.group).map((m) => m.group))
+  ].sort();
+
   const records = [
     recordCard("🔥", "Najdłuższa seria trafionych rezultatów", hitRec.value, hitRec.holders, " z rzędu"),
     recordCard("🎯", "Najdłuższa seria dokładnych wyników", exactStreakRec.value, exactStreakRec.holders, " z rzędu"),
@@ -3296,6 +3302,18 @@ function statsHtml() {
         ${phaseTableHtml("III kolejka", (m) => m.stage === "group" && m.matchday === 3)}
         ${phaseTableHtml("Faza pucharowa", (m) => isKnockout(m))}
       </div>
+
+      ${
+        groupKeys.length
+          ? `<div class="section-head compact"><div><div class="eyebrow">Grupy</div><h3 style="margin:.1rem 0">Statystyki grupowe</h3></div></div>
+             <p class="muted small" style="margin:-.3rem .2rem .2rem">Kto najlepiej poradził sobie w danej grupie — punkty, dokładne wyniki i trafione rezultaty z meczów tej grupy. Kliknij, by rozwinąć.</p>
+             <div class="stat-grid">
+               ${groupKeys
+                 .map((g) => phaseTableHtml("Grupa " + g, (m) => m.stage === "group" && m.group === g))
+                 .join("")}
+             </div>`
+          : ""
+      }
 
       ${championPopularityHtml()}
 
