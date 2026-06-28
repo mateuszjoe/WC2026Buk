@@ -1815,7 +1815,7 @@
       "name": "Kanada",
       "crest": "https://crests.football-data.org/canada.svg"
     },
-    "status": "IN_PLAY",
+    "status": "PAUSED",
     "duration": "REGULAR",
     "winner": "DRAW",
     "homeScore": 0,
