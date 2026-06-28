@@ -1742,12 +1742,12 @@
     },
     "status": "PAUSED",
     "duration": "REGULAR",
-    "winner": "DRAW",
+    "winner": "AWAY_TEAM",
     "homeScore": 0,
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-28T00:27:57Z"
+    "lastUpdated": "2026-06-28T00:28:31Z"
   },
   {
     "id": "wc-537401",
