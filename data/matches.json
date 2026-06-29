@@ -1865,14 +1865,14 @@
       "name": "Paragwaj",
       "crest": "https://crests.football-data.org/761.svg"
     },
-    "status": "IN_PLAY",
+    "status": "PAUSED",
     "duration": "REGULAR",
     "winner": "AWAY_TEAM",
     "homeScore": 0,
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-29T21:20:15Z"
+    "lastUpdated": "2026-06-29T21:21:15Z"
   },
   {
     "id": "wc-537418",
