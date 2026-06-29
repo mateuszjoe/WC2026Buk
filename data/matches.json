@@ -1868,11 +1868,11 @@
     "status": "IN_PLAY",
     "duration": "EXTRA_TIME",
     "winner": "DRAW",
-    "homeScore": 1,
+    "homeScore": 2,
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-29T22:45:35Z"
+    "lastUpdated": "2026-06-29T22:46:35Z"
   },
   {
     "id": "wc-537418",
