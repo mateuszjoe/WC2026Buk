@@ -1840,14 +1840,14 @@
       "name": "Japonia",
       "crest": "https://crests.football-data.org/766.svg"
     },
-    "status": "TIMED",
+    "status": "IN_PLAY",
     "duration": "REGULAR",
-    "winner": null,
-    "homeScore": null,
-    "awayScore": null,
+    "winner": "DRAW",
+    "homeScore": 0,
+    "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-29T05:20:12Z"
+    "lastUpdated": "2026-06-29T17:31:13Z"
   },
   {
     "id": "wc-537415",
