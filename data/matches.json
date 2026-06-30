@@ -1868,8 +1868,8 @@
     "status": "FINISHED",
     "duration": "PENALTY_SHOOTOUT",
     "winner": "AWAY_TEAM",
-    "homeScore": 4,
-    "awayScore": 5,
+    "homeScore": 1,
+    "awayScore": 1,
     "regularHomeScore": 1,
     "regularAwayScore": 1,
     "lastUpdated": "2026-06-30T02:22:13Z"
@@ -1893,8 +1893,8 @@
     "status": "FINISHED",
     "duration": "PENALTY_SHOOTOUT",
     "winner": "AWAY_TEAM",
-    "homeScore": 3,
-    "awayScore": 4,
+    "homeScore": 1,
+    "awayScore": 1,
     "regularHomeScore": 1,
     "regularAwayScore": 1,
     "lastUpdated": "2026-06-30T06:02:35Z"
@@ -1915,14 +1915,14 @@
       "name": "Norwegia",
       "crest": "https://crests.football-data.org/813.svg"
     },
-    "status": "TIMED",
+    "status": "IN_PLAY",
     "duration": "REGULAR",
-    "winner": null,
-    "homeScore": null,
-    "awayScore": null,
+    "winner": "DRAW",
+    "homeScore": 0,
+    "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-29T15:20:12Z"
+    "lastUpdated": "2026-06-30T17:29:26Z"
   },
   {
     "id": "wc-537416",
