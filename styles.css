@@ -391,6 +391,7 @@ table.leaderboard { width: 100%; border-collapse: collapse; font-size: 0.92rem; 
 .pred-list { display: flex; flex-direction: column; }
 .pred-row {
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  flex-wrap: wrap;
   padding: 0.7rem 0; border-bottom: 1px solid rgba(42, 54, 102, 0.5);
 }
 .pred-row:last-child { border-bottom: 0; }
@@ -400,6 +401,34 @@ table.leaderboard { width: 100%; border-collapse: collapse; font-size: 0.92rem; 
 .row-teams { font-weight: 600; }
 .pred-inputs { display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0; }
 .colon { color: var(--muted); font-weight: 700; }
+/* Admin: wybór drużyny awansującej przy ręcznym remisie w pucharach */
+.adv-admin {
+  flex-basis: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+  padding-top: 0.45rem;
+  border-top: 1px dashed var(--line);
+}
+.adv-admin-btn {
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.adv-admin-btn:hover { border-color: var(--accent); }
+.adv-admin-btn.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
 .lock-tag { color: var(--muted); font-size: 0.8rem; }
 
 input[type="number"] {

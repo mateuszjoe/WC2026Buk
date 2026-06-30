@@ -162,8 +162,12 @@ function isKnockout(m) {
   return Boolean(m && m.stage && m.stage !== "group");
 }
 
-// Która strona faktycznie awansowała (też po dogrywce/karnych) — z pola winner.
+// Która strona faktycznie awansowała (też po dogrywce/karnych).
+// Pierwszeństwo ma ręczne wskazanie admina (gdy wynik wpisał ręcznie, bo API się
+// spóźnia — wtedy pole winner w danych jest puste), potem pole winner z API.
 function advancingSide(m) {
+  const adv = state.admin.results?.[m.id]?.adv;
+  if (adv === "h" || adv === "a") return adv;
   if (m.winner === "HOME_TEAM") return "h";
   if (m.winner === "AWAY_TEAM") return "a";
   return null;
@@ -2916,6 +2920,21 @@ function adminHtml() {
       const r = state.admin.results?.[m.id] || {};
       const h = typeof r.h === "number" ? r.h : "";
       const a = typeof r.a === "number" ? r.a : "";
+      // Puchary + ręczny remis w 90' → pokaż wybór drużyny awansującej (po
+      // dogrywce/karnych), bo z samego wyniku nie da się tego ustalić, a od tego
+      // zależy bonus +awans dla graczy, którzy trafili remis.
+      const showAdv =
+        isKnockout(m) && typeof r.h === "number" && typeof r.a === "number" && r.h === r.a;
+      const advRow = showAdv
+        ? `
+          <div class="adv-admin">
+            <span class="muted small">🎯 Kto awansuje?</span>
+            <button class="adv-admin-btn${r.adv === "h" ? " on" : ""}"
+              data-match="${m.id}" data-adv="h">${escapeHtml(m.homeTeam.name)}</button>
+            <button class="adv-admin-btn${r.adv === "a" ? " on" : ""}"
+              data-match="${m.id}" data-adv="a">${escapeHtml(m.awayTeam.name)}</button>
+          </div>`
+        : "";
       return `
         <div class="pred-row">
           <div class="pred-info">
@@ -2930,6 +2949,7 @@ function adminHtml() {
               data-match="${m.id}" data-side="a" value="${a}" />
             <button class="btn ghost tiny clear-result" data-match="${m.id}">wyczyść</button>
           </div>
+          ${advRow}
         </div>`;
     })
     .join("");
@@ -3655,7 +3675,26 @@ function wireEvents() {
       state.admin.results[id][side] = v;
       const cur = state.admin.results[id];
       if (cur.h === undefined && cur.a === undefined) delete state.admin.results[id];
+      // Wynik nie jest już remisem? Wybór drużyny awansującej traci sens — kasujemy.
+      else if (cur.h !== cur.a) delete cur.adv;
       saveAdminDebounced();
+    });
+    // Po opuszczeniu pola przerysuj, by pokazać/ukryć wybór "kto awansuje"
+    // (puchary, remis w 90'). Nie robimy tego na każdy znak, żeby nie zabierać
+    // fokusu w trakcie wpisywania wyniku.
+    input.addEventListener("change", () => render());
+  });
+
+  // Puchary, ręczny remis: wskazanie drużyny awansującej (bonus +awans).
+  appRoot.querySelectorAll(".adv-admin-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.match;
+      const cur = state.admin.results[id];
+      if (!cur) return;
+      cur.adv = cur.adv === btn.dataset.adv ? undefined : btn.dataset.adv;
+      if (cur.adv === undefined) delete cur.adv;
+      saveAdminDebounced();
+      render();
     });
   });
 
