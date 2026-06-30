@@ -1943,11 +1943,11 @@
     "status": "IN_PLAY",
     "duration": "REGULAR",
     "winner": "HOME_TEAM",
-    "homeScore": 1,
+    "homeScore": 2,
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-30T22:11:14Z"
+    "lastUpdated": "2026-06-30T22:11:42Z"
   },
   {
     "id": "wc-537425",
