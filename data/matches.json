@@ -1940,7 +1940,7 @@
       "name": "Szwecja",
       "crest": "https://crests.football-data.org/792.svg"
     },
-    "status": "IN_PLAY",
+    "status": "PAUSED",
     "duration": "REGULAR",
     "winner": "DRAW",
     "homeScore": 1,
