@@ -1942,12 +1942,12 @@
     },
     "status": "PAUSED",
     "duration": "REGULAR",
-    "winner": "DRAW",
+    "winner": "HOME_TEAM",
     "homeScore": 1,
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-30T21:59:06Z"
+    "lastUpdated": "2026-06-30T22:04:30Z"
   },
   {
     "id": "wc-537425",
