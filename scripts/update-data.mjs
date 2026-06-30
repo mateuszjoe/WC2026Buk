@@ -354,6 +354,30 @@ function mergeEspnLive(matches, events) {
       patch.homeScore = hs;
       patch.awayScore = as;
     }
+    // Zwycięzca z ESPN — KLUCZOWE dla pucharów rozstrzygniętych karnymi/dogrywką.
+    // football-data.org czasem spóźnia się z polem score.winner (zostaje null mimo
+    // STATUS_FINAL_PEN), a od niego zależy bonus +awans. ESPN oznacza drużynę
+    // awansującą flagą competitor.winner === true (też po karnych). Bierzemy ją
+    // tylko po zakończeniu meczu, żeby nie zgadywać zwycięzcy w trakcie gry.
+    if (mapped === "FINISHED" && (m.winner == null)) {
+      if (h?.winner === true) patch.winner = "HOME_TEAM";
+      else if (a?.winner === true) patch.winner = "AWAY_TEAM";
+    }
+    // Karne: utrwal też duration, gdyby football-data jeszcze go nie podał — do
+    // typów liczy się wtedy czas regulaminowy (90'), nie wynik po karnych.
+    const isPen = /PEN/i.test(String(st.type?.name || "")) ||
+      Number.isFinite(parseInt(h?.shootoutScore, 10)) ||
+      Number.isFinite(parseInt(a?.shootoutScore, 10));
+    if (mapped === "FINISHED" && isPen) {
+      patch.duration = m.duration && m.duration !== "REGULAR" ? m.duration : "PENALTY_SHOOTOUT";
+      // ESPN podaje wynik regulaminowy (np. 1:1) w competitor.score — gdy brak go
+      // z football-data, użyjmy go jako regularTime, by punktacja 90' miała wynik.
+      if ((m.regularHomeScore == null || m.regularAwayScore == null) &&
+          Number.isFinite(hs) && Number.isFinite(as)) {
+        patch.regularHomeScore = hs;
+        patch.regularAwayScore = as;
+      }
+    }
     if (mapped === "IN_PLAY" || mapped === "PAUSED") live++;
     merged++;
     return { ...m, ...patch };
@@ -455,6 +479,7 @@ const FINAL_STATUSES = new Set(["FINISHED", "AWARDED"]);
 // zmianie wyniku/statusu (kilka commitów na mecz). Live "co sekundę" idzie Firestore.
 const matchesForFile = liveMatches.map(({ liveElapsed, liveExtra, ...rest }) => {
   const p = prevById[rest.id];
+  let out = rest;
   // Czy poprzednia (dobra) wersja miała zakończony mecz z liczbowym wynikiem?
   const prevHasFinalScore =
     p &&
@@ -470,7 +495,7 @@ const matchesForFile = liveMatches.map(({ liveElapsed, liveExtra, ...rest }) => 
     if (newStatusNotFinal || newScoreMissing) {
       // Korekta wyniku (np. 1:1 -> 2:1) przejdzie normalnie — blokujemy tylko
       // cofnięcie statusu i nadpisanie znanego wyniku pustką (null).
-      return {
+      out = {
         ...rest,
         status: p.status,
         homeScore: p.homeScore,
@@ -482,7 +507,23 @@ const matchesForFile = liveMatches.map(({ liveElapsed, liveExtra, ...rest }) => 
       };
     }
   }
-  return rest;
+  // TRWAŁOŚĆ ZWYCIĘZCY: gdy raz poznaliśmy drużynę awansującą (z ESPN/football-data
+  // lub ręcznej korekty w pliku), NIE pozwalamy cofnąć jej do null. football-data
+  // potrafi przez wiele godzin trzymać score.winner = null mimo PENALTY_SHOOTOUT,
+  // a od tego pola zależy bonus +awans. Dotyczy też duration/regularTime po karnych.
+  if (p) {
+    if (p.winner && !out.winner) out = { ...out, winner: p.winner };
+    if (
+      p.duration && p.duration !== "REGULAR" &&
+      (!out.duration || out.duration === "REGULAR")
+    ) {
+      out = { ...out, duration: p.duration };
+    }
+    if (out.regularHomeScore == null && p.regularHomeScore != null) {
+      out = { ...out, regularHomeScore: p.regularHomeScore, regularAwayScore: p.regularAwayScore };
+    }
+  }
+  return out;
 });
 await writeFile("data/matches.json", JSON.stringify(matchesForFile, null, 2) + "\n", "utf8");
 matches = matchesForFile;
