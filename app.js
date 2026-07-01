@@ -188,6 +188,10 @@ function advanceBonus(pred, result, m, settings) {
   return pred.adv === actual ? settings.points.advanceBonus ?? 1 : 0;
 }
 
+function showAdvancePick(pred, m) {
+  return Boolean(isKnockout(m) && pred?.adv && getOutcome(pred.h, pred.a) === "draw");
+}
+
 // WAŻNE: typ ZAWSZE się liczy (auto-zapis). Flaga "c" (zatwierdzony) jest tylko
 // kosmetycznym znacznikiem w "Moich typach" — NIE ukrywa typu z punktacji/widoków,
 // bo to wcześniej gubiło edytowane/niezatwierdzone obstawienia.
@@ -248,7 +252,6 @@ function calculateLeaderboard(options = {}) {
       let advanceCount = 0; // trafione wskazania drużyny awansującej (po remisie w 90')
       let liveExactCount = 0;
       let liveOutcomeOnlyCount = 0;
-      let liveAdvanceCount = 0;
 
       for (const match of matches) {
         const pred = confirmedMatchPrediction(p.matches?.[match.id]);
@@ -256,12 +259,11 @@ function calculateLeaderboard(options = {}) {
         const s = scoreMatch(pred, result, settings);
         if (s.exact) exactCount += 1;
         else if (s.correct) outcomeOnlyCount += 1;
-        const adv = advanceBonus(pred, result, match, settings) > 0;
+        const adv = !live && advanceBonus(pred, result, match, settings) > 0;
         if (adv) advanceCount += 1;
         if (live) {
           if (s.exact) liveExactCount += 1;
           else if (s.correct) liveOutcomeOnlyCount += 1;
-          if (adv) liveAdvanceCount += 1;
         }
       }
 
@@ -271,15 +273,14 @@ function calculateLeaderboard(options = {}) {
       const championPoints = scoreChampion(p.champion, settings, championTeamId);
       const livePoints =
         liveExactCount * settings.points.exactScore +
-        liveOutcomeOnlyCount * settings.points.correctResult +
-        liveAdvanceCount * (settings.points.advanceBonus ?? 1);
+        liveOutcomeOnlyCount * settings.points.correctResult;
       const total = exactPoints + outcomePoints + advancePoints + championPoints;
 
       // Rozbicie BEZ live (utrwalone) — kolumny Dokł./Rez./awans pokazują tylko
       // zaksięgowane punkty; live wchodzi wyłącznie do SUMY jako delta "+x LIVE".
       const finalExactCount = exactCount - liveExactCount;
       const finalOutcomeOnlyCount = outcomeOnlyCount - liveOutcomeOnlyCount;
-      const finalAdvanceCount = advanceCount - liveAdvanceCount;
+      const finalAdvanceCount = advanceCount;
 
       return {
         uid,
@@ -296,7 +297,6 @@ function calculateLeaderboard(options = {}) {
         advanceCount,
         liveExactCount,
         liveOutcomeOnlyCount,
-        liveAdvanceCount,
         // Wartości utrwalone (bez live) do kolumn rozbicia w rankingu.
         finalExactCount,
         finalOutcomeOnlyCount,
@@ -926,10 +926,10 @@ function myPredTag(myPred, result, m, options = {}) {
     return `<span class="pts pending">Typ roboczy ${draftScore} · zatwierdź</span>`;
   }
   const s = scoreMatch(myPred, result, state.settings);
-  const bonus = m ? advanceBonus(myPred, result, m, state.settings) : 0;
+  const bonus = !options.live && m ? advanceBonus(myPred, result, m, state.settings) : 0;
   const cls = result ? (bonus > 0 || s.exact ? "exact" : s.correct ? "ok" : "miss") : "pending";
   const advTxt =
-    m && isKnockout(m) && myPred.adv
+    showAdvancePick(myPred, m)
       ? ` · awans: ${escapeHtml(myPred.adv === "h" ? m.homeTeam.name : m.awayTeam.name)}`
       : "";
   const livePrefix = options.live ? "na żywo: " : "";
@@ -2002,7 +2002,7 @@ function playerPickRowHtml(p, m) {
     const cls = r ? (bonus > 0 || s.exact ? "exact" : s.correct ? "ok" : "miss") : "pending";
     const label = r ? `${s.points + bonus} pkt${bonus ? " 🎯" : ""}` : "czeka";
     const advTxt =
-      isKnockout(m) && pk.adv
+      showAdvancePick(pk, m)
         ? `<span class="pp-adv">awans: ${escapeHtml(pk.adv === "h" ? m.homeTeam.name : m.awayTeam.name)}</span>`
         : "";
     right = `<span class="pp-pick">${pk.h ?? "–"}:${pk.a ?? "–"}</span>${advTxt}<span class="pts ${cls}">${label}</span>`;
