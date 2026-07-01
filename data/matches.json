@@ -2015,7 +2015,7 @@
       "name": "Senegal",
       "crest": "https://crests.football-data.org/senegal.svg"
     },
-    "status": "PAUSED",
+    "status": "IN_PLAY",
     "duration": "REGULAR",
     "winner": "AWAY_TEAM",
     "homeScore": 0,
