@@ -379,6 +379,20 @@ function matchLocked(match) {
   return Date.now() >= Date.parse(match.kickoffAt) - LOCK_BEFORE_MS;
 }
 
+// Twarda blokada edycji typu — sprawdzana PRZY KAŻDEJ próbie zmiany, nie tylko
+// przy renderze. Chroni przed edycją w NIEODŚWIEŻONEJ karcie: przyciski +/− oraz
+// pola wyniku wyrenderowane, gdy mecz był jeszcze otwarty, zostają klikalne mimo
+// że mecz już się rozpoczął (atrybut "disabled" pochodzi ze starego DOM). Bez tej
+// kontroli dało się zmienić typ po gwizdku i „dopunktować się". Zwraca true, gdy
+// zablokowano — wtedy handler przerywa i odświeża widok (przyciski się dezaktywują).
+function guardMatchLocked(id) {
+  const m = state.matches.find((x) => x.id === id);
+  if (!m || !matchLocked(m)) return false;
+  state.saveMsg = "⏱️ Mecz już się rozpoczął — typu nie można zmienić.";
+  render(); // przebuduj nieaktualny widok: pola/przyciski staną się nieaktywne
+  return true;
+}
+
 // Ostatni mecz 1. kolejki fazy grupowej (wg czasu rozpoczęcia).
 // 1. kolejka = po 2 mecze w każdej grupie. Jeśli dane mają numer kolejki
 // (matchday), używamy go; w innym razie bierzemy liczba_grup * 2 najwcześniejszych.
@@ -979,6 +993,7 @@ function saveMyPredictionsDebounced() {
 // Usuwa typ na dany mecz — LOKALNIE i w bazie (deleteField, bo merge nie kasuje
 // kluczy mapy, przez co wyczyszczony typ wracał po odświeżeniu).
 async function clearMatchPrediction(id) {
+  if (guardMatchLocked(id)) return; // mecz ruszył — nie kasuj typu po gwizdku
   clearTimeout(saveTimer); // anuluj zaległy merge-zapis, by nie przywrócił klucza
   if (state.myDraft?.matches) delete state.myDraft.matches[id];
   const mine = state.predictions[predUid()];
@@ -3580,6 +3595,7 @@ function wireEvents() {
     input.addEventListener("input", () => {
       const id = input.dataset.match;
       const side = input.dataset.side;
+      if (guardMatchLocked(id)) return; // mecz ruszył — cofnij i nie zapisuj
       if (!state.myDraft.matches[id]) state.myDraft.matches[id] = {};
       const cur = state.myDraft.matches[id];
       const wasDraw = cur.h !== undefined && cur.h === cur.a;
@@ -3606,6 +3622,7 @@ function wireEvents() {
       const id = b.dataset.match;
       const side = b.dataset.side;
       const dir = Number(b.dataset.dir) || 0;
+      if (guardMatchLocked(id)) return; // mecz ruszył — ignoruj klik ze starego DOM
       if (!state.myDraft.matches[id]) state.myDraft.matches[id] = {};
       const cur = state.myDraft.matches[id];
       const v0 = typeof cur[side] === "number" ? cur[side] : 0;
@@ -3620,6 +3637,7 @@ function wireEvents() {
   appRoot.querySelectorAll(".bet-confirm").forEach((b) =>
     b.addEventListener("click", () => {
       const id = b.dataset.match;
+      if (guardMatchLocked(id)) return; // mecz ruszył — nie zatwierdzaj zmian
       const cur = state.myDraft.matches[id];
       if (!cur) return;
       if (cur.h === undefined || cur.a === undefined) {
@@ -3645,6 +3663,7 @@ function wireEvents() {
     b.addEventListener("click", () => {
       const id = b.dataset.match;
       const side = b.dataset.adv;
+      if (guardMatchLocked(id)) return; // mecz ruszył — nie zmieniaj typu awansu
       if (!state.myDraft.matches[id]) state.myDraft.matches[id] = {};
       const cur = state.myDraft.matches[id];
       cur.adv = cur.adv === side ? undefined : side; // ponowne kliknięcie = odznacz
@@ -4325,6 +4344,7 @@ if ("serviceWorker" in navigator) {
 
 // Cykliczne odświeżanie wyników z pliku (robot aktualizuje go co kilka minut),
 // żeby przy otwartej aplikacji wpadały powiadomienia o zakończonych meczach.
+let lastLockedCount = -1;
 function startMatchesPolling() {
   setInterval(async () => {
     try {
@@ -4332,7 +4352,15 @@ function startMatchesPolling() {
       state.baseMatches = [...matches].sort((a, b) => a.kickoffAt.localeCompare(b.kickoffAt));
       applyLiveOverlay();
       checkNotifications();
+      // Wykryj moment, w którym jakiś mecz właśnie się zablokował (gwizdek), żeby
+      // odświeżyć też otwartą kartę „Moje typy" — inaczej przyciski +/− z wczoraj
+      // zostają aktywne aż do kliknięcia. Odświeżamy TYLKO przy zmianie liczby
+      // zablokowanych (rzadko), by nie gubić kursora podczas wpisywania typu.
+      const lockedNow = state.matches.filter((m) => matchLocked(m)).length;
+      const newlyLocked = lastLockedCount !== -1 && lockedNow > lastLockedCount;
+      lastLockedCount = lockedNow;
       if (state.view === "matches" || state.view === "ranking") render();
+      else if (state.view === "mine" && newlyLocked) render();
     } catch (_) {}
   }, 60 * 1000);
 }
