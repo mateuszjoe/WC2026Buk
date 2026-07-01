@@ -1968,11 +1968,11 @@
     "status": "IN_PLAY",
     "duration": "REGULAR",
     "winner": "HOME_TEAM",
-    "homeScore": 1,
+    "homeScore": 2,
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-01T02:30:49Z"
+    "lastUpdated": "2026-07-01T02:31:49Z"
   },
   {
     "id": "wc-537426",
