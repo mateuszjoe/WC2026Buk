@@ -1992,12 +1992,12 @@
     },
     "status": "IN_PLAY",
     "duration": "REGULAR",
-    "winner": "DRAW",
+    "winner": "HOME_TEAM",
     "homeScore": 2,
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-01T17:53:30Z"
+    "lastUpdated": "2026-07-01T17:54:16Z"
   },
   {
     "id": "wc-537422",
