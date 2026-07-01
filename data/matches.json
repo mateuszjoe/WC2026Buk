@@ -1965,14 +1965,14 @@
       "name": "Ekwador",
       "crest": "https://crests.football-data.org/791.svg"
     },
-    "status": "TIMED",
+    "status": "IN_PLAY",
     "duration": "REGULAR",
-    "winner": null,
-    "homeScore": null,
-    "awayScore": null,
+    "winner": "DRAW",
+    "homeScore": 0,
+    "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-06-29T15:20:12Z"
+    "lastUpdated": "2026-07-01T01:05:45Z"
   },
   {
     "id": "wc-537426",
