@@ -213,7 +213,34 @@ table.leaderboard { width: 100%; border-collapse: collapse; font-size: 0.92rem; 
 .leaderboard th.sortable.active { color: var(--accent); }
 .leaderboard td { padding: 0.7rem; text-align: right; border-bottom: 1px solid rgba(42, 54, 102, 0.5); }
 .leaderboard td.rank, .leaderboard td.name { text-align: left; }
-.leaderboard td.rank { font-weight: 700; width: 3rem; }
+.leaderboard td.rank { font-weight: 700; width: 3.8rem; }
+.rank-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  white-space: nowrap;
+}
+.rank-main { min-width: 1.15rem; }
+.rank-move {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.08rem;
+  padding: 0.06rem 0.28rem;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  font-size: 0.64rem;
+  font-weight: 900;
+  line-height: 1;
+}
+.rank-move.up {
+  color: var(--accent);
+  background: rgba(54, 211, 153, 0.12);
+}
+.rank-move.down {
+  color: #ff7b7b;
+  background: rgba(255, 123, 123, 0.12);
+}
+.rank-move-arrow { font-size: 0.72rem; line-height: 1; }
 .leaderboard td.total strong { color: var(--accent); font-size: 1.05rem; }
 .leaderboard td.hits strong { color: var(--gold); font-size: 1.02rem; }
 .leaderboard tr:last-child td { border-bottom: 0; }
@@ -694,8 +721,7 @@ body::before {
 }
 .contrib-chip:hover { filter: brightness(1.15); }
 
-/* Znaczek opłaconej składki + przełącznik w panelu admina */
-.paid-badge { font-size: 0.85rem; vertical-align: middle; }
+/* Przelacznik w panelu admina */
 .pay-toggle { white-space: nowrap; }
 .pay-toggle.paid { color: var(--accent); border-color: rgba(54, 211, 153, 0.5); }
 
@@ -1538,7 +1564,7 @@ details.mini-standings[open] summary { color: var(--text); }
   /* Stała szerokość kolumn = tabela ZAWSZE mieści się w ekranie, a typy live
      (chipy) zawijają się pod nick zamiast rozpychać tabelę poza ramkę. */
   .leaderboard { table-layout: fixed; width: 100%; }
-  .leaderboard th:nth-child(1), .leaderboard td:nth-child(1) { width: 1.9rem; }
+  .leaderboard th:nth-child(1), .leaderboard td:nth-child(1) { width: 3.15rem; }
   .leaderboard th:nth-child(3), .leaderboard td:nth-child(3) { width: 3.5rem; }
   .leaderboard th:nth-child(4), .leaderboard td:nth-child(4) { width: 2.8rem; }
   .leaderboard td.name { white-space: normal; }
@@ -1668,7 +1694,7 @@ html.vv-mobile .leaderboard th { padding: 0.6rem 0.4rem; }
 html.vv-mobile .leaderboard .cnt { display: none; }
 /* j.w. — stała szerokość kolumn, chipy live zawijają się pod nick */
 html.vv-mobile .leaderboard { table-layout: fixed; width: 100%; }
-html.vv-mobile .leaderboard th:nth-child(1), html.vv-mobile .leaderboard td:nth-child(1) { width: 1.9rem; }
+html.vv-mobile .leaderboard th:nth-child(1), html.vv-mobile .leaderboard td:nth-child(1) { width: 3.15rem; }
 html.vv-mobile .leaderboard th:nth-child(3), html.vv-mobile .leaderboard td:nth-child(3) { width: 3.5rem; }
 html.vv-mobile .leaderboard th:nth-child(4), html.vv-mobile .leaderboard td:nth-child(4) { width: 2.8rem; }
 html.vv-mobile .leaderboard td.name { white-space: normal; }

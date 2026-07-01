@@ -2116,6 +2116,27 @@ function liveDeltaHtml(r, hasLiveRanking) {
   return `<span class="live-delta${cls}">${r.livePoints > 0 ? "+" : ""}${r.livePoints} live</span>`;
 }
 
+function liveRankMovementMap(liveBoard) {
+  const baseRanks = new Map(calculateLeaderboard({ includeLive: false }).map((r) => [r.uid, r.rank]));
+  return new Map(
+    liveBoard.map((r) => {
+      const from = baseRanks.get(r.uid);
+      if (!from || from === r.rank) return [r.uid, null];
+      return [r.uid, { from, dir: r.rank < from ? "up" : "down" }];
+    })
+  );
+}
+
+function liveRankMovementHtml(move) {
+  if (!move) return "";
+  const up = move.dir === "up";
+  const label = `Live: ${up ? "awans" : "spadek"} z miejsca ${move.from}`;
+  return `
+    <span class="rank-move ${up ? "up" : "down"}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}">
+      <span class="rank-move-arrow" aria-hidden="true">${up ? "&uarr;" : "&darr;"}</span><span>${move.from}</span>
+    </span>`;
+}
+
 // Typy gracza na trwające mecze — pokazywane obok nicku w rankingu live.
 // Mecz już się zaczął, więc cudze typy są jawne (uczciwa gra zachowana).
 function livePickChipsHtml(uid, liveMatches) {
@@ -2177,7 +2198,9 @@ function sortTh(key, label, title) {
 function rankingHtml() {
   const liveMatches = liveScoredMatches();
   const hasLiveRanking = liveMatches.length > 0;
-  const board = sortBoard(calculateLeaderboard({ includeLive: hasLiveRanking }));
+  const liveBoard = calculateLeaderboard({ includeLive: hasLiveRanking });
+  const movementByUid = hasLiveRanking ? liveRankMovementMap(liveBoard) : new Map();
+  const board = sortBoard(liveBoard);
   const p = state.settings.points;
 
   const rows =
@@ -2190,11 +2213,11 @@ function rankingHtml() {
             const prof = state.predictions[r.uid] || { name: r.name };
             return `
             <tr class="${me ? "me" : ""}">
-              <td class="rank">${medal}</td>
+              <td class="rank"><span class="rank-cell"><span class="rank-main">${medal}</span>${liveRankMovementHtml(movementByUid.get(r.uid))}</span></td>
               <td class="name">
                 <span class="player-cell clickable" data-player="${escapeHtml(r.uid)}" title="Zobacz typy">
                   ${avatarHtml(prof)}
-                  <span class="player-name">${escapeHtml(r.name)}${prof.paid ? ' <span class="paid-badge" title="Składka opłacona">💰</span>' : ""}${me ? ' <span class="you">Ty</span>' : ""}</span>
+                  <span class="player-name">${escapeHtml(r.name)}${me ? ' <span class="you">Ty</span>' : ""}</span>
                   ${livePickChipsHtml(r.uid, liveMatches)}
                 </span>
               </td>
@@ -2900,7 +2923,7 @@ function adminHtml() {
               </span>
               <span class="player-pts">${r.total} pkt</span>
               <button class="btn ghost tiny pay-toggle ${prof.paid ? "paid" : ""}" data-uid="${escapeHtml(r.uid)}"
-                data-paid="${prof.paid ? "1" : "0"}" title="${prof.paid ? "Oznacz jako NIEopłacone" : "Oznacz jako opłacone"}">${prof.paid ? "✅ opłacił" : "💰 nieopłac."}</button>
+                data-paid="${prof.paid ? "1" : "0"}" title="${prof.paid ? "Oznacz jako NIEopłacone" : "Oznacz jako opłacone"}">${prof.paid ? "opłacił" : "nieopłac."}</button>
               <button class="btn ghost tiny edit-nick" data-uid="${escapeHtml(r.uid)}"
                 data-name="${escapeHtml(r.name)}" title="Zmień nick">✏️</button>
               <button class="btn ghost tiny del-player" data-uid="${escapeHtml(r.uid)}"
