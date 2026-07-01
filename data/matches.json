@@ -2015,14 +2015,14 @@
       "name": "Senegal",
       "crest": "https://crests.football-data.org/senegal.svg"
     },
-    "status": "IN_PLAY",
+    "status": "PAUSED",
     "duration": "EXTRA_TIME",
     "winner": "DRAW",
     "homeScore": 2,
     "awayScore": 2,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-01T22:19:33Z"
+    "lastUpdated": "2026-07-01T22:20:09Z"
   },
   {
     "id": "wc-537421",
