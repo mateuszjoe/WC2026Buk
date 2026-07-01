@@ -1990,11 +1990,11 @@
       "name": "DR Konga",
       "crest": "https://crests.football-data.org/congo_dr.svg"
     },
-    "status": "TIMED",
+    "status": "IN_PLAY",
     "duration": "REGULAR",
     "winner": null,
-    "homeScore": null,
-    "awayScore": null,
+    "homeScore": 0,
+    "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
     "lastUpdated": "2026-06-30T15:20:13Z"
