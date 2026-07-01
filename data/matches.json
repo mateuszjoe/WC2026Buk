@@ -1922,7 +1922,7 @@
     "awayScore": 2,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-01T08:25:00Z"
+    "lastUpdated": "2026-07-01T08:25:01Z"
   },
   {
     "id": "wc-537416",
@@ -2016,13 +2016,13 @@
       "crest": "https://crests.football-data.org/senegal.svg"
     },
     "status": "IN_PLAY",
-    "duration": "REGULAR",
+    "duration": "EXTRA_TIME",
     "winner": "DRAW",
     "homeScore": 2,
     "awayScore": 2,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-01T22:10:13Z"
+    "lastUpdated": "2026-07-01T22:11:09Z"
   },
   {
     "id": "wc-537421",
