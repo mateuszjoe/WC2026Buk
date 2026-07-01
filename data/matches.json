@@ -2018,11 +2018,11 @@
     "status": "IN_PLAY",
     "duration": "REGULAR",
     "winner": "AWAY_TEAM",
-    "homeScore": 0,
+    "homeScore": 1,
     "awayScore": 2,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-01T21:48:27Z"
+    "lastUpdated": "2026-07-01T21:49:28Z"
   },
   {
     "id": "wc-537421",
