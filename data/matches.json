@@ -2022,7 +2022,7 @@
     "awayScore": 2,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-01T22:54:56Z"
+    "lastUpdated": "2026-07-01T23:03:13Z"
   },
   {
     "id": "wc-537421",
@@ -2040,14 +2040,14 @@
       "name": "Bośnia i Hercegowina",
       "crest": "https://crests.football-data.org/bosnia.svg"
     },
-    "status": "IN_PLAY",
+    "status": "FINISHED",
     "duration": "REGULAR",
     "winner": "HOME_TEAM",
     "homeScore": 2,
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-02T02:06:09Z"
+    "lastUpdated": "2026-07-02T02:07:08Z"
   },
   {
     "id": "wc-537420",
