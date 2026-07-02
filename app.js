@@ -2571,12 +2571,14 @@ function matchesGroupedHtml() {
       </div>`;
     })
     .join("");
+  const koBracket = knockoutBracketHtml();
 
   return `
     <div class="phase-label">Faza grupowa</div>
     <div class="group-grid">${groupBlocks}</div>
     <div class="phase-label">Faza pucharowa</div>
-    <div class="group-grid">${koBlocks}</div>`;
+    ${koBracket}
+    ${koBlocks ? `<div class="group-grid ko-bracket-mobile-list">${koBlocks}</div>` : ""}`;
 }
 
 function matchesHtml() {
@@ -2698,7 +2700,6 @@ function mineHtml() {
       </div>`;
     })
     .join("");
-  const koBracket = mineTab === "locked" ? knockoutBracketHtml(inTab) : "";
 
   const champTeam = teamById(state.myDraft.champion);
 
@@ -2743,13 +2744,7 @@ function mineHtml() {
             })}</div>`
           : `<div class="phase-label">Faza grupowa</div>
              <div class="group-grid">${groupBlocks}</div>
-             ${
-               koBlocks || koBracket
-                 ? `<div class="phase-label">Faza pucharowa</div>
-                    ${koBracket}
-                    ${koBlocks ? `<div class="group-grid ko-bracket-mobile-list">${koBlocks}</div>` : ""}`
-                 : ""
-             }`
+             ${koBlocks ? `<div class="phase-label">Faza pucharowa</div><div class="group-grid">${koBlocks}</div>` : ""}`
       }
 
       <p class="muted small footnote">

@@ -827,7 +827,7 @@ body::before {
 .ko-count { margin-left: auto; color: var(--muted); font-size: 0.74rem; }
 .ko-note { margin: 0.4rem 0 0.2rem; }
 
-/* Desktopowe drzewko fazy pucharowej w "Rozegrane / trwające". */
+/* Desktopowe drzewko fazy pucharowej w zakładce "Mecze". */
 .ko-bracket-card {
   padding: 0.9rem;
   overflow-x: auto;
