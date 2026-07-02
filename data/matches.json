@@ -2065,14 +2065,14 @@
       "name": "Austria",
       "crest": "https://crests.football-data.org/816.svg"
     },
-    "status": "IN_PLAY",
+    "status": "PAUSED",
     "duration": "REGULAR",
     "winner": "HOME_TEAM",
     "homeScore": 1,
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-02T19:49:45Z"
+    "lastUpdated": "2026-07-02T19:50:10Z"
   },
   {
     "id": "wc-537419",
