@@ -2392,6 +2392,121 @@ function betRow(m) {
     </div>`;
 }
 
+function bracketStageShort(stage) {
+  const i = STAGE_ORDER.indexOf(stage);
+  return ["1/16", "1/8", "ĆF", "PF", "3. miejsce", "Finał"][i] || capitalize(stage);
+}
+
+function bracketDisplayResult(m) {
+  return apiFullTimeResult(m) || getLiveResult(m);
+}
+
+function bracketWinnerSide(m, result) {
+  const adv = advancingSide(m);
+  if (adv) return adv;
+  if (!result || result.h === result.a) return null;
+  return result.h > result.a ? "h" : "a";
+}
+
+function bracketMatchCard(m, stage, lockedFilter) {
+  if (!m) {
+    return `
+      <div class="bracket-match empty">
+        <div class="bracket-stage">${escapeHtml(bracketStageShort(stage))}</div>
+        <div class="bracket-wait">Do ustalenia</div>
+      </div>`;
+  }
+
+  const locked = lockedFilter ? lockedFilter(m) : true;
+  if (!locked) {
+    return `
+      <div class="bracket-match empty">
+        <div class="bracket-stage">${escapeHtml(bracketStageShort(stage))}</div>
+        <div class="bracket-wait">${isRealTeam(m.homeTeam) && isRealTeam(m.awayTeam) ? "Czeka na start" : "Do ustalenia"}</div>
+      </div>`;
+  }
+
+  const display = bracketDisplayResult(m);
+  const pointResult = getLiveResult(m);
+  const winner = bracketWinnerSide(m, display);
+  const live = isLiveMatch(m) && Boolean(pointResult) && !matchFinished(m);
+  const myPred = state.user
+    ? confirmedMatchPrediction(state.predictions[predUid()]?.matches?.[m.id])
+    : null;
+  const tag = pointResult ? myPredTag(myPred, pointResult, m, { live }) : "";
+  const score = display ? `${display.h}:${display.a}` : "–";
+  const regular =
+    m.duration && m.duration !== "REGULAR" && typeof m.regularHomeScore === "number" && typeof m.regularAwayScore === "number"
+      ? `<span class="bracket-regular">90' ${m.regularHomeScore}:${m.regularAwayScore}</span>`
+      : "";
+
+  const teamLine = (team, side) => `
+    <div class="bracket-team ${winner === side ? "win" : ""}">
+      <span class="bracket-team-name">${flagImg(team)}<span>${escapeHtml(team?.name || "TBD")}</span></span>
+      <b>${display ? display[side] : ""}</b>
+    </div>`;
+
+  return `
+    <div class="bracket-match ${matchFinished(m) ? "fin" : ""} ${live ? "live-game" : ""}">
+      <div class="bracket-top">
+        <span class="bracket-stage">${escapeHtml(bracketStageShort(stage))}</span>
+        <span class="bracket-date">${fmtShort(m.kickoffAt)}</span>
+        ${liveTag(m)}
+      </div>
+      <div class="bracket-score">${score}${regular}</div>
+      <div class="bracket-teams">
+        ${teamLine(m.homeTeam, "h")}
+        ${teamLine(m.awayTeam, "a")}
+      </div>
+      ${tag ? `<div class="bracket-pick">${tag}</div>` : ""}
+    </div>`;
+}
+
+function bracketColumnHtml(stage, matches, side, lockedFilter) {
+  return `
+    <div class="bracket-col ${side}">
+      <div class="bracket-col-title">${escapeHtml(bracketStageShort(stage))}</div>
+      <div class="bracket-col-matches">
+        ${matches.map((m) => bracketMatchCard(m, stage, lockedFilter)).join("")}
+      </div>
+    </div>`;
+}
+
+function knockoutBracketHtml(lockedFilter) {
+  const byStage = new Map(knockoutByStage());
+  const hasVisible = [...byStage.values()]
+    .flat()
+    .some((m) => isRealTeam(m.homeTeam) && isRealTeam(m.awayTeam) && (!lockedFilter || lockedFilter(m)));
+  if (!hasVisible) return "";
+
+  const roundStages = STAGE_ORDER.slice(0, 4);
+  const leftCols = roundStages.map((stage) => {
+    const ms = byStage.get(stage) || [];
+    return [stage, ms.slice(0, Math.ceil(ms.length / 2))];
+  });
+  const rightCols = roundStages.map((stage) => {
+    const ms = byStage.get(stage) || [];
+    return [stage, ms.slice(Math.ceil(ms.length / 2))];
+  });
+  const finalStage = STAGE_ORDER[5];
+  const thirdStage = STAGE_ORDER[4];
+  const finalMatch = (byStage.get(finalStage) || [])[0] || null;
+  const thirdMatch = (byStage.get(thirdStage) || [])[0] || null;
+
+  return `
+    <div class="card ko-bracket-card">
+      <div class="ko-bracket">
+        ${leftCols.map(([stage, ms]) => bracketColumnHtml(stage, ms, "left", lockedFilter)).join("")}
+        <div class="bracket-center">
+          <div class="bracket-col-title">Finały</div>
+          ${bracketMatchCard(finalMatch, finalStage, lockedFilter)}
+          ${bracketMatchCard(thirdMatch, thirdStage, lockedFilter)}
+        </div>
+        ${rightCols.reverse().map(([stage, ms]) => bracketColumnHtml(stage, ms, "right", lockedFilter)).join("")}
+      </div>
+    </div>`;
+}
+
 // Przełącznik układu meczów: Wg grup / Wg dat.
 function matchViewToggle() {
   const v = state.matchView;
@@ -2583,6 +2698,7 @@ function mineHtml() {
       </div>`;
     })
     .join("");
+  const koBracket = mineTab === "locked" ? knockoutBracketHtml(inTab) : "";
 
   const champTeam = teamById(state.myDraft.champion);
 
@@ -2627,7 +2743,13 @@ function mineHtml() {
             })}</div>`
           : `<div class="phase-label">Faza grupowa</div>
              <div class="group-grid">${groupBlocks}</div>
-             ${koBlocks ? `<div class="phase-label">Faza pucharowa</div><div class="group-grid">${koBlocks}</div>` : ""}`
+             ${
+               koBlocks || koBracket
+                 ? `<div class="phase-label">Faza pucharowa</div>
+                    ${koBracket}
+                    ${koBlocks ? `<div class="group-grid ko-bracket-mobile-list">${koBlocks}</div>` : ""}`
+                 : ""
+             }`
       }
 
       <p class="muted small footnote">

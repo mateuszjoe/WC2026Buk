@@ -827,6 +827,166 @@ body::before {
 .ko-count { margin-left: auto; color: var(--muted); font-size: 0.74rem; }
 .ko-note { margin: 0.4rem 0 0.2rem; }
 
+/* Desktopowe drzewko fazy pucharowej w "Rozegrane / trwające". */
+.ko-bracket-card {
+  padding: 0.9rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.ko-bracket-card ~ .ko-bracket-mobile-list { display: none; }
+.ko-bracket {
+  min-width: 1120px;
+  display: grid;
+  grid-template-columns: 1.2fr 1.08fr 0.98fr 0.9fr 1.18fr 0.9fr 0.98fr 1.08fr 1.2fr;
+  gap: 0.65rem;
+  align-items: stretch;
+}
+.bracket-col,
+.bracket-center {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.bracket-center {
+  justify-content: center;
+}
+.bracket-col-title {
+  min-height: 1.35rem;
+  text-align: center;
+  color: var(--gold);
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.bracket-col-matches {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 0.7rem;
+}
+.bracket-match {
+  position: relative;
+  min-height: 95px;
+  border: 1px solid rgba(72, 91, 150, 0.66);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(19, 31, 70, 0.96), rgba(12, 20, 48, 0.96));
+  padding: 0.5rem 0.55rem;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
+}
+.bracket-match::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 0.68rem;
+  border-top: 1px solid rgba(255, 209, 102, 0.34);
+}
+.bracket-col.left .bracket-match::after { right: -0.68rem; }
+.bracket-col.right .bracket-match::after { left: -0.68rem; }
+.bracket-center .bracket-match::after,
+.bracket-match.empty::after { display: none; }
+.bracket-match.empty {
+  min-height: 74px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-style: dashed;
+  background: rgba(19, 31, 70, 0.38);
+  color: var(--muted);
+  box-shadow: none;
+}
+.bracket-top {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 1.1rem;
+}
+.bracket-stage {
+  color: var(--gold);
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.bracket-date {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-variant-numeric: tabular-nums;
+}
+.bracket-score {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin: 0.16rem 0 0.3rem;
+  color: var(--text);
+  font-size: 1.15rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+.bracket-regular {
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 800;
+}
+.bracket-teams {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+.bracket-team {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+.bracket-team.win {
+  color: var(--text);
+  font-weight: 900;
+}
+.bracket-team-name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.32rem;
+}
+.bracket-team-name span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bracket-team-name .flag {
+  width: 1rem;
+  flex-shrink: 0;
+}
+.bracket-team b {
+  min-width: 1rem;
+  text-align: right;
+  color: inherit;
+  font-variant-numeric: tabular-nums;
+}
+.bracket-pick {
+  margin-top: 0.4rem;
+  display: flex;
+  justify-content: flex-end;
+}
+.bracket-pick .pts {
+  max-width: 100%;
+  margin-left: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bracket-wait {
+  margin-top: 0.18rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
 /* Tabela grupy */
 .standings {
   width: 100%;
@@ -1484,6 +1644,8 @@ details.mini-standings[open] summary { color: var(--text); }
 /* ---------- Tablet ---------- */
 @media (max-width: 760px) {
   .group-grid { grid-template-columns: 1fr; }
+  .ko-bracket-card { display: none; }
+  .ko-bracket-card ~ .ko-bracket-mobile-list { display: grid; }
 }
 
 /* ---------- Mobile ---------- */
@@ -1593,6 +1755,8 @@ html.vv-mobile .chat-panel {
   max-height: none;
 }
 html.vv-mobile .group-grid { grid-template-columns: 1fr; }
+html.vv-mobile .ko-bracket-card { display: none; }
+html.vv-mobile .ko-bracket-card ~ .ko-bracket-mobile-list { display: grid; }
 html.vv-mobile .container {
   width: 100%;
   max-width: 100%;
