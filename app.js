@@ -2574,11 +2574,11 @@ function matchesGroupedHtml() {
   const koBracket = knockoutBracketHtml();
 
   return `
-    <div class="phase-label">Faza grupowa</div>
-    <div class="group-grid">${groupBlocks}</div>
     <div class="phase-label">Faza pucharowa</div>
     ${koBracket}
-    ${koBlocks ? `<div class="group-grid ko-bracket-mobile-list">${koBlocks}</div>` : ""}`;
+    ${koBlocks ? `<div class="group-grid ko-bracket-mobile-list">${koBlocks}</div>` : ""}
+    <div class="phase-label">Faza grupowa</div>
+    <div class="group-grid">${groupBlocks}</div>`;
 }
 
 function matchesHtml() {
