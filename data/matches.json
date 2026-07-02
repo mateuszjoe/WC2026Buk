@@ -2068,11 +2068,11 @@
     "status": "IN_PLAY",
     "duration": "REGULAR",
     "winner": null,
-    "homeScore": 0,
+    "homeScore": 1,
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-02T19:36:10Z"
+    "lastUpdated": "2026-07-02T19:37:11Z"
   },
   {
     "id": "wc-537419",
