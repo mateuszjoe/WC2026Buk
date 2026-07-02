@@ -154,6 +154,30 @@ function espnMinute(st) {
   const m = String(st?.displayClock || "").match(/\d+/);
   return m ? parseInt(m[0], 10) : null;
 }
+function espnTypeText(st) {
+  const t = st?.type || {};
+  return [t.name, t.detail, t.shortDetail, t.description].filter(Boolean).join(" ");
+}
+function espnRegulationScore(comp, home, away) {
+  const details = comp?.details;
+  if (!Array.isArray(details) || !details.length) return null;
+  const homeId = String(home?.id || "");
+  const awayId = String(away?.id || "");
+  if (!homeId || !awayId) return null;
+  let h = 0;
+  let a = 0;
+  for (const play of details) {
+    if (!play?.scoringPlay || play.shootout) continue;
+    const clock = Number(play.clock?.value);
+    if (!Number.isFinite(clock) || clock > 90 * 60) continue;
+    const value = Number(play.scoreValue ?? 1);
+    if (!Number.isFinite(value) || value <= 0) continue;
+    const teamId = String(play.team?.id || "");
+    if (teamId === homeId) h += value;
+    else if (teamId === awayId) a += value;
+  }
+  return { home: h, away: a };
+}
 function closeKick(aIso, bIso) {
   const a = Date.parse(aIso), b = Date.parse(bIso);
   if (!isFinite(a) || !isFinite(b)) return false;
@@ -220,16 +244,30 @@ exports.liveScorePoll = onSchedule(
       const a = cs.find((x) => x.homeAway === "away");
       const hs = h ? parseInt(h.score, 10) : NaN;
       const as = a ? parseInt(a.score, 10) : NaN;
+      const typeText = espnTypeText(st);
+      const isAet = /AET|EXTRA TIME/i.test(typeText);
+      const isPen = /PEN/i.test(typeText) ||
+        Number.isFinite(parseInt(h?.shootoutScore, 10)) ||
+        Number.isFinite(parseInt(a?.shootoutScore, 10));
+      const rt = mapped === "FINISHED" && (isAet || isPen)
+        ? espnRegulationScore(comp, h, a)
+        : null;
       overlay[m.id] = {
         status: mapped,
         homeName: m.homeTeam?.name ?? null,
         awayName: m.awayTeam?.name ?? null,
         homeScore: Number.isFinite(hs) ? hs : null,
         awayScore: Number.isFinite(as) ? as : null,
-        regularHomeScore: null,
-        regularAwayScore: null,
-        duration: m.duration || "REGULAR",
-        winner: null,
+        regularHomeScore: rt && Number.isFinite(rt.home) ? rt.home : null,
+        regularAwayScore: rt && Number.isFinite(rt.away) ? rt.away : null,
+        duration: isPen ? "PENALTY_SHOOTOUT" : isAet ? "EXTRA_TIME" : m.duration || "REGULAR",
+        winner: mapped === "FINISHED"
+          ? h?.winner === true
+            ? "HOME_TEAM"
+            : a?.winner === true
+              ? "AWAY_TEAM"
+              : null
+          : null,
         liveElapsed: espnMinute(st)
       };
     }

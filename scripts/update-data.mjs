@@ -282,6 +282,32 @@ function espnMinute(status) {
   return m ? parseInt(m[0], 10) : null;
 }
 
+function espnTypeText(status) {
+  const t = status?.type || {};
+  return [t.name, t.detail, t.shortDetail, t.description].filter(Boolean).join(" ");
+}
+
+function espnRegulationScore(comp, home, away) {
+  const details = comp?.details;
+  if (!Array.isArray(details) || !details.length) return null;
+  const homeId = String(home?.id || "");
+  const awayId = String(away?.id || "");
+  if (!homeId || !awayId) return null;
+  let h = 0;
+  let a = 0;
+  for (const play of details) {
+    if (!play?.scoringPlay || play.shootout) continue;
+    const clock = Number(play.clock?.value);
+    if (!Number.isFinite(clock) || clock > 90 * 60) continue;
+    const value = Number(play.scoreValue ?? 1);
+    if (!Number.isFinite(value) || value <= 0) continue;
+    const teamId = String(play.team?.id || "");
+    if (teamId === homeId) h += value;
+    else if (teamId === awayId) a += value;
+  }
+  return { home: h, away: a };
+}
+
 async function fetchEspnEvents(matches) {
   if (!isInEspnWindow(matches)) {
     console.log("Brak meczu w oknie ESPN — ESPN pominięte.");
@@ -365,14 +391,31 @@ function mergeEspnLive(matches, events) {
     }
     // Karne: utrwal też duration, gdyby football-data jeszcze go nie podał — do
     // typów liczy się wtedy czas regulaminowy (90'), nie wynik po karnych.
-    const isPen = /PEN/i.test(String(st.type?.name || "")) ||
+    const typeText = espnTypeText(st);
+    const isAet = /AET|EXTRA TIME/i.test(typeText);
+    const isPen = /PEN/i.test(typeText) ||
       Number.isFinite(parseInt(h?.shootoutScore, 10)) ||
       Number.isFinite(parseInt(a?.shootoutScore, 10));
+    if (mapped === "FINISHED" && isAet) {
+      patch.duration = m.duration && m.duration !== "REGULAR" ? m.duration : "EXTRA_TIME";
+    }
+    if (
+      mapped === "FINISHED" &&
+      (isAet || isPen) &&
+      (m.regularHomeScore == null || m.regularAwayScore == null)
+    ) {
+      const rt = espnRegulationScore(comp, h, a);
+      if (rt && Number.isFinite(rt.home) && Number.isFinite(rt.away)) {
+        patch.regularHomeScore = rt.home;
+        patch.regularAwayScore = rt.away;
+      }
+    }
     if (mapped === "FINISHED" && isPen) {
       patch.duration = m.duration && m.duration !== "REGULAR" ? m.duration : "PENALTY_SHOOTOUT";
       // ESPN podaje wynik regulaminowy (np. 1:1) w competitor.score — gdy brak go
       // z football-data, użyjmy go jako regularTime, by punktacja 90' miała wynik.
-      if ((m.regularHomeScore == null || m.regularAwayScore == null) &&
+      if ((patch.regularHomeScore == null || patch.regularAwayScore == null) &&
+          (m.regularHomeScore == null || m.regularAwayScore == null) &&
           Number.isFinite(hs) && Number.isFinite(as)) {
         patch.regularHomeScore = hs;
         patch.regularAwayScore = as;

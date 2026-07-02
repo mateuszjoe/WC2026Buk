@@ -2020,8 +2020,8 @@
     "winner": "HOME_TEAM",
     "homeScore": 3,
     "awayScore": 2,
-    "regularHomeScore": null,
-    "regularAwayScore": null,
+    "regularHomeScore": 2,
+    "regularAwayScore": 2,
     "lastUpdated": "2026-07-02T03:25:01Z"
   },
   {
