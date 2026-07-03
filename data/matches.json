@@ -2090,14 +2090,14 @@
       "name": "Chorwacja",
       "crest": "https://crests.football-data.org/799.svg"
     },
-    "status": "IN_PLAY",
+    "status": "FINISHED",
     "duration": "REGULAR",
     "winner": "DRAW",
     "homeScore": 2,
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-03T01:09:14Z"
+    "lastUpdated": "2026-07-03T01:10:14Z"
   },
   {
     "id": "wc-537429",
