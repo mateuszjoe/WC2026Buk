@@ -2093,11 +2093,11 @@
     "status": "IN_PLAY",
     "duration": "REGULAR",
     "winner": "DRAW",
-    "homeScore": 1,
+    "homeScore": 2,
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-03T00:53:51Z"
+    "lastUpdated": "2026-07-03T00:54:15Z"
   },
   {
     "id": "wc-537429",
