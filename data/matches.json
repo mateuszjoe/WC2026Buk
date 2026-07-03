@@ -2140,14 +2140,14 @@
       "name": "Egipt",
       "crest": "https://crests.football-data.org/825.svg"
     },
-    "status": "IN_PLAY",
+    "status": "PAUSED",
     "duration": "REGULAR",
     "winner": "AWAY_TEAM",
     "homeScore": 0,
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-03T18:50:08Z"
+    "lastUpdated": "2026-07-03T18:51:08Z"
   },
   {
     "id": "wc-537427",
