@@ -2166,13 +2166,13 @@
       "crest": "https://crests.football-data.org/cape_verde.svg"
     },
     "status": "IN_PLAY",
-    "duration": "REGULAR",
+    "duration": "EXTRA_TIME",
     "winner": "DRAW",
     "homeScore": 2,
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-04T00:10:46Z"
+    "lastUpdated": "2026-07-04T00:11:06Z"
   },
   {
     "id": "wc-537430",
