@@ -2217,12 +2217,12 @@
     },
     "status": "IN_PLAY",
     "duration": "REGULAR",
-    "winner": "DRAW",
+    "winner": "AWAY_TEAM",
     "homeScore": 0,
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-04T18:19:00Z"
+    "lastUpdated": "2026-07-04T18:20:12Z"
   },
   {
     "id": "wc-537375",
