@@ -2165,14 +2165,14 @@
       "name": "Republika Zielonego Przylądka",
       "crest": "https://crests.football-data.org/cape_verde.svg"
     },
-    "status": "IN_PLAY",
+    "status": "FINISHED",
     "duration": "EXTRA_TIME",
-    "winner": "DRAW",
-    "homeScore": 2,
+    "winner": "HOME_TEAM",
+    "homeScore": 3,
     "awayScore": 2,
-    "regularHomeScore": null,
-    "regularAwayScore": null,
-    "lastUpdated": "2026-07-04T00:29:06Z"
+    "regularHomeScore": 1,
+    "regularAwayScore": 1,
+    "lastUpdated": "2026-07-04T00:50:06Z"
   },
   {
     "id": "wc-537430",
