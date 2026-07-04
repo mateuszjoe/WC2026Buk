@@ -2240,14 +2240,14 @@
       "name": "Francja",
       "crest": "https://crests.football-data.org/773.svg"
     },
-    "status": "TIMED",
+    "status": "IN_PLAY",
     "duration": "REGULAR",
-    "winner": null,
-    "homeScore": null,
-    "awayScore": null,
+    "winner": "DRAW",
+    "homeScore": 0,
+    "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-03T15:20:13Z"
+    "lastUpdated": "2026-07-04T21:30:48Z"
   },
   {
     "id": "wc-537377",
