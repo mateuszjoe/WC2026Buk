@@ -2143,8 +2143,8 @@
     "status": "FINISHED",
     "duration": "PENALTY_SHOOTOUT",
     "winner": "AWAY_TEAM",
-    "homeScore": 3,
-    "awayScore": 5,
+    "homeScore": 1,
+    "awayScore": 1,
     "regularHomeScore": 1,
     "regularAwayScore": 1,
     "lastUpdated": "2026-07-03T23:04:00Z"
@@ -2215,14 +2215,14 @@
       "name": "Maroko",
       "crest": "https://crests.football-data.org/morocco.svg"
     },
-    "status": "TIMED",
+    "status": "IN_PLAY",
     "duration": "REGULAR",
-    "winner": null,
-    "homeScore": null,
-    "awayScore": null,
+    "winner": "DRAW",
+    "homeScore": 0,
+    "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-03T15:20:13Z"
+    "lastUpdated": "2026-07-04T17:17:48Z"
   },
   {
     "id": "wc-537375",
