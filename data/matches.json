@@ -2143,8 +2143,8 @@
     "status": "FINISHED",
     "duration": "PENALTY_SHOOTOUT",
     "winner": "AWAY_TEAM",
-    "homeScore": 1,
-    "awayScore": 1,
+    "homeScore": 3,
+    "awayScore": 5,
     "regularHomeScore": 1,
     "regularAwayScore": 1,
     "lastUpdated": "2026-07-03T23:04:00Z"
@@ -2222,7 +2222,7 @@
     "awayScore": 3,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-04T19:09:21Z"
+    "lastUpdated": "2026-07-05T03:25:01Z"
   },
   {
     "id": "wc-537375",
@@ -2247,7 +2247,7 @@
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-04T23:10:57Z"
+    "lastUpdated": "2026-07-05T03:25:01Z"
   },
   {
     "id": "wc-537377",
