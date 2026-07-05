@@ -2265,14 +2265,14 @@
       "name": "Norwegia",
       "crest": "https://crests.football-data.org/813.svg"
     },
-    "status": "IN_PLAY",
+    "status": "PAUSED",
     "duration": "REGULAR",
     "winner": "DRAW",
     "homeScore": 0,
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-05T20:51:27Z"
+    "lastUpdated": "2026-07-05T20:52:39Z"
   },
   {
     "id": "wc-537378",
