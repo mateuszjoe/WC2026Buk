@@ -2269,10 +2269,10 @@
     "duration": "REGULAR",
     "winner": "DRAW",
     "homeScore": 0,
-    "awayScore": 0,
+    "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-05T21:41:25Z"
+    "lastUpdated": "2026-07-05T21:42:15Z"
   },
   {
     "id": "wc-537378",
