@@ -2391,13 +2391,13 @@
       "crest": "https://crests.football-data.org/818.svg"
     },
     "status": "IN_PLAY",
-    "duration": "REGULAR",
+    "duration": "EXTRA_TIME",
     "winner": "DRAW",
     "homeScore": 0,
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-07T22:25:10Z"
+    "lastUpdated": "2026-07-07T22:26:11Z"
   },
   {
     "id": "wc-537383",
