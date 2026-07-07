@@ -2340,7 +2340,7 @@
       "name": "Belgia",
       "crest": "https://crests.football-data.org/805.svg"
     },
-    "status": "PAUSED",
+    "status": "IN_PLAY",
     "duration": "REGULAR",
     "winner": "AWAY_TEAM",
     "homeScore": 1,
