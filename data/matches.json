@@ -2372,7 +2372,7 @@
     "awayScore": 2,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-07T18:15:15Z"
+    "lastUpdated": "2026-07-07T22:56:42Z"
   },
   {
     "id": "wc-537382",
@@ -2390,14 +2390,14 @@
       "name": "Kolumbia",
       "crest": "https://crests.football-data.org/818.svg"
     },
-    "status": "IN_PLAY",
-    "duration": "EXTRA_TIME",
-    "winner": "DRAW",
+    "status": "FINISHED",
+    "duration": "PENALTY_SHOOTOUT",
+    "winner": "HOME_TEAM",
     "homeScore": 0,
     "awayScore": 0,
-    "regularHomeScore": null,
-    "regularAwayScore": null,
-    "lastUpdated": "2026-07-07T22:40:31Z"
+    "regularHomeScore": 0,
+    "regularAwayScore": 0,
+    "lastUpdated": "2026-07-07T22:57:22Z"
   },
   {
     "id": "wc-537383",
