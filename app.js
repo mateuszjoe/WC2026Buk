@@ -2462,14 +2462,159 @@ function bracketMatchCard(m, stage, lockedFilter) {
     </div>`;
 }
 
-function bracketColumnHtml(stage, matches, side, lockedFilter) {
+function bracketTeamIds(m) {
+  return [m?.homeTeam, m?.awayTeam].filter(isRealTeam).map((team) => team.id);
+}
+
+function bracketMakeNode(match, stage, originalIndex, leaves = []) {
+  return {
+    key: `${stage}:${match?.id || originalIndex}`,
+    match,
+    originalIndex,
+    children: [],
+    leaves,
+    teamIds: new Set(bracketTeamIds(match))
+  };
+}
+
+function bracketNodeMinLeaf(node) {
+  return node.leaves.length ? node.leaves[0] : Number.MAX_SAFE_INTEGER;
+}
+
+function bracketNodeCompare(a, b) {
+  const byLeaf = bracketNodeMinLeaf(a) - bracketNodeMinLeaf(b);
+  if (byLeaf) return byLeaf;
+  return a.originalIndex - b.originalIndex;
+}
+
+function bracketFindSourceNode(team, prevNodes, used) {
+  if (!isRealTeam(team)) return null;
+  return prevNodes.find((node) => !used.has(node.key) && node.teamIds.has(team.id)) || null;
+}
+
+function bracketFallbackSourceNode(node, prevNodes, used) {
+  const available = prevNodes.filter((source) => !used.has(source.key));
+  if (!available.length) return null;
+  if (!node.children.length) return available.sort(bracketNodeCompare)[0];
+
+  const anchor = bracketNodeMinLeaf(node.children[0]);
+  return available.sort((a, b) => {
+    const aLeaf = bracketNodeMinLeaf(a);
+    const bLeaf = bracketNodeMinLeaf(b);
+    const byDistance = Math.abs(aLeaf - anchor) - Math.abs(bLeaf - anchor);
+    if (byDistance) return byDistance;
+    return aLeaf - bLeaf;
+  })[0];
+}
+
+function bracketBuildNextRoundNodes(stage, matches, prevNodes) {
+  if (!prevNodes.length) {
+    return matches.map((m, index) => bracketMakeNode(m, stage, index, [index]));
+  }
+
+  const orderedPrev = [...prevNodes].sort(bracketNodeCompare);
+  const used = new Set();
+  const nodes = matches.map((m, index) => {
+    const node = bracketMakeNode(m, stage, index);
+    for (const team of [m?.homeTeam, m?.awayTeam]) {
+      const source = bracketFindSourceNode(team, orderedPrev, used);
+      if (source) {
+        node.children.push(source);
+        used.add(source.key);
+      }
+    }
+    return node;
+  });
+
+  for (const node of nodes) {
+    while (node.children.length < 2) {
+      const source = bracketFallbackSourceNode(node, orderedPrev, used);
+      if (!source) break;
+      node.children.push(source);
+      used.add(source.key);
+    }
+
+    node.children.sort(bracketNodeCompare);
+    node.leaves = node.children
+      .flatMap((child) => child.leaves)
+      .sort((a, b) => a - b);
+  }
+
+  return nodes.sort(bracketNodeCompare);
+}
+
+function bracketOrderRoundFromParents(nodes, parents) {
+  const seen = new Set();
+  const ordered = [];
+
+  for (const parent of parents) {
+    for (const child of parent.children) {
+      if (seen.has(child.key)) continue;
+      ordered.push(child);
+      seen.add(child.key);
+    }
+  }
+
+  for (const node of [...nodes].sort(bracketNodeCompare)) {
+    if (seen.has(node.key)) continue;
+    ordered.push(node);
+  }
+
+  return ordered;
+}
+
+function bracketOrderedRounds(byStage, stages) {
+  const rounds = [];
+  const firstStage = stages[0];
+  rounds[0] = (byStage.get(firstStage) || []).map((m, index) =>
+    bracketMakeNode(m, firstStage, index, [index])
+  );
+
+  for (let i = 1; i < stages.length; i++) {
+    const stage = stages[i];
+    rounds[i] = bracketBuildNextRoundNodes(stage, byStage.get(stage) || [], rounds[i - 1] || []);
+  }
+
+  for (let i = rounds.length - 2; i >= 0; i--) {
+    rounds[i] = bracketOrderRoundFromParents(rounds[i] || [], rounds[i + 1] || []);
+  }
+
+  return rounds;
+}
+
+function bracketSideRounds(rounds, side) {
+  return rounds.map((nodes) => {
+    const middle = Math.ceil(nodes.length / 2);
+    return side === "left" ? nodes.slice(0, middle) : nodes.slice(middle);
+  });
+}
+
+function bracketGridTitleHtml(stage, col) {
+  return `<div class="bracket-col-title bracket-grid-title" style="--col:${col}">${escapeHtml(
+    bracketStageShort(stage)
+  )}</div>`;
+}
+
+function bracketSlotHtml(node, stage, side, roundIndex, index, col, lockedFilter) {
+  const span = 2 ** roundIndex;
+  const row = 2 + index * span;
   return `
-    <div class="bracket-col ${side}">
-      <div class="bracket-col-title">${escapeHtml(bracketStageShort(stage))}</div>
-      <div class="bracket-col-matches">
-        ${matches.map((m) => bracketMatchCard(m, stage, lockedFilter)).join("")}
-      </div>
+    <div class="bracket-slot ${side}" data-round="${roundIndex}" style="--col:${col}; --row:${row}; --span:${span}">
+      ${bracketMatchCard(node?.match || null, stage, lockedFilter)}
     </div>`;
+}
+
+function bracketSideHtml(stages, sideRounds, side, lockedFilter) {
+  const cols = side === "left" ? [1, 2, 3, 4] : [9, 8, 7, 6];
+  return sideRounds
+    .map((nodes, roundIndex) =>
+      nodes
+        .map((node, index) =>
+          bracketSlotHtml(node, stages[roundIndex], side, roundIndex, index, cols[roundIndex], lockedFilter)
+        )
+        .join("")
+    )
+    .join("");
 }
 
 function knockoutBracketHtml(lockedFilter) {
@@ -2480,14 +2625,9 @@ function knockoutBracketHtml(lockedFilter) {
   if (!hasVisible) return "";
 
   const roundStages = STAGE_ORDER.slice(0, 4);
-  const leftCols = roundStages.map((stage) => {
-    const ms = byStage.get(stage) || [];
-    return [stage, ms.slice(0, Math.ceil(ms.length / 2))];
-  });
-  const rightCols = roundStages.map((stage) => {
-    const ms = byStage.get(stage) || [];
-    return [stage, ms.slice(Math.ceil(ms.length / 2))];
-  });
+  const orderedRounds = bracketOrderedRounds(byStage, roundStages);
+  const leftRounds = bracketSideRounds(orderedRounds, "left");
+  const rightRounds = bracketSideRounds(orderedRounds, "right");
   const finalStage = STAGE_ORDER[5];
   const thirdStage = STAGE_ORDER[4];
   const finalMatch = (byStage.get(finalStage) || [])[0] || null;
@@ -2495,14 +2635,16 @@ function knockoutBracketHtml(lockedFilter) {
 
   return `
     <div class="card ko-bracket-card">
-      <div class="ko-bracket">
-        ${leftCols.map(([stage, ms]) => bracketColumnHtml(stage, ms, "left", lockedFilter)).join("")}
+      <div class="ko-bracket ko-bracket-tree">
+        ${roundStages.map((stage, index) => bracketGridTitleHtml(stage, index + 1)).join("")}
+        <div class="bracket-col-title bracket-grid-title" style="--col:5">Finały</div>
+        ${roundStages.map((stage, index) => bracketGridTitleHtml(stage, 9 - index)).join("")}
+        ${bracketSideHtml(roundStages, leftRounds, "left", lockedFilter)}
         <div class="bracket-center">
-          <div class="bracket-col-title">Finały</div>
           ${bracketMatchCard(finalMatch, finalStage, lockedFilter)}
           ${bracketMatchCard(thirdMatch, thirdStage, lockedFilter)}
         </div>
-        ${rightCols.reverse().map(([stage, ms]) => bracketColumnHtml(stage, ms, "right", lockedFilter)).join("")}
+        ${bracketSideHtml(roundStages, rightRounds, "right", lockedFilter)}
       </div>
     </div>`;
 }

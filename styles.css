@@ -835,16 +835,23 @@ body::before {
 }
 .ko-bracket-card ~ .ko-bracket-mobile-list { display: none; }
 .ko-bracket {
-  --bracket-gap: 0.38rem;
+  --bracket-gap: 0.56rem;
   width: 100%;
   min-width: 0;
   display: grid;
+  gap: var(--bracket-gap);
+  align-items: stretch;
+}
+.ko-bracket-tree {
+  --branch-line: rgba(255, 209, 102, 0.38);
+  --bracket-slot-h: 118px;
   grid-template-columns:
     minmax(0, 1.08fr) minmax(0, 0.98fr) minmax(0, 0.88fr) minmax(0, 0.78fr)
     minmax(0, 1fr)
     minmax(0, 0.78fr) minmax(0, 0.88fr) minmax(0, 0.98fr) minmax(0, 1.08fr);
-  gap: var(--bracket-gap);
-  align-items: stretch;
+  grid-template-rows: 1.35rem repeat(8, minmax(var(--bracket-slot-h), auto));
+  column-gap: var(--bracket-gap);
+  row-gap: 0.55rem;
 }
 .bracket-col,
 .bracket-center {
@@ -856,6 +863,41 @@ body::before {
 .bracket-center {
   justify-content: center;
 }
+.ko-bracket-tree .bracket-center {
+  grid-column: 5;
+  grid-row: 2 / span 8;
+  align-self: stretch;
+}
+.bracket-slot {
+  position: relative;
+  min-width: 0;
+  grid-column: var(--col);
+  grid-row: var(--row) / span var(--span);
+  display: flex;
+  align-items: center;
+}
+.bracket-slot > .bracket-match {
+  width: 100%;
+}
+.bracket-slot[data-round]:not([data-round="0"])::before {
+  content: "";
+  position: absolute;
+  top: 25%;
+  bottom: 25%;
+  width: var(--bracket-gap);
+  pointer-events: none;
+  background:
+    linear-gradient(var(--branch-line), var(--branch-line)) 0 0 / 100% 1px no-repeat,
+    linear-gradient(var(--branch-line), var(--branch-line)) 0 50% / 100% 1px no-repeat,
+    linear-gradient(var(--branch-line), var(--branch-line)) 0 100% / 100% 1px no-repeat,
+    linear-gradient(var(--branch-line), var(--branch-line)) 50% 0 / 1px 100% no-repeat;
+}
+.bracket-slot.left[data-round]:not([data-round="0"])::before {
+  left: calc(-1 * var(--bracket-gap));
+}
+.bracket-slot.right[data-round]:not([data-round="0"])::before {
+  right: calc(-1 * var(--bracket-gap));
+}
 .bracket-col-title {
   min-height: 1.35rem;
   text-align: center;
@@ -864,6 +906,10 @@ body::before {
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+}
+.bracket-grid-title {
+  grid-column: var(--col);
+  grid-row: 1;
 }
 .bracket-col-matches {
   flex: 1;
@@ -891,8 +937,11 @@ body::before {
 }
 .bracket-col.left .bracket-match::after { right: calc(-1 * var(--bracket-gap)); }
 .bracket-col.right .bracket-match::after { left: calc(-1 * var(--bracket-gap)); }
+.ko-bracket-tree .bracket-slot.left .bracket-match::after { right: calc(-1 * var(--bracket-gap)); }
+.ko-bracket-tree .bracket-slot.right .bracket-match::after { left: calc(-1 * var(--bracket-gap)); }
 .bracket-center .bracket-match::after,
-.bracket-match.empty::after { display: none; }
+.bracket-match.empty::after,
+.ko-bracket-tree .bracket-match.empty::after { display: none; }
 .bracket-match.empty {
   min-height: 74px;
   display: flex;
