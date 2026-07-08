@@ -2393,8 +2393,8 @@
     "status": "FINISHED",
     "duration": "PENALTY_SHOOTOUT",
     "winner": "HOME_TEAM",
-    "homeScore": 0,
-    "awayScore": 0,
+    "homeScore": 4,
+    "awayScore": 3,
     "regularHomeScore": 0,
     "regularAwayScore": 0,
     "lastUpdated": "2026-07-07T22:57:22Z"
