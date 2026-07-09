@@ -2415,7 +2415,7 @@
       "name": "Maroko",
       "crest": "https://crests.football-data.org/morocco.svg"
     },
-    "status": "IN_PLAY",
+    "status": "PAUSED",
     "duration": "REGULAR",
     "winner": "DRAW",
     "homeScore": 0,
