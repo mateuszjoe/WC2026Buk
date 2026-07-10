@@ -2443,11 +2443,11 @@
     "status": "IN_PLAY",
     "duration": "REGULAR",
     "winner": "DRAW",
-    "homeScore": 1,
+    "homeScore": 2,
     "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-10T20:48:54Z"
+    "lastUpdated": "2026-07-10T20:50:07Z"
   },
   {
     "id": "wc-537385",
