@@ -2440,14 +2440,14 @@
       "name": "Belgia",
       "crest": "https://crests.football-data.org/805.svg"
     },
-    "status": "TIMED",
+    "status": "PAUSED",
     "duration": "REGULAR",
-    "winner": null,
-    "homeScore": null,
-    "awayScore": null,
+    "winner": "DRAW",
+    "homeScore": 1,
+    "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-10T05:20:09Z"
+    "lastUpdated": "2026-07-10T19:56:43Z"
   },
   {
     "id": "wc-537385",
