@@ -2467,12 +2467,12 @@
     },
     "status": "IN_PLAY",
     "duration": "REGULAR",
-    "winner": null,
+    "winner": "DRAW",
     "homeScore": 0,
     "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-11T05:20:09Z"
+    "lastUpdated": "2026-07-11T21:06:10Z"
   },
   {
     "id": "wc-537386",
