@@ -2490,14 +2490,14 @@
       "name": "Szwajcaria",
       "crest": "https://crests.football-data.org/788.svg"
     },
-    "status": "IN_PLAY",
+    "status": "FINISHED",
     "duration": "EXTRA_TIME",
-    "winner": "DRAW",
-    "homeScore": 1,
+    "winner": "HOME_TEAM",
+    "homeScore": 3,
     "awayScore": 1,
-    "regularHomeScore": null,
-    "regularAwayScore": null,
-    "lastUpdated": "2026-07-12T03:29:10Z"
+    "regularHomeScore": 1,
+    "regularAwayScore": 1,
+    "lastUpdated": "2026-07-12T03:51:58Z"
   },
   {
     "id": "wc-537387",
