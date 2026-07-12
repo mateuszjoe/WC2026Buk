@@ -2494,7 +2494,7 @@
     "duration": "REGULAR",
     "winner": "HOME_TEAM",
     "homeScore": 1,
-    "awayScore": 0,
+    "awayScore": 1,
     "regularHomeScore": null,
     "regularAwayScore": null,
     "lastUpdated": "2026-07-12T02:27:57Z"
