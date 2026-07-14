@@ -2515,11 +2515,11 @@
       "name": "Hiszpania",
       "crest": "https://crests.football-data.org/760.svg"
     },
-    "status": "TIMED",
+    "status": "IN_PLAY",
     "duration": "REGULAR",
     "winner": null,
-    "homeScore": null,
-    "awayScore": null,
+    "homeScore": 0,
+    "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
     "lastUpdated": "2026-07-14T05:20:10Z"
