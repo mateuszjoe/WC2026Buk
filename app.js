@@ -564,6 +564,15 @@ function flagUrl(team) {
   return team.crest || "";
 }
 
+// Żart: graczom typującym Francję na mistrza pokazujemy tę grafikę zamiast flagi.
+const CHAMPION_FLAG_OVERRIDE = { Francja: "assets/mbappe-placze.jpg" };
+
+// Miniaturka przy avatarze dla typu na mistrza — z uwzględnieniem żartobliwej podmianki.
+function championBadgeUrl(team) {
+  if (!team) return "";
+  return CHAMPION_FLAG_OVERRIDE[team.name] || flagUrl(team);
+}
+
 // Mała flaga drużyny obok nazwy (jednolite źródło).
 function flagImg(team, cls = "flag") {
   const url = flagUrl(team);
@@ -625,7 +634,7 @@ function avatarHtml(p, cls = "") {
     inner = `<span class="ava-initials">${escapeHtml(initials(p.name))}</span>`;
   }
   const champ = teamById(p.champion);
-  const champFlag = flagUrl(champ);
+  const champFlag = championBadgeUrl(champ);
   const flag = champFlag
     ? `<img class="ava-flag" src="${champFlag}" alt="" title="Typ na mistrza: ${escapeHtml(champ.name)}" />`
     : "";
