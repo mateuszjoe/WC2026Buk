@@ -2540,14 +2540,14 @@
       "name": "Argentyna",
       "crest": "https://crests.football-data.org/762.png"
     },
-    "status": "TIMED",
+    "status": "IN_PLAY",
     "duration": "REGULAR",
-    "winner": null,
-    "homeScore": null,
-    "awayScore": null,
+    "winner": "DRAW",
+    "homeScore": 0,
+    "awayScore": 0,
     "regularHomeScore": null,
     "regularAwayScore": null,
-    "lastUpdated": "2026-07-15T05:20:10Z"
+    "lastUpdated": "2026-07-15T19:39:37Z"
   },
   {
     "id": "wc-537389",
