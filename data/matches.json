@@ -2590,7 +2590,7 @@
       "name": "Argentyna",
       "crest": "https://crests.football-data.org/762.png"
     },
-    "status": "IN_PLAY",
+    "status": "PAUSED",
     "duration": "REGULAR",
     "winner": "DRAW",
     "homeScore": 0,
