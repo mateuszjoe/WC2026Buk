@@ -255,6 +255,8 @@ exports.liveScorePoll = onSchedule(
       // inaczej live przez chwilę pokazuje bieżący wynik (z golem z dogrywki) jako
       // "wynik regulaminowy" i błędnie zalicza dokładne typy z czasu podstawowego.
       const rt = (isAet || isPen) ? espnRegulationScore(comp, h, a) : null;
+      const shootH = parseInt(h?.shootoutScore, 10);
+      const shootA = parseInt(a?.shootoutScore, 10);
       overlay[m.id] = {
         status: mapped,
         homeName: m.homeTeam?.name ?? null,
@@ -263,6 +265,9 @@ exports.liveScorePoll = onSchedule(
         awayScore: Number.isFinite(as) ? as : null,
         regularHomeScore: rt && Number.isFinite(rt.home) ? rt.home : null,
         regularAwayScore: rt && Number.isFinite(rt.away) ? rt.away : null,
+        // Wynik karnych na żywo — do tymczasowego bonusu za awans w rankingu live.
+        shootoutHomeScore: Number.isFinite(shootH) ? shootH : null,
+        shootoutAwayScore: Number.isFinite(shootA) ? shootA : null,
         duration: isPen ? "PENALTY_SHOOTOUT" : isAet ? "EXTRA_TIME" : m.duration || "REGULAR",
         winner: mapped === "FINISHED"
           ? h?.winner === true

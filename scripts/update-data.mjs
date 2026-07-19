@@ -380,6 +380,14 @@ function mergeEspnLive(matches, events) {
       patch.homeScore = hs;
       patch.awayScore = as;
     }
+    // Wynik karnych NA ŻYWO (rzut po rzucie) — potrzebny do tymczasowego bonusu za
+    // awans w rankingu live, zanim mecz oficjalnie się skończy (patrz winner niżej).
+    const shootH = parseInt(h?.shootoutScore, 10);
+    const shootA = parseInt(a?.shootoutScore, 10);
+    if (Number.isFinite(shootH) && Number.isFinite(shootA)) {
+      patch.shootoutHomeScore = shootH;
+      patch.shootoutAwayScore = shootA;
+    }
     // Zwycięzca z ESPN — KLUCZOWE dla pucharów rozstrzygniętych karnymi/dogrywką.
     // football-data.org czasem spóźnia się z polem score.winner (zostaje null mimo
     // STATUS_FINAL_PEN), a od niego zależy bonus +awans. ESPN oznacza drużynę

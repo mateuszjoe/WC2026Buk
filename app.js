@@ -173,17 +173,38 @@ function advancingSide(m) {
   return null;
 }
 
+// Kto AKTUALNIE prowadzi w dogrywce/karnych, zanim mecz oficjalnie się skończy
+// (pole "winner" z API jest puste aż do końcowego gwizdka). Używane WYŁĄCZNIE
+// jako tymczasowy podgląd bonusu za awans na żywo — może się jeszcze zmienić
+// (kolejny gol/rzut karny), stąd w rankingu live wszystko jest oznaczone jako
+// "tymczasowe do końcowego gwizdka".
+function livePresumptiveAdvancer(m) {
+  if (
+    typeof m.shootoutHomeScore === "number" &&
+    typeof m.shootoutAwayScore === "number" &&
+    m.shootoutHomeScore !== m.shootoutAwayScore
+  ) {
+    return m.shootoutHomeScore > m.shootoutAwayScore ? "h" : "a";
+  }
+  const cur = apiFullTimeResult(m);
+  if (cur && cur.h !== cur.a) return cur.h > cur.a ? "h" : "a";
+  return null;
+}
+
 // Bonus za wskazanie drużyny awansującej. Liczy się TYLKO, gdy:
 //  - to mecz pucharowy,
 //  - w regulaminowym czasie (90') był REMIS,
 //  - gracz typował remis (czyli trafił rezultat),
 //  - i wskazał właściwą drużynę awansującą (po dogrywce/karnych).
 // Jeśli gracz typował remis, a drużyna awansowała wygraną w 90' — 0 pkt (rezultat nietrafiony).
-function advanceBonus(pred, result, m, settings) {
+// `live=true` (mecz jeszcze trwa): gdy oficjalny zwycięzca jest jeszcze nieznany,
+// bierzemy TYMCZASOWO aktualnie prowadzącą drużynę — dopóki nie ma gwizdka, wynik
+// może się zmienić, ale gracz nie powinien czekać do końca meczu na ten punkt.
+function advanceBonus(pred, result, m, settings, live = false) {
   if (!isKnockout(m) || !pred || !result) return 0;
   if (getOutcome(result.h, result.a) !== "draw") return 0; // 90' nie był remisem
   if (getOutcome(pred.h, pred.a) !== "draw") return 0; // gracz nie typował remisu
-  const actual = advancingSide(m);
+  const actual = advancingSide(m) || (live ? livePresumptiveAdvancer(m) : null);
   if (!actual || !pred.adv) return 0;
   return pred.adv === actual ? settings.points.advanceBonus ?? 1 : 0;
 }
@@ -252,6 +273,7 @@ function calculateLeaderboard(options = {}) {
       let advanceCount = 0; // trafione wskazania drużyny awansującej (po remisie w 90')
       let liveExactCount = 0;
       let liveOutcomeOnlyCount = 0;
+      let liveAdvanceCount = 0;
 
       for (const match of matches) {
         const pred = confirmedMatchPrediction(p.matches?.[match.id]);
@@ -259,11 +281,15 @@ function calculateLeaderboard(options = {}) {
         const s = scoreMatch(pred, result, settings);
         if (s.exact) exactCount += 1;
         else if (s.correct) outcomeOnlyCount += 1;
-        const adv = !live && advanceBonus(pred, result, match, settings) > 0;
+        // Na żywo bonus liczy się TYMCZASOWO wg aktualnie prowadzącej drużyny
+        // (livePresumptiveAdvancer w advanceBonus) — dopóki nie ma gwizdka, może
+        // się jeszcze zmienić, stąd wchodzi do live-deltas jak reszta punktów live.
+        const adv = advanceBonus(pred, result, match, settings, live) > 0;
         if (adv) advanceCount += 1;
         if (live) {
           if (s.exact) liveExactCount += 1;
           else if (s.correct) liveOutcomeOnlyCount += 1;
+          if (adv) liveAdvanceCount += 1;
         }
       }
 
@@ -273,14 +299,15 @@ function calculateLeaderboard(options = {}) {
       const championPoints = scoreChampion(p.champion, settings, championTeamId);
       const livePoints =
         liveExactCount * settings.points.exactScore +
-        liveOutcomeOnlyCount * settings.points.correctResult;
+        liveOutcomeOnlyCount * settings.points.correctResult +
+        liveAdvanceCount * (settings.points.advanceBonus ?? 1);
       const total = exactPoints + outcomePoints + advancePoints + championPoints;
 
       // Rozbicie BEZ live (utrwalone) — kolumny Dokł./Rez./awans pokazują tylko
       // zaksięgowane punkty; live wchodzi wyłącznie do SUMY jako delta "+x LIVE".
       const finalExactCount = exactCount - liveExactCount;
       const finalOutcomeOnlyCount = outcomeOnlyCount - liveOutcomeOnlyCount;
-      const finalAdvanceCount = advanceCount;
+      const finalAdvanceCount = advanceCount - liveAdvanceCount;
 
       return {
         uid,
@@ -297,6 +324,7 @@ function calculateLeaderboard(options = {}) {
         advanceCount,
         liveExactCount,
         liveOutcomeOnlyCount,
+        liveAdvanceCount,
         // Wartości utrwalone (bez live) do kolumn rozbicia w rankingu.
         finalExactCount,
         finalOutcomeOnlyCount,
@@ -932,7 +960,7 @@ function myPredTag(myPred, result, m, options = {}) {
     return `<span class="pts pending">Typ roboczy ${draftScore} · zatwierdź</span>`;
   }
   const s = scoreMatch(myPred, result, state.settings);
-  const bonus = !options.live && m ? advanceBonus(myPred, result, m, state.settings) : 0;
+  const bonus = m ? advanceBonus(myPred, result, m, state.settings, options.live) : 0;
   const cls = result ? (bonus > 0 || s.exact ? "exact" : s.correct ? "ok" : "miss") : "pending";
   const advTxt =
     showAdvancePick(myPred, m)
