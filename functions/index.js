@@ -244,9 +244,11 @@ exports.liveScorePoll = onSchedule(
       const a = cs.find((x) => x.homeAway === "away");
       const hs = h ? parseInt(h.score, 10) : NaN;
       const as = a ? parseInt(a.score, 10) : NaN;
+      // UWAGA: ESPN nazywa dogrywkę inaczej W TRAKCIE gry niż po jej zakończeniu —
+      // live to "STATUS_OVERTIME"/"Overtime", dopiero FINISHED daje "AET"/"Extra Time".
       const typeText = espnTypeText(st);
-      const isAet = /AET|EXTRA TIME/i.test(typeText);
-      const isPen = /PEN/i.test(typeText) ||
+      const isAet = /AET|EXTRA TIME|OVERTIME/i.test(typeText);
+      const isPen = /PEN|SHOOTOUT/i.test(typeText) ||
         Number.isFinite(parseInt(h?.shootoutScore, 10)) ||
         Number.isFinite(parseInt(a?.shootoutScore, 10));
       // Liczymy wynik z 90' już W TRAKCIE dogrywki/karnych (nie dopiero po FINISHED) —

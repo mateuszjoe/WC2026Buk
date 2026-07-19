@@ -393,9 +393,12 @@ function mergeEspnLive(matches, events) {
     // gry (nie dopiero po FINISHED) — inaczej przez całą dogrywkę duration zostaje
     // "REGULAR" i live pokazuje bieżący wynik (z golem z dogrywki) jako dokładny
     // typ z czasu podstawowego, zamiast rozpoznać remis w 90' + bonus za awans.
+    // UWAGA: ESPN nazywa dogrywkę inaczej W TRAKCIE gry niż po jej zakończeniu —
+    // live to "STATUS_OVERTIME"/"Overtime", dopiero FINISHED daje "AET"/"Extra Time".
+    // Bez "OVERTIME" w regexie ta cała sekcja nigdy nie odpalała się na żywo.
     const typeText = espnTypeText(st);
-    const isAet = /AET|EXTRA TIME/i.test(typeText);
-    const isPen = /PEN/i.test(typeText) ||
+    const isAet = /AET|EXTRA TIME|OVERTIME/i.test(typeText);
+    const isPen = /PEN|SHOOTOUT/i.test(typeText) ||
       Number.isFinite(parseInt(h?.shootoutScore, 10)) ||
       Number.isFinite(parseInt(a?.shootoutScore, 10));
     if (isAet) {
