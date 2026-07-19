@@ -2098,9 +2098,11 @@ function liveScoredMatches() {
 }
 
 function liveScoreText(m) {
-  const r = getLiveResult(m);
-  if (!r) return "";
-  return `${m.homeTeam.name} ${r.h}:${r.a} ${m.awayTeam.name}`;
+  if (!getLiveResult(m)) return "";
+  // Baner pokazuje PRAWDZIWY wynik na boisku (z dogrywką), nie zablokowany na 90' —
+  // ten drugi służy tylko do liczenia punktów (patrz bracketDisplayResult).
+  const d = bracketDisplayResult(m);
+  return d ? `${m.homeTeam.name} ${d.h}:${d.a} ${m.awayTeam.name}` : "";
 }
 
 function liveRankingNoticeHtml(ms) {
@@ -2285,15 +2287,18 @@ function rankingHtml() {
 
 // Wiersz meczu w stylu Flashscore (tylko podgląd: wynik + mój typ).
 function fsMatchRow(m) {
-  const r = getLiveResult(m);
+  const r = getLiveResult(m); // wynik do punktacji (90' w dogrywce/karnych)
   const live = isLiveMatch(m) && Boolean(r) && !matchFinished(m);
+  // Na żywo pokazujemy PRAWDZIWY wynik na boisku (z dogrywką); do punktacji i tak
+  // liczy się `r` (90'). Po końcu meczu zostaje dotychczasowy wynik "do typów".
+  const display = live ? bracketDisplayResult(m) : r;
   const myPred = state.user
     ? confirmedMatchPrediction(state.predictions[predUid()]?.matches?.[m.id])
     : null;
-  const hs = r ? r.h : "";
-  const as = r ? r.a : "";
-  const winH = Boolean(r) && r.h > r.a;
-  const winA = Boolean(r) && r.a > r.h;
+  const hs = display ? display.h : "";
+  const as = display ? display.a : "";
+  const winH = Boolean(display) && display.h > display.a;
+  const winA = Boolean(display) && display.a > display.h;
   return `
     <div class="fs-row ${matchFinished(m) ? "fin" : ""} ${live ? "live-game" : ""}">
       <div class="fs-meta">
@@ -2319,9 +2324,12 @@ function fsMatchRow(m) {
 function betRow(m) {
   const locked = matchLocked(m);
   const pred = state.myDraft.matches[m.id] || {};
-  const r = getLiveResult(m);
+  const r = getLiveResult(m); // wynik do punktacji (90' w dogrywce/karnych)
   const finished = matchFinished(m);
   const live = isLiveMatch(m) && Boolean(r) && !finished;
+  // Na żywo pokazujemy PRAWDZIWY wynik na boisku (z dogrywką); do punktacji i tak
+  // liczy się `r` (90'). Po końcu meczu zostaje dotychczasowy wynik "do typów".
+  const display = live ? bracketDisplayResult(m) : r;
   const hasScore = pred.h !== undefined && pred.a !== undefined;
   const myp = hasScore ? pred : null;
   const tag = finished || live ? myPredTag(myp, r, m, { live }) : "";
@@ -2332,8 +2340,8 @@ function betRow(m) {
 
   const teamLine = (team, side) => {
     const val = pred[side] ?? "";
-    const real = finished || live ? r[side] : null;
-    const win = (finished || live) && (side === "h" ? r.h > r.a : r.a > r.h);
+    const real = finished || live ? display[side] : null;
+    const win = (finished || live) && (side === "h" ? display.h > display.a : display.a > display.h);
     return `
       <div class="bet-team-row ${win ? "win" : ""}">
         <span class="fs-flag">${flagImg(team)}</span>
@@ -2365,7 +2373,9 @@ function betRow(m) {
 
   const etNote =
     isKO && m.duration && m.duration !== "REGULAR" && !finished
-      ? `<div class="bet-tag et-note">⏱️ Rozstrzygnięty po dogrywce/karnych — czeka na wynik 90' od admina.</div>`
+      ? typeof m.regularHomeScore === "number" && typeof m.regularAwayScore === "number"
+        ? `<div class="bet-tag et-note">⏱️ Dogrywka/karne — do typów liczy się wynik z 90': ${m.regularHomeScore}:${m.regularAwayScore}.</div>`
+        : `<div class="bet-tag et-note">⏱️ Rozstrzygnięty po dogrywce/karnych — czeka na wynik 90' od admina.</div>`
       : "";
 
   // Akcje: zatwierdzenie typu + wyczyszczenie (gdy jest co i mecz niezablokowany).
