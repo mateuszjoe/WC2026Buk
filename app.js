@@ -564,13 +564,10 @@ function flagUrl(team) {
   return team.crest || "";
 }
 
-// Żart: graczom typującym Francję na mistrza pokazujemy tę grafikę zamiast flagi.
-const CHAMPION_FLAG_OVERRIDE = { Francja: "assets/mbappe-placze.jpg" };
-
-// Miniaturka przy avatarze dla typu na mistrza — z uwzględnieniem żartobliwej podmianki.
+// Miniaturka przy avatarze dla typu na mistrza.
 function championBadgeUrl(team) {
   if (!team) return "";
-  return CHAMPION_FLAG_OVERRIDE[team.name] || flagUrl(team);
+  return flagUrl(team);
 }
 
 // Mała flaga drużyny obok nazwy (jednolite źródło).
