@@ -249,9 +249,10 @@ exports.liveScorePoll = onSchedule(
       const isPen = /PEN/i.test(typeText) ||
         Number.isFinite(parseInt(h?.shootoutScore, 10)) ||
         Number.isFinite(parseInt(a?.shootoutScore, 10));
-      const rt = mapped === "FINISHED" && (isAet || isPen)
-        ? espnRegulationScore(comp, h, a)
-        : null;
+      // Liczymy wynik z 90' już W TRAKCIE dogrywki/karnych (nie dopiero po FINISHED) —
+      // inaczej live przez chwilę pokazuje bieżący wynik (z golem z dogrywki) jako
+      // "wynik regulaminowy" i błędnie zalicza dokładne typy z czasu podstawowego.
+      const rt = (isAet || isPen) ? espnRegulationScore(comp, h, a) : null;
       overlay[m.id] = {
         status: mapped,
         homeName: m.homeTeam?.name ?? null,

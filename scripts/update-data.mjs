@@ -389,28 +389,26 @@ function mergeEspnLive(matches, events) {
       if (h?.winner === true) patch.winner = "HOME_TEAM";
       else if (a?.winner === true) patch.winner = "AWAY_TEAM";
     }
-    // Karne: utrwal też duration, gdyby football-data jeszcze go nie podał — do
-    // typów liczy się wtedy czas regulaminowy (90'), nie wynik po karnych.
+    // Dogrywka/karne: utrwalamy duration i wynik regulaminowy (90') JUŻ W TRAKCIE
+    // gry (nie dopiero po FINISHED) — inaczej przez całą dogrywkę duration zostaje
+    // "REGULAR" i live pokazuje bieżący wynik (z golem z dogrywki) jako dokładny
+    // typ z czasu podstawowego, zamiast rozpoznać remis w 90' + bonus za awans.
     const typeText = espnTypeText(st);
     const isAet = /AET|EXTRA TIME/i.test(typeText);
     const isPen = /PEN/i.test(typeText) ||
       Number.isFinite(parseInt(h?.shootoutScore, 10)) ||
       Number.isFinite(parseInt(a?.shootoutScore, 10));
-    if (mapped === "FINISHED" && isAet) {
+    if (isAet) {
       patch.duration = m.duration && m.duration !== "REGULAR" ? m.duration : "EXTRA_TIME";
     }
-    if (
-      mapped === "FINISHED" &&
-      (isAet || isPen) &&
-      (m.regularHomeScore == null || m.regularAwayScore == null)
-    ) {
+    if ((isAet || isPen) && (m.regularHomeScore == null || m.regularAwayScore == null)) {
       const rt = espnRegulationScore(comp, h, a);
       if (rt && Number.isFinite(rt.home) && Number.isFinite(rt.away)) {
         patch.regularHomeScore = rt.home;
         patch.regularAwayScore = rt.away;
       }
     }
-    if (mapped === "FINISHED" && isPen) {
+    if (isPen) {
       patch.duration = m.duration && m.duration !== "REGULAR" ? m.duration : "PENALTY_SHOOTOUT";
       // ESPN podaje wynik regulaminowy (np. 1:1) w competitor.score — gdy brak go
       // z football-data, użyjmy go jako regularTime, by punktacja 90' miała wynik.
