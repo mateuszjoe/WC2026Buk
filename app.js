@@ -1164,6 +1164,10 @@ function render() {
 // Lekkie odświeżenie podczas pisania w "Moich typach" — NIE przebudowujemy pól
 // formularza (żeby nie tracić kursora), aktualizujemy tylko wskaźnik zapisu.
 function maybeRender() {
+  if (tournamentFinished()) {
+    render();
+    return;
+  }
   // Na widokach z polami tekstowymi nie przebudowujemy DOM (żeby nie tracić
   // kursora podczas pisania) — odświeżamy tylko wskaźnik zapisu.
   if (state.view === "mine" || state.view === "profile") {
@@ -1204,6 +1208,7 @@ function myPaid() {
 // (do małego chipa). Widzą go TYLKO nieopłaceni gracze. Admin go nie widzi
 // (kto nie zapłacił sprawdza w panelu admina), opłacony gracz też nie.
 function contributionBannerHtml() {
+  if (tournamentFinished()) return "";
   if (!state.user || !state.predictionsLoaded || myPending()) return "";
   if (isAdmin() || myPaid()) return ""; // admin i opłaceni gracze nie widzą baneru
   let collapsed = false;
@@ -1239,17 +1244,18 @@ function heroBannerHtml() {
 }
 
 function headerHtml() {
-  const pendCount = isAdmin() ? pendingPlayers().length : 0;
-  const tabs = VIEWS.filter(
-    (v) => (!v.adminOnly || isAdmin()) && (!v.authOnly || state.user)
-  )
-    .map((v) => {
-      const badge =
-        v.id === "admin" && pendCount > 0 ? ` <span class="tab-badge">${pendCount}</span>` : "";
-      // Na mobile pokazujemy ikonę (.tab-ico), na desktopie tekst (.tab-txt) — przełącza CSS.
-      return `<button class="tab ${state.view === v.id ? "active" : ""}" data-view="${v.id}" aria-label="${escapeHtml(v.label)}" title="${escapeHtml(v.label)}"><span class="tab-ico" aria-hidden="true">${v.icon || ""}</span><span class="tab-txt">${v.label}</span>${badge}</button>`;
-    })
-    .join("");
+  const finalMode = tournamentFinished();
+  const pendCount = !finalMode && isAdmin() ? pendingPlayers().length : 0;
+  const tabs = finalMode
+    ? ""
+    : VIEWS.filter((v) => (!v.adminOnly || isAdmin()) && (!v.authOnly || state.user))
+        .map((v) => {
+          const badge =
+            v.id === "admin" && pendCount > 0 ? ` <span class="tab-badge">${pendCount}</span>` : "";
+          // Na mobile pokazujemy ikonę (.tab-ico), na desktopie tekst (.tab-txt) — przełącza CSS.
+          return `<button class="tab ${state.view === v.id ? "active" : ""}" data-view="${v.id}" aria-label="${escapeHtml(v.label)}" title="${escapeHtml(v.label)}"><span class="tab-ico" aria-hidden="true">${v.icon || ""}</span><span class="tab-txt">${v.label}</span>${badge}</button>`;
+        })
+        .join("");
 
   const account = state.user
     ? `<div class="account">
@@ -1273,13 +1279,12 @@ function headerHtml() {
         </div>
         ${account}
       </div>
-      <div class="container">
-        <nav class="tabs">${tabs}</nav>
-      </div>
+      ${tabs ? `<div class="container"><nav class="tabs">${tabs}</nav></div>` : ""}
     </header>`;
 }
 
 function viewHtml() {
+  if (tournamentFinished()) return finalHomeHtml();
   switch (state.view) {
     case "ranking":
       return rankingHtml();
@@ -1893,7 +1898,7 @@ function updateChatWidget() {
   const w = document.getElementById("chat-widget");
   if (!w) return;
   // Czat tylko dla zalogowanych i zatwierdzonych (poczekalnia nie widzi dymka).
-  if (!state.user || myPending()) {
+  if (tournamentFinished() || !state.user || myPending()) {
     if (state.chatOpen) toggleChat(false);
     w.style.display = "none";
     return;
@@ -2050,11 +2055,81 @@ function playerPickRowHtml(p, m) {
       <div class="pp-pickwrap">${right}</div>
     </div>`;
 }
+
+function exactHitsForPlayer(p) {
+  return finishedMatchesChrono()
+    .map((m) => {
+      const result = getResult(m);
+      const pred = confirmedMatchPrediction(p.matches?.[m.id]);
+      if (!result || !pred || pred.h !== result.h || pred.a !== result.a) return null;
+      return { match: m, result, odds: SURPRISE_ODDS[m.id] || null };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.match.kickoffAt.localeCompare(a.match.kickoffAt));
+}
+
+function playerFinalStatsHtml(uid) {
+  const p = state.predictions[uid];
+  if (!p) return "";
+  const board = calculateLeaderboard({ includeLive: false });
+  const row = board.find((r) => r.uid === uid) || {
+    rank: "—", total: 0, finalHitsCount: 0, finalExactCount: 0,
+    finalOutcomeOnlyCount: 0, finalAdvanceCount: 0, championPoints: 0
+  };
+  const stat = statsPerPlayer().find((r) => r.uid === uid) || {
+    bestHit: 0, bestExact: 0, bestDry: 0, exactTotal: 0, correctTotal: 0,
+    advTotal: 0, drawHits: 0, predicted: 0
+  };
+  const prof = { name: p.name, avatar: p.avatar, photo: p.photo, champion: p.champion };
+  const champTeam = teamById(p.champion);
+  const exactHits = exactHitsForPlayer(p);
+  const exactRows = exactHits.length
+    ? exactHits.slice(0, 12).map(({ match, result, odds }) => `
+        <div class="pm-exact-row">
+          <span class="pm-exact-match">${flagImg(match.homeTeam)} ${escapeHtml(match.homeTeam.name)} – ${escapeHtml(match.awayTeam.name)} ${flagImg(match.awayTeam)}</span>
+          <span class="pm-exact-score">${result.h}:${result.a}</span>
+          ${odds ? `<span class="pm-exact-odds">kurs ${odds.odds.toFixed(2)}</span>` : ""}
+        </div>`)
+        .join("")
+    : `<p class="muted small" style="margin:.25rem 0 0">Brak dokładnie trafionych wyników.</p>`;
+
+  return `
+    <div class="player-modal-overlay">
+      <div class="player-modal final-player-modal">
+        <button class="pm-close" id="pm-close" title="Zamknij">✕</button>
+        <div class="pm-head">
+          ${avatarHtml(prof, "lg")}
+          <div>
+            <div class="pm-name">${escapeHtml(p.name || "Gracz")}</div>
+            <div class="muted small">#${row.rank} · ${row.total} pkt · ${row.finalHitsCount} trafień</div>
+          </div>
+        </div>
+        <div class="pm-final-grid">
+          <div><span>${row.total}</span><b>punktów</b></div>
+          <div><span>${stat.exactTotal}</span><b>dokładnych</b></div>
+          <div><span>${stat.correctTotal}</span><b>rezultatów</b></div>
+          <div><span>${stat.drawHits}</span><b>trafionych remisów</b></div>
+          <div><span>${stat.bestHit}</span><b>seria typów</b></div>
+          <div><span>${stat.bestExact}</span><b>seria wyników</b></div>
+        </div>
+        <div class="pm-champ">
+          👑 Mistrz: ${champTeam ? `${flagImg(champTeam)} ${escapeHtml(champTeam.name)}` : "—"}
+          <span class="muted small">${row.championPoints ? ` · +${row.championPoints} pkt` : ""}</span>
+        </div>
+        <div class="pm-final-section">
+          <h4>Trafione dokładne wyniki</h4>
+          <div class="pm-exact-list">${exactRows}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
 function playerModalHtml() {
   const uid = state.playerModalUid;
   if (!uid) return "";
   const p = state.predictions[uid];
   if (!p) return "";
+  if (tournamentFinished()) return playerFinalStatsHtml(uid);
   const board = calculateLeaderboard();
   const row = board.find((r) => r.uid === uid) || {
     total: 0, exactCount: 0, outcomeOnlyCount: 0, advanceCount: 0
@@ -2231,17 +2306,16 @@ function sortTh(key, label, title) {
   return `<th class="sortable${active ? " active" : ""}" data-sort="${key}"${title ? ` title="${escapeHtml(title)} — kliknij, by sortować"` : ' title="Kliknij, by sortować"'}>${label}${arrow}</th>`;
 }
 
-function rankingHtml() {
-  const liveMatches = liveScoredMatches();
-  const hasLiveRanking = liveMatches.length > 0;
-  const liveBoard = calculateLeaderboard({ includeLive: hasLiveRanking });
-  const movementByUid = hasLiveRanking ? liveRankMovementMap(liveBoard) : new Map();
-  const board = sortBoard(liveBoard);
-  const p = state.settings.points;
-
+function leaderboardTableHtml(board, options = {}) {
+  const liveMatches = options.liveMatches || [];
+  const hasLiveRanking = options.hasLiveRanking === true;
+  const movementByUid = options.movementByUid || new Map();
+  const sortable = options.sortable !== false;
+  const playerTitle = options.playerTitle || "Zobacz typy";
+  const emptyText = options.emptyText || "Brak typów. Bądź pierwszy — zaloguj się i wpisz typy!";
   const rows =
     board.length === 0
-      ? `<tr><td colspan="8" class="muted center">Brak typów. Bądź pierwszy — zaloguj się i wpisz typy!</td></tr>`
+      ? `<tr><td colspan="8" class="muted center">${escapeHtml(emptyText)}</td></tr>`
       : board
           .map((r) => {
             const me = state.user && r.uid === state.user.uid;
@@ -2251,7 +2325,7 @@ function rankingHtml() {
             <tr class="${me ? "me" : ""}">
               <td class="rank"><span class="rank-cell"><span class="rank-main">${medal}</span>${liveRankMovementHtml(movementByUid.get(r.uid))}</span></td>
               <td class="name">
-                <span class="player-cell clickable" data-player="${escapeHtml(r.uid)}" title="Zobacz typy">
+                <span class="player-cell clickable" data-player="${escapeHtml(r.uid)}" title="${escapeHtml(playerTitle)}">
                   ${avatarHtml(prof)}
                   <span class="player-name">${escapeHtml(r.name)}${me ? ' <span class="you">Ty</span>' : ""}</span>
                   ${livePickChipsHtml(r.uid, liveMatches)}
@@ -2266,6 +2340,123 @@ function rankingHtml() {
             </tr>`;
           })
           .join("");
+
+  return `
+      <div class="card table-card">
+        <table class="leaderboard">
+          <thead>
+            <tr>
+              <th>#</th>
+              ${sortable ? sortTh("name", "Gracz") : "<th>Gracz</th>"}
+              ${sortable ? sortTh("total", "Suma") : "<th>Suma</th>"}
+              ${sortable ? sortTh("hits", "Traf.", "Trafienia ogółem (dokładne + rezultaty)") : '<th title="Trafienia ogółem (dokładne + rezultaty)">Traf.</th>'}
+              ${sortable ? sortTh("exact", "Dokł.", "Punkty za dokładne wyniki") : '<th title="Punkty za dokładne wyniki">Dokł.</th>'}
+              ${sortable ? sortTh("outcome", "Rez.", "Punkty za trafione rezultaty (1/X/2)") : '<th title="Punkty za trafione rezultaty (1/X/2)">Rez.</th>'}
+              ${sortable ? sortTh("advance", "🎯", "Bonus za wskazanie drużyny awansującej (po remisie w 90')") : '<th title="Bonus za wskazanie drużyny awansującej (po remisie w 90\')">🎯</th>'}
+              ${sortable ? sortTh("champion", "Mistrz", "Punkty za zwycięzcę turnieju") : '<th title="Punkty za zwycięzcę turnieju">Mistrz</th>'}
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+}
+
+function tournamentFinished() {
+  const finalMatch = state.matches.find((m) => m.stage === "finał");
+  return Boolean(finalMatch && getResult(finalMatch));
+}
+
+function finalPodiumHtml(board) {
+  const top = board.slice(0, 3);
+  if (!top.length) return "";
+  return `
+    <div class="final-podium">
+      ${top
+        .map((r) => {
+          const prof = state.predictions[r.uid] || { name: r.name };
+          const medal = r.rank === 1 ? "🥇" : r.rank === 2 ? "🥈" : "🥉";
+          return `
+            <div class="final-podium-card rank-${r.rank}">
+              <div class="final-medal">${medal}</div>
+              ${avatarHtml(prof)}
+              <div class="final-podium-name">${escapeHtml(r.name)}</div>
+              <div class="final-podium-points">${r.total} pkt</div>
+            </div>`;
+        })
+        .join("")}
+    </div>`;
+}
+
+function finalHomeHtml() {
+  const loaded = state.predictionsLoaded;
+  const rawBoard = loaded ? calculateLeaderboard({ includeLive: false }) : [];
+  const board = rawBoard;
+  const defaultBoard = rawBoard;
+  const champ = teamById(getChampionTeamId());
+  const finished = finishedMatchesChrono();
+  const stats = loaded ? statsSummary() : null;
+  const p = state.settings.points;
+
+  return `
+    <section class="stack final-home">
+      <div class="final-hero">
+        <div class="final-hero-copy">
+          <div class="eyebrow">Typer zakończony</div>
+          <h1>Tu nic nie ma. Wyloguj się do rzeczywistości.</h1>
+          <p>
+            Wszystkie kupony spalone albo ozłocone, finał policzony, a tabela zastygła.
+            ${champ ? `Mistrz świata: ${flagImg(champ)} <strong>${escapeHtml(champ.name)}</strong>.` : ""}
+          </p>
+          ${state.user ? `<div class="final-hero-actions"><button class="btn primary" id="logout-final">Wyloguj</button></div>` : ""}
+        </div>
+        ${finalPodiumHtml(defaultBoard)}
+      </div>
+
+      <div class="final-metrics">
+        <div class="final-metric"><span>${loaded ? board.length : "…"}</span><b>graczy</b></div>
+        <div class="final-metric"><span>${finished.length}</span><b>meczów policzonych</b></div>
+        <div class="final-metric"><span>${stats ? stats.totalExact : "…"}</span><b>dokładnych wyników</b></div>
+        <div class="final-metric"><span>${stats ? stats.avgPts : "…"}</span><b>pkt średnio na gracza</b></div>
+      </div>
+
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Klasyfikacja końcowa</div>
+          <h2>Ranking końcowy</h2>
+        </div>
+        <div class="points-legend">
+          ${p.exactScore} pkt dokładny wynik · ${p.correctResult} pkt rezultat · 🎯 ${p.advanceBonus ?? 1} pkt awans · ${p.tournamentWinner} pkt mistrz
+        </div>
+      </div>
+      ${leaderboardTableHtml(board, {
+        sortable: false,
+        playerTitle: "Zobacz statystyki",
+        emptyText: loaded ? "Brak zatwierdzonych graczy." : "Ładuję ranking końcowy..."
+      })}
+
+      <div class="section-head compact">
+        <div>
+          <div class="eyebrow">Ciekawostki końcowe</div>
+          <h3 style="margin:.1rem 0">Mini-rankingi po wszystkim</h3>
+        </div>
+      </div>
+      ${finalCuriosityTablesHtml(stats)}
+      <p class="muted small" style="margin:0 .2rem">
+        Serie liczone są po kolei z rozegranych meczów, które gracz obstawił — brak typu nie przerywa serii.
+        Kursy przy niespodziankach to kursy 1X2 na faktyczny rezultat meczu, nie rynek dokładnego wyniku.
+      </p>
+    </section>`;
+}
+
+function rankingHtml() {
+  if (tournamentFinished()) return finalHomeHtml();
+
+  const liveMatches = liveScoredMatches();
+  const hasLiveRanking = liveMatches.length > 0;
+  const liveBoard = calculateLeaderboard({ includeLive: hasLiveRanking });
+  const movementByUid = hasLiveRanking ? liveRankMovementMap(liveBoard) : new Map();
+  const board = sortBoard(liveBoard);
+  const p = state.settings.points;
 
   return `
     <section class="stack">
@@ -2287,23 +2478,7 @@ function rankingHtml() {
              </div>`
           : ""
       }
-      <div class="card table-card">
-        <table class="leaderboard">
-          <thead>
-            <tr>
-              <th>#</th>
-              ${sortTh("name", "Gracz")}
-              ${sortTh("total", "Suma")}
-              ${sortTh("hits", "Traf.", "Trafienia ogółem (dokładne + rezultaty)")}
-              ${sortTh("exact", "Dokł.", "Punkty za dokładne wyniki")}
-              ${sortTh("outcome", "Rez.", "Punkty za trafione rezultaty (1/X/2)")}
-              ${sortTh("advance", "🎯", "Bonus za wskazanie drużyny awansującej (po remisie w 90')")}
-              ${sortTh("champion", "Mistrz", "Punkty za zwycięzcę turnieju")}
-            </tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>
+      ${leaderboardTableHtml(board, { liveMatches, hasLiveRanking, movementByUid })}
       <p class="muted small" style="margin:0 0.2rem">
         💡 Kliknij nagłówek kolumny, aby posortować tabelę (kolejny klik zmienia kierunek,
         trzeci wraca do domyślnej kolejności). Numer „#" to zawsze miejsce w klasyfikacji.
@@ -3111,6 +3286,7 @@ function dismissNotifyPrompt() {
 }
 
 function notifyPromptHtml() {
+  if (tournamentFinished()) return "";
   if (!shouldShowNotifyPrompt()) return "";
   return `
     <div class="notify-pop-overlay">
@@ -3362,6 +3538,96 @@ function adminHtml() {
 
 const ROMAN = ["", "I", "II", "III", "IV", "V"];
 
+// Ręcznie zebrane kursy 1X2 dla kilku dużych niespodzianek. Liczymy tylko mecze,
+// w których ktoś trafił dokładny wynik; karta pokazuje najwyższy kurs faktycznego
+// rezultatu (wygrana/remis), a nie kurs rynku "correct score".
+const SURPRISE_ODDS = {
+  "wc-537355": {
+    outcome: "home",
+    odds: 5.8,
+    label: "Ekwador",
+    source: "ToffeeWeb / Matchbook",
+    url: "https://www.toffeeweb.com/ecuador-vs-germany-predictions-picks-odds-25-06-2026/"
+  },
+  "wc-537377": {
+    outcome: "away",
+    odds: 4.9,
+    label: "Norwegia",
+    source: "ToffeeWeb / Smarkets",
+    url: "https://www.toffeeweb.com/brazil-vs-norway-predictions-picks-odds-05-07-2026/"
+  },
+  "wc-537407": {
+    outcome: "draw",
+    odds: 3.8,
+    label: "remis",
+    source: "FOX Sports",
+    url: "https://www.foxsports.com/stories/soccer/2026-world-cup-colombia-portugal-odds-prediction-picks"
+  },
+  "wc-537339": {
+    outcome: "draw",
+    odds: 3.7,
+    label: "remis",
+    source: "FOX Sports",
+    url: "https://www.foxsports.com/stories/soccer/2026-world-cup-brazil-morocco-odds-prediction-picks"
+  },
+  "wc-537385": {
+    outcome: "draw",
+    odds: 3.6,
+    label: "remis",
+    source: "FOX Sports",
+    url: "https://www.foxsports.com/stories/soccer/england-vs-norway-prediction-odds-picks-world-cup-match"
+  },
+  "wc-537386": {
+    outcome: "draw",
+    odds: 3.5,
+    label: "remis",
+    source: "FOX Sports",
+    url: "https://www.foxsports.com/stories/soccer/argentina-vs-switzerland-prediction-odds-picks-world-cup-match"
+  },
+  "wc-537374": {
+    outcome: "draw",
+    odds: 3.3,
+    label: "remis",
+    source: "FOX Sports",
+    url: "https://www.foxsports.com/stories/soccer/2026-world-cup-saudi-arabia-cape-verde-odds-prediction-picks"
+  },
+  "wc-537390": {
+    outcome: "draw",
+    odds: 2.95,
+    label: "remis",
+    source: "FOX Sports",
+    url: "https://www.foxsports.com/stories/soccer/spain-vs-argentina-odds-spain-favored-over-world-cup-final"
+  },
+  "wc-537428": {
+    outcome: "draw",
+    odds: 2.85,
+    label: "remis",
+    source: "FOX Sports",
+    url: "https://www.foxsports.com/stories/soccer/australia-vs-egypt-prediction-odds-picks-world-cup-match"
+  },
+  "wc-537368": {
+    outcome: "draw",
+    odds: 2.75,
+    label: "remis",
+    source: "JuveFC",
+    url: "https://www.juvefc.com/egypt-v-iran-predictions/"
+  },
+  "wc-537350": {
+    outcome: "draw",
+    odds: 2.2,
+    label: "remis",
+    source: "FOX Sports",
+    url: "https://www.foxsports.com/stories/soccer/2026-world-cup-paraguay-australia-odds-prediction-picks"
+  },
+  "wc-537363": {
+    outcome: "draw",
+    odds: 3.9,
+    label: "remis",
+    source: "FOX Sports",
+    url: "https://www.foxsports.com/stories/soccer/2026-world-cup-belgium-egypt-odds-prediction-picks"
+  }
+};
+
 // Które tabele faz są rozwinięte (domyślnie wszystkie zwinięte). Trzymane poza
 // state, żeby render (np. po odświeżeniu live) nie zwijał otwartej tabeli.
 const statsOpen = new Set();
@@ -3410,12 +3676,15 @@ function statsPerPlayer() {
     let curHit = 0, bestHit = 0;
     let curExact = 0, bestExact = 0;
     let curDry = 0, bestDry = 0;
-    let exactTotal = 0, correctTotal = 0, advTotal = 0, ptsTotal = 0, predicted = 0;
+    let exactTotal = 0, correctTotal = 0, advTotal = 0, drawHits = 0, ptsTotal = 0, predicted = 0;
     for (const m of finished) {
       const r = playerMatchScore(p, m);
       if (!r.played) continue;
       predicted++;
       ptsTotal += r.pts;
+      const result = getResult(m);
+      const pred = confirmedMatchPrediction(p.matches?.[m.id]);
+      if (result && pred && result.h === result.a && pred.h === pred.a) drawHits++;
       if (r.exact) exactTotal++;
       else if (r.correct) correctTotal++;
       if (r.adv) advTotal++;
@@ -3425,7 +3694,7 @@ function statsPerPlayer() {
     }
     return {
       uid: p.uid, name: p.name, champion: p.champion,
-      bestHit, bestExact, bestDry, exactTotal, correctTotal, advTotal, ptsTotal, predicted
+      bestHit, bestExact, bestDry, exactTotal, correctTotal, advTotal, drawHits, ptsTotal, predicted
     };
   });
 }
@@ -3436,6 +3705,41 @@ function leadersBy(arr, key) {
   for (const r of arr) if (r[key] > best) best = r[key];
   const holders = best > 0 ? arr.filter((r) => r[key] === best).map((r) => r.name) : [];
   return { value: best, holders };
+}
+
+function exactHitPlayersForMatch(m) {
+  const result = getResult(m);
+  if (!result) return [];
+  return rankedPlayers()
+    .filter((p) => {
+      const pred = confirmedMatchPrediction(p.matches?.[m.id]);
+      return pred && pred.h === result.h && pred.a === result.a;
+    })
+    .map((p) => ({ uid: p.uid, name: p.name }))
+    .sort((a, b) => a.name.localeCompare(b.name, "pl"));
+}
+
+function exactHitNamesForMatch(m) {
+  return exactHitPlayersForMatch(m).map((p) => p.name);
+}
+
+function surpriseHits(limit = 10) {
+  return finishedMatchesChrono()
+    .map((m) => {
+      const odds = SURPRISE_ODDS[m.id];
+      const result = getResult(m);
+      if (!odds || !result || getOutcome(result.h, result.a) !== odds.outcome) return null;
+      const holders = exactHitPlayersForMatch(m);
+      if (!holders.length) return null;
+      return { match: m, result, holders, ...odds };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.odds - a.odds || a.match.kickoffAt.localeCompare(b.match.kickoffAt))
+    .slice(0, limit);
+}
+
+function surpriseHit() {
+  return surpriseHits(1)[0] || null;
 }
 
 // Kubełki "kolejek": I/II/III kolejka grupowa + każda runda pucharowa osobno.
@@ -3589,6 +3893,125 @@ function recordCard(emoji, title, value, holders, suffix, hint) {
     </div>`;
 }
 
+function surpriseHitCard(hit) {
+  if (!hit) return "";
+  const pair = `${hit.match.homeTeam.name} – ${hit.match.awayTeam.name}`;
+  const score = `${hit.result.h}:${hit.result.a}`;
+  const who =
+    hit.holders.slice(0, 3).map((p) => escapeHtml(p.name)).join(", ") +
+    (hit.holders.length > 3 ? ` <span class="muted">+${hit.holders.length - 3}</span>` : "");
+  return `
+    <div class="record-card surprise-card">
+      <div class="rec-emoji">💣</div>
+      <div class="rec-body">
+        <div class="rec-title">Najbardziej niespodziewany trafiony wynik</div>
+        <div class="rec-value">${escapeHtml(score)} <span>kurs ${hit.odds.toFixed(2)}</span></div>
+        <div class="rec-who">${who}</div>
+        <div class="rec-hint muted">
+          ${escapeHtml(pair)} · kurs 1X2 na ${escapeHtml(hit.label)}
+          <a href="${escapeHtml(hit.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(hit.source)}</a>
+        </div>
+      </div>
+    </div>`;
+}
+
+function miniRankMark(i) {
+  return i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1;
+}
+
+function statPlayerNameHtml(r) {
+  const prof = state.predictions[r.uid] || { name: r.name };
+  return `
+    <span class="player-cell mini-player clickable" data-player="${escapeHtml(r.uid)}" title="Zobacz statystyki">
+      ${avatarHtml(prof)}
+      <span class="player-name">${escapeHtml(r.name)}</span>
+    </span>`;
+}
+
+function statPlayerRankingHtml(title, subtitle, rows, valueKey, valueLabel, suffix = "") {
+  const sorted = [...rows]
+    .filter((r) => (r[valueKey] || 0) > 0)
+    .sort((a, b) => (b[valueKey] || 0) - (a[valueKey] || 0) || b.ptsTotal - a.ptsTotal || a.name.localeCompare(b.name, "pl"))
+    .slice(0, 10);
+  const body = sorted.length
+    ? sorted.map((r, i) => `
+        <tr>
+          <td class="rank">${miniRankMark(i)}</td>
+          <td class="name">${statPlayerNameHtml(r)}</td>
+          <td class="total"><strong>${r[valueKey] || 0}</strong>${suffix}</td>
+        </tr>`)
+        .join("")
+    : `<tr><td colspan="3" class="muted center">Brak danych.</td></tr>`;
+  return `
+    <div class="card stat-table final-rank-table">
+      <h3 class="card-title">${title} <span class="muted small">· ${subtitle}</span></h3>
+      <table class="leaderboard mini">
+        <thead><tr><th>#</th><th>Gracz</th><th>${valueLabel}</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>
+    </div>`;
+}
+
+function surpriseRankingTableHtml(surprises) {
+  const body = surprises.length
+    ? surprises.map((hit, i) => {
+        const pair = `${hit.match.homeTeam.name} – ${hit.match.awayTeam.name}`;
+        const holders = hit.holders
+          .map((p) => `<span class="player-inline clickable" data-player="${escapeHtml(p.uid)}" title="Zobacz statystyki">${escapeHtml(p.name)}</span>`)
+          .join(", ");
+        return `
+          <tr>
+            <td class="rank">${miniRankMark(i)}</td>
+            <td class="name surprise-match-cell">
+              <strong>${flagImg(hit.match.homeTeam)} ${escapeHtml(pair)} ${flagImg(hit.match.awayTeam)}</strong>
+              <span class="mini-sub">${hit.result.h}:${hit.result.a} · ${escapeHtml(hit.source)} · ${escapeHtml(hit.label)}</span>
+            </td>
+            <td class="total"><strong>${hit.odds.toFixed(2)}</strong></td>
+            <td>${holders}</td>
+          </tr>`;
+      })
+      .join("")
+    : `<tr><td colspan="4" class="muted center">Brak trafionych wyników z uzupełnionym kursem.</td></tr>`;
+  return `
+    <div class="card stat-table final-rank-table surprise-rank-table">
+      <h3 class="card-title">Najbardziej niespodziewane trafione wyniki <span class="muted small">· top 10 wg kursu 1X2</span></h3>
+      <table class="leaderboard mini">
+        <thead><tr><th>#</th><th>Mecz</th><th>Kurs</th><th>Trafili</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>
+    </div>`;
+}
+
+function finalCuriosityTablesHtml(stats) {
+  if (!stats) {
+    return `
+      <div class="card stat-table">
+        <h3 class="card-title">Ciekawostki</h3>
+        <p class="muted small center" style="margin:.4rem 0">Ładuję typy z bazy.</p>
+      </div>`;
+  }
+  return `
+    <div class="stat-grid final-stat-grid">
+      ${statPlayerRankingHtml("Najdłuższa seria typów z rzędu", "trafione 1/X/2", stats.per, "bestHit", "Seria")}
+      ${statPlayerRankingHtml("Najdłuższa seria wyników z rzędu", "dokładny wynik", stats.per, "bestExact", "Seria")}
+      ${surpriseRankingTableHtml(stats.surprises)}
+      ${statPlayerRankingHtml("Najwięcej trafionych remisów", "trafiony rezultat X", stats.per, "drawHits", "Remisy")}
+    </div>`;
+}
+
+function statsSummary() {
+  const per = statsPerPlayer();
+  const surprises = surpriseHits(10);
+
+  const totalExact = per.reduce((s, r) => s + r.exactTotal, 0);
+  const totalCorrect = per.reduce((s, r) => s + r.correctTotal, 0);
+  const avgPts = per.length
+    ? Math.round((per.reduce((s, r) => s + r.ptsTotal, 0) / per.length) * 10) / 10
+    : 0;
+
+  return { per, totalExact, totalCorrect, avgPts, surprises, surprise: surprises[0] || null };
+}
+
 function statsHtml() {
   const finished = finishedMatchesChrono();
   if (!finished.length || !rankedPlayers().length) {
@@ -3603,46 +4026,7 @@ function statsHtml() {
       </section>`;
   }
 
-  const per = statsPerPlayer();
-  const hitRec = leadersBy(per, "bestHit");
-  const exactStreakRec = leadersBy(per, "bestExact");
-  const dryRec = leadersBy(per, "bestDry");
-  const exactTotalRec = leadersBy(per, "exactTotal");
-  const advRec = leadersBy(per, "advTotal");
-  const bestRound = bestSingleRound();
-
-  // Zbiorcze ciekawostki turnieju.
-  const totalExact = per.reduce((s, r) => s + r.exactTotal, 0);
-  const totalCorrect = per.reduce((s, r) => s + r.correctTotal, 0);
-  const avgPts = per.length
-    ? Math.round((per.reduce((s, r) => s + r.ptsTotal, 0) / per.length) * 10) / 10
-    : 0;
-
-  // Grupy obecne w terminarzu (A, B, … L) — do statystyk grupowych.
-  const groupKeys = [
-    ...new Set(state.matches.filter((m) => m.stage === "group" && m.group).map((m) => m.group))
-  ].sort();
-
-  const records = [
-    recordCard("🔥", "Najdłuższa seria trafionych rezultatów", hitRec.value, hitRec.holders, " z rzędu"),
-    recordCard("🎯", "Najdłuższa seria dokładnych wyników", exactStreakRec.value, exactStreakRec.holders, " z rzędu"),
-    bestRound
-      ? recordCard(
-          "💰",
-          "Najlepsza pojedyncza kolejka",
-          bestRound.pts,
-          bestRound.holders.map((h) => `${h.name} · ${h.label}`),
-          " pkt"
-        )
-      : "",
-    recordCard("🏆", "Najwięcej dokładnych wyników", exactTotalRec.value, exactTotalRec.holders, "×"),
-    advRec.value > 0
-      ? recordCard("🧭", "Najwięcej bonusów za awans", advRec.value, advRec.holders, "×")
-      : "",
-    recordCard("🧊", "Najdłuższa sucha passa (0 pkt)", dryRec.value, dryRec.holders, " z rzędu", "im mniej, tym lepiej 😅")
-  ]
-    .filter(Boolean)
-    .join("");
+  const stats = statsSummary();
 
   return `
     <section class="stack">
@@ -3651,36 +4035,15 @@ function statsHtml() {
           <div class="eyebrow">Ciekawostki</div>
           <h2>Statystyki</h2>
         </div>
-        <div class="points-legend">📊 ${totalExact} dokł. · ${totalCorrect} rezultatów · śr. ${avgPts} pkt/gracz</div>
+        <div class="points-legend">📊 ${stats.totalExact} dokł. · ${stats.totalCorrect} rezultatów · śr. ${stats.avgPts} pkt/gracz</div>
       </div>
 
-      <div class="record-grid">${records}</div>
-
-      <div class="section-head compact"><div><div class="eyebrow">Klasyfikacje</div><h3 style="margin:.1rem 0">Tabele wg faz</h3></div></div>
-      <div class="stat-grid">
-        ${phaseTableHtml("I kolejka", (m) => m.stage === "group" && m.matchday === 1)}
-        ${phaseTableHtml("II kolejka", (m) => m.stage === "group" && m.matchday === 2)}
-        ${phaseTableHtml("III kolejka", (m) => m.stage === "group" && m.matchday === 3)}
-        ${phaseTableHtml("Faza pucharowa", (m) => isKnockout(m))}
-      </div>
-
-      ${
-        groupKeys.length
-          ? `<div class="section-head compact"><div><div class="eyebrow">Grupy</div><h3 style="margin:.1rem 0">Statystyki grupowe</h3></div></div>
-             <p class="muted small" style="margin:-.3rem .2rem .2rem">Kto najlepiej poradził sobie w danej grupie — punkty, dokładne wyniki i trafione rezultaty z meczów tej grupy. Kliknij, by rozwinąć.</p>
-             <div class="stat-grid">
-               ${groupKeys
-                 .map((g) => phaseTableHtml("Grupa " + g, (m) => m.stage === "group" && m.group === g))
-                 .join("")}
-             </div>`
-          : ""
-      }
-
-      ${championPopularityHtml()}
+      ${finalCuriosityTablesHtml(stats)}
 
       <p class="muted small" style="margin:0 .2rem">
         Serie liczone po kolei z rozegranych meczów, które obstawiłeś — brak typu nie przerywa serii.
         Rezultat = trafione 1/X/2, dokładny wynik = trafiony wynik co do gola.
+        Kurs przy niespodziance to kurs 1X2 na faktyczny rezultat meczu.
       </p>
     </section>`;
 }
@@ -3778,7 +4141,9 @@ function wireEvents() {
   if (login3) login3.addEventListener("click", doLogin);
 
   const logout = document.getElementById("logout");
+  const logoutFinal = document.getElementById("logout-final");
   if (logout) logout.addEventListener("click", () => signOut(auth));
+  if (logoutFinal) logoutFinal.addEventListener("click", () => signOut(auth));
 
   const openExternal = document.getElementById("open-external");
   if (openExternal) openExternal.addEventListener("click", openInExternalBrowser);
@@ -4485,8 +4850,8 @@ function listenToLiveScores() {
   );
 }
 
-// Reguły Firestore pozwalają czytać tylko zalogowanym, więc listenery startują
-// dopiero po zalogowaniu i są odpinane po wylogowaniu.
+// Ranking/czat mają publiczny odczyt, więc listenery startują od razu.
+// Logowanie jest potrzebne dopiero do zapisu własnych typów/profilu.
 let unsubscribers = [];
 
 function listenToFirestore() {
@@ -4579,6 +4944,59 @@ function listenToFirestore() {
       (err) => console.error("chatReactions:", err.message)
     )
   );
+
+  setTimeout(loadPublicPredictionsFallback, 2500);
+}
+
+function firestoreRestValue(v) {
+  if (!v) return null;
+  if (v.stringValue !== undefined) return v.stringValue;
+  if (v.integerValue !== undefined) return Number(v.integerValue);
+  if (v.doubleValue !== undefined) return Number(v.doubleValue);
+  if (v.booleanValue !== undefined) return Boolean(v.booleanValue);
+  if (v.timestampValue !== undefined) return v.timestampValue;
+  if (v.nullValue !== undefined) return null;
+  if (v.arrayValue !== undefined) {
+    return (v.arrayValue.values || []).map(firestoreRestValue);
+  }
+  if (v.mapValue !== undefined) {
+    const out = {};
+    for (const [key, value] of Object.entries(v.mapValue.fields || {})) {
+      out[key] = firestoreRestValue(value);
+    }
+    return out;
+  }
+  return null;
+}
+
+async function loadPublicPredictionsFallback() {
+  if (state.predictionsLoaded) return;
+  try {
+    const url =
+      `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(firebaseConfig.projectId)}` +
+      `/databases/(default)/documents/predictions?key=${encodeURIComponent(firebaseConfig.apiKey)}&pageSize=500`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const next = {};
+    for (const docSnap of data.documents || []) {
+      const uid = String(docSnap.name || "").split("/").pop();
+      if (!uid) continue;
+      const fields = {};
+      for (const [key, value] of Object.entries(docSnap.fields || {})) {
+        fields[key] = firestoreRestValue(value);
+      }
+      next[uid] = fields;
+    }
+    if (!Object.keys(next).length) return;
+    state.predictions = next;
+    state.predictionsLoaded = true;
+    state.myDraftSeededFor = null;
+    state.myDraft = null;
+    render();
+  } catch (e) {
+    console.warn("predictions REST fallback:", e.message);
+  }
 }
 
 function stopListening() {
@@ -4623,10 +5041,16 @@ async function ensureProfileDoc(user) {
 
 // --- Routing po adresie (#widok) — odświeżenie zostaje na tej samej zakładce ---
 function viewFromHash() {
+  if (tournamentFinished()) return null;
   const h = (location.hash || "").replace(/^#/, "");
   return VIEWS.some((v) => v.id === h) ? h : null;
 }
 function applyHashView() {
+  if (tournamentFinished()) {
+    if (state.view !== "ranking") state.view = "ranking";
+    render();
+    return;
+  }
   const v = viewFromHash();
   if (!v || v === state.view) return;
   if (v === "admin" && !isAdmin()) return; // panel admina tylko dla admina
@@ -4741,6 +5165,7 @@ function maybeShowIntroPopup() {
   try {
     await loadStaticData();
     render();
+    listenToFirestore();
     // Popup „Co nowego?" wyłączony na życzenie (wyskakiwał za często).
     // maybeShowIntroPopup();
     listenToLiveScores();
