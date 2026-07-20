@@ -3829,6 +3829,43 @@ function highestScoringExactHits(limit = 10) {
     .slice(0, limit);
 }
 
+// Mecze, których dokładny wynik trafiło najwięcej graczy.
+function mostPopularExactHits(limit = 10) {
+  return finishedMatchesChrono()
+    .map((m) => {
+      const result = getResult(m);
+      const holders = exactHitPlayersForMatch(m);
+      return result && holders.length ? { match: m, result, holders } : null;
+    })
+    .filter(Boolean)
+    .sort(
+      (a, b) =>
+        b.holders.length - a.holders.length ||
+        a.match.kickoffAt.localeCompare(b.match.kickoffAt)
+    )
+    .slice(0, limit);
+}
+
+// Pełna lista meczów, w których żaden zatwierdzony gracz nie trafił nawet
+// rezultatu 1/X/2. Dokładne trafienie również liczy się jako trafiony rezultat.
+function matchesNobodyHit() {
+  const players = rankedPlayers();
+  return finishedMatchesChrono()
+    .map((m) => {
+      const result = getResult(m);
+      let predicted = 0;
+      let correct = 0;
+      for (const player of players) {
+        const score = playerMatchScore(player, m);
+        if (!score.played) continue;
+        predicted++;
+        if (score.correct) correct++;
+      }
+      return result && correct === 0 ? { match: m, result, predicted } : null;
+    })
+    .filter(Boolean);
+}
+
 function surpriseHit() {
   return surpriseHits(1)[0] || null;
 }
@@ -4102,6 +4139,61 @@ function goalFestTableHtml(hits) {
     </div>`;
 }
 
+function popularExactHitsTableHtml(hits) {
+  const body = hits.length
+    ? hits.map((hit, i) => {
+        const pair = `${hit.match.homeTeam.name} – ${hit.match.awayTeam.name}`;
+        const holders = hit.holders
+          .map((p) => `<span class="player-inline clickable" data-player="${escapeHtml(p.uid)}" title="Zobacz statystyki">${escapeHtml(p.name)}</span>`)
+          .join(", ");
+        return `
+          <tr>
+            <td class="rank">${miniRankMark(i)}</td>
+            <td class="name surprise-match-cell">
+              <strong>${flagImg(hit.match.homeTeam)} ${escapeHtml(pair)} ${flagImg(hit.match.awayTeam)}</strong>
+              <span class="mini-sub">dokładnie trafiony wynik ${hit.result.h}:${hit.result.a}</span>
+            </td>
+            <td class="total"><strong>${hit.holders.length}</strong></td>
+            <td>${holders}</td>
+          </tr>`;
+      }).join("")
+    : `<tr><td colspan="4" class="muted center">Brak dokładnie trafionych wyników.</td></tr>`;
+  return `
+    <div class="card stat-table final-rank-table surprise-rank-table">
+      <h3 class="card-title">Wyniki trafione przez największą liczbę graczy <span class="muted small">· top 10 dokładnych trafień</span></h3>
+      <table class="leaderboard mini">
+        <thead><tr><th>#</th><th>Mecz</th><th>Gracze</th><th>Trafili</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>
+    </div>`;
+}
+
+function nobodyHitMatchesTableHtml(matches) {
+  const body = matches.length
+    ? matches.map((item, i) => {
+        const pair = `${item.match.homeTeam.name} – ${item.match.awayTeam.name}`;
+        return `
+          <tr>
+            <td class="rank">${i + 1}</td>
+            <td class="name surprise-match-cell">
+              <strong>${flagImg(item.match.homeTeam)} ${escapeHtml(pair)} ${flagImg(item.match.awayTeam)}</strong>
+              <span class="mini-sub">${escapeHtml(fmtShort(item.match.kickoffAt))} · ${escapeHtml(fmtStage(item.match))}</span>
+            </td>
+            <td class="total"><strong>${item.result.h}:${item.result.a}</strong></td>
+            <td>${item.predicted} oddanych typów</td>
+          </tr>`;
+      }).join("")
+    : `<tr><td colspan="4" class="muted center">Każdy mecz został trafiony przynajmniej przez jednego gracza.</td></tr>`;
+  return `
+    <div class="card stat-table final-rank-table surprise-rank-table">
+      <h3 class="card-title">Mecze, których nie trafił nikt <span class="muted small">· ani rezultatu 1/X/2, ani dokładnego wyniku</span></h3>
+      <table class="leaderboard mini">
+        <thead><tr><th>#</th><th>Mecz</th><th>Wynik</th><th>Typowało</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>
+    </div>`;
+}
+
 function chatActivityRankingHtml(stats) {
   if (!stats.chatActivityLoaded) {
     return `
@@ -4142,6 +4234,8 @@ function finalCuriosityTablesHtml(stats) {
       ${statPlayerRankingHtml("Samotni snajperzy", "dokładny wynik trafiony jako jedyny gracz", stats.per, "soloExact", "Trafienia")}
       ${surpriseRankingTableHtml(stats.surprises)}
       ${goalFestTableHtml(stats.goalFests)}
+      ${popularExactHitsTableHtml(stats.popularExactHits)}
+      ${nobodyHitMatchesTableHtml(stats.nobodyHitMatches)}
       ${statPlayerRankingHtml("Najwięcej trafionych remisów", "trafiony rezultat X", stats.per, "drawHits", "Remisy")}
       ${chatActivityRankingHtml(stats)}
     </div>`;
@@ -4151,6 +4245,8 @@ function statsSummary() {
   const per = statsPerPlayer();
   const surprises = surpriseHits(10);
   const goalFests = highestScoringExactHits();
+  const popularExactHits = mostPopularExactHits();
+  const nobodyHitMatches = matchesNobodyHit();
 
   const totalExact = per.reduce((s, r) => s + r.exactTotal, 0);
   const totalCorrect = per.reduce((s, r) => s + r.correctTotal, 0);
@@ -4166,6 +4262,8 @@ function statsSummary() {
     surprises,
     surprise: surprises[0] || null,
     goalFests,
+    popularExactHits,
+    nobodyHitMatches,
     chatActivityLoaded: state.chatActivityCounts !== null,
     chatActivityError: state.chatActivityError
   };
