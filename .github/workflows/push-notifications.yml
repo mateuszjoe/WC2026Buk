@@ -3,6 +3,12 @@ name: Powiadomienia push
 # Robot sprawdza nowe wiadomości czatu częściej niż wyniki meczów.
 # GitHub Actions nie jest backendem realtime, więc push może mieć kilka minut opóźnienia.
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - "scripts/send-push.mjs"
+      - ".github/workflows/push-notifications.yml"
   schedule:
     # Nie używamy "*/5", bo pełne minuty są na GitHubie częściej opóźniane.
     # Nadal sprawdzamy co 5 minut, tylko lekko poza okrągłymi minutami.
