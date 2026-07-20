@@ -2157,6 +2157,64 @@ html.vv-mobile .pred-inputs { justify-content: flex-end; }
   font-size: 0.78rem;
   line-height: 1.25;
 }
+.final-curiosities-cta {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 0;
+  border: 1px solid rgba(255, 209, 102, 0.38);
+  border-radius: 8px;
+  padding: 0.65rem 0.8rem;
+  color: var(--text);
+  background: rgba(22, 31, 61, 0.72);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+.final-curiosities-cta:hover {
+  border-color: rgba(255, 209, 102, 0.72);
+  background: rgba(255, 209, 102, 0.08);
+}
+.final-curiosities-cta:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+.final-curiosities-cta-icon {
+  flex: 0 0 auto;
+  color: var(--gold);
+  font-size: 1.35rem;
+  font-weight: 900;
+  line-height: 1;
+}
+.final-curiosities-cta-copy {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.final-curiosities-cta-copy strong {
+  font-size: 0.86rem;
+}
+.final-curiosities-cta-copy > span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.final-curiosities-cta-action {
+  flex: 0 0 auto;
+  color: var(--gold);
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.final-curiosities-target {
+  scroll-margin-top: 1rem;
+}
 @media (max-width: 760px) {
   .final-hero {
     grid-template-columns: 1fr;

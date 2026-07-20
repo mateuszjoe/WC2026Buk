@@ -2445,8 +2445,16 @@ function finalHomeHtml() {
         playerTitle: "Zobacz statystyki",
         emptyText: loaded ? "Brak zatwierdzonych graczy." : "Ładuję ranking końcowy..."
       })}
+      <button type="button" class="final-curiosities-cta" id="final-curiosities-jump" aria-controls="final-curiosities">
+        <span class="final-curiosities-cta-icon" aria-hidden="true">↓</span>
+        <span class="final-curiosities-cta-copy">
+          <strong>Ranking to nie wszystko</strong>
+          <span>Serie, niespodzianki, strzelaniny i aktywność na czacie.</span>
+        </span>
+        <span class="final-curiosities-cta-action">Zobacz ciekawostki</span>
+      </button>
 
-      <div class="section-head compact">
+      <div class="section-head compact final-curiosities-target" id="final-curiosities">
         <div>
           <div class="eyebrow">Ciekawostki końcowe</div>
           <h3 style="margin:.1rem 0">Mini-rankingi po wszystkim</h3>
@@ -4077,6 +4085,16 @@ function wireEvents() {
       }
     })
   );
+
+  const finalCuriositiesJump = document.getElementById("final-curiosities-jump");
+  if (finalCuriositiesJump) {
+    finalCuriositiesJump.addEventListener("click", () => {
+      const target = document.getElementById("final-curiosities");
+      if (!target) return;
+      const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+      target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    });
+  }
 
   // Sortowanie tabeli rankingu po kliknięciu w nagłówek kolumny.
   // Cykl: domyślne → malejąco → rosnąco → domyślne (dla nazwy: rosnąco → malejąco).
