@@ -2465,6 +2465,15 @@ function finalHomeHtml() {
         <div class="final-metric"><span>${stats ? stats.avgPts : "…"}</span><b>pkt średnio na gracza</b></div>
       </div>
 
+      <button type="button" class="final-curiosities-cta" id="final-curiosities-jump" aria-controls="final-curiosities">
+        <span class="final-curiosities-cta-icon" aria-hidden="true">↓</span>
+        <span class="final-curiosities-cta-copy">
+          <strong>Ranking to nie wszystko</strong>
+          <span>Serie, niespodzianki, strzelaniny i aktywność na czacie.</span>
+        </span>
+        <span class="final-curiosities-cta-action">Zobacz ciekawostki</span>
+      </button>
+
       <div class="section-head">
         <div>
           <div class="eyebrow">Klasyfikacja końcowa</div>
@@ -2479,14 +2488,6 @@ function finalHomeHtml() {
         playerTitle: "Zobacz statystyki",
         emptyText: loaded ? "Brak zatwierdzonych graczy." : "Ładuję ranking końcowy..."
       })}
-      <button type="button" class="final-curiosities-cta" id="final-curiosities-jump" aria-controls="final-curiosities">
-        <span class="final-curiosities-cta-icon" aria-hidden="true">↓</span>
-        <span class="final-curiosities-cta-copy">
-          <strong>Ranking to nie wszystko</strong>
-          <span>Serie, niespodzianki, strzelaniny i aktywność na czacie.</span>
-        </span>
-        <span class="final-curiosities-cta-action">Zobacz ciekawostki</span>
-      </button>
 
       <div class="section-head compact final-curiosities-target" id="final-curiosities">
         <div>
