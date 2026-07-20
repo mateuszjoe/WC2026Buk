@@ -1403,7 +1403,7 @@ function chatReactionsHtml(msgId) {
 }
 
 function chatReactionPickerHtml(msgId) {
-  if (state.chatReactionPicker !== msgId) return "";
+  if (!canWriteChat() || state.chatReactionPicker !== msgId) return "";
   const mine = myReactionForMessage(msgId);
   return `
     <div class="chat-reaction-picker">
@@ -1426,7 +1426,7 @@ function scrollToChatMessage(id) {
 
 function setChatReplyFromMessage(id) {
   const m = chatMessageById(id);
-  if (!m || !state.user) return;
+  if (!m || !canWriteChat()) return;
   state.chatReplyTo = chatReplySummary(m);
   updateChatReplyPreview();
   const input = document.getElementById("cw-text");
@@ -1434,7 +1434,7 @@ function setChatReplyFromMessage(id) {
 }
 
 async function setChatReaction(msgId, emoji) {
-  if (!state.user || !CHAT_REACTION_EMOJIS.includes(emoji)) return;
+  if (!canWriteChat() || !CHAT_REACTION_EMOJIS.includes(emoji)) return;
   const mp = myProfile();
   const ref = doc(db, "chatReactions", `${msgId}_${state.user.uid}`);
   const existing = myReactionForMessage(msgId);
@@ -1586,6 +1586,7 @@ function chatMessagesHtml() {
     ? `<div class="chat-history-start muted">⚽ To początek czatu</div>`
     : "";
   const receipts = computeReadReceipts();
+  const canInteract = canWriteChat();
   return startLine + state.chat
     .map((m) => {
       const mine = state.user && m.uid === state.user.uid;
@@ -1608,8 +1609,8 @@ function chatMessagesHtml() {
               <span class="chat-name">${escapeHtml(m.name || "Gracz")}</span>
               <span class="chat-time">${fmtChatTime(m.createdAt)}</span>
               <span class="chat-actions">
-                <button type="button" class="chat-act chat-reply" data-reply="${escapeHtml(m.id)}" title="Odpowiedz">↩</button>
-                <button type="button" class="chat-act chat-react" data-react-toggle="${escapeHtml(m.id)}" title="Dodaj reakcję">☺</button>
+                ${canInteract ? `<button type="button" class="chat-act chat-reply" data-reply="${escapeHtml(m.id)}" title="Odpowiedz">↩</button>` : ""}
+                ${canInteract ? `<button type="button" class="chat-act chat-react" data-react-toggle="${escapeHtml(m.id)}" title="Dodaj reakcję">☺</button>` : ""}
                 ${canDel ? `<button class="chat-del" data-id="${escapeHtml(m.id)}" title="Usuń">✕</button>` : ""}
               </span>
             </div>
@@ -1623,12 +1624,28 @@ function chatMessagesHtml() {
     .join("");
 }
 
-// HTML pola pisania (zależne od zalogowania).
+function canWriteChat() {
+  return Boolean(state.user && !myPending());
+}
+
+function chatComposerMode() {
+  if (!state.user) return "guest";
+  if (myPending()) return "pending";
+  return "member";
+}
+
+// HTML pola pisania (zależne od zalogowania i zatwierdzenia gracza).
 function chatComposerHtml() {
-  if (!state.user) {
+  const mode = chatComposerMode();
+  if (mode === "guest") {
     return `<div class="chat-login">
         <p class="muted small">Zaloguj się, żeby pisać.</p>
         <button class="btn primary tiny" id="cw-login"><span class="g-dot"></span> Zaloguj przez Google</button>
+      </div>`;
+  }
+  if (mode === "pending") {
+    return `<div class="chat-login">
+        <p class="muted small">Możesz czytać całą historię. Pisanie będzie dostępne po zatwierdzeniu konta.</p>
       </div>`;
   }
   return `
@@ -1705,10 +1722,10 @@ function writeReadReceipt(ms) {
   }).catch((e) => console.warn("read receipt:", e));
 }
 
-// Buduje pole pisania i podpina zdarzenia (raz; przy zmianie zalogowania na nowo).
+// Buduje pole pisania i podpina zdarzenia (przy zmianie trybu dostępu na nowo).
 function renderChatComposer(w) {
   const wrap = w.querySelector(".chat-composer-wrap");
-  wrap.dataset.logged = String(!!state.user);
+  wrap.dataset.mode = chatComposerMode();
   wrap.innerHTML = chatComposerHtml();
   const text = wrap.querySelector("#cw-text");
   if (text) {
@@ -1897,12 +1914,7 @@ function toggleChat(force) {
 function updateChatWidget() {
   const w = document.getElementById("chat-widget");
   if (!w) return;
-  // Czat tylko dla zalogowanych i zatwierdzonych (poczekalnia nie widzi dymka).
-  if (tournamentFinished() || !state.user || myPending()) {
-    if (state.chatOpen) toggleChat(false);
-    w.style.display = "none";
-    return;
-  }
+  // Historia jest publiczna także po zakończeniu typera; pisanie kontroluje composer.
   w.style.display = "";
   if (location.hash === "#chat" && !openedChatFromHash) {
     openedChatFromHash = true;
@@ -1912,7 +1924,7 @@ function updateChatWidget() {
     }, 0);
   }
   const wrap = w.querySelector(".chat-composer-wrap");
-  if (wrap && wrap.dataset.logged !== String(!!state.user)) renderChatComposer(w);
+  if (wrap && wrap.dataset.mode !== chatComposerMode()) renderChatComposer(w);
   if (state.chatOpen) {
     const list = w.querySelector("#chat-messages");
     if (list) {
@@ -1983,7 +1995,7 @@ async function attachChatPhoto(file) {
 }
 
 async function sendChatMessage() {
-  if (!state.user) return;
+  if (!canWriteChat()) return;
   const text = (state.chatDraft || "").trim();
   const image = state.chatImage || null;
   if (!text && !image) return;
