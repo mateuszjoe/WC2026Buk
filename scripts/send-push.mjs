@@ -257,6 +257,15 @@ const CUSTOM_ANNOUNCEMENTS = [
       "trafione remisy oraz 10 największych niespodzianek.",
     url: "./",
     when: tournamentIsFinished
+  },
+  {
+    key: "typer-zakonczony-finalny-push-2026-07-20",
+    title: "Typer zakończony. Dzięki za grę!",
+    body:
+      "Ranking końcowy i nowe ciekawostki już czekają: serie, remisy, niespodzianki " +
+      "i rekordy. Zajrzyj na stronę!",
+    url: "./",
+    when: tournamentIsFinished
   }
 ];
 
