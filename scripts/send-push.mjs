@@ -120,6 +120,8 @@ function championTeamId() {
   return r.h > r.a ? fin.homeTeam.id : fin.awayTeam.id;
 }
 const champId = championTeamId();
+const tournamentIsFinished =
+  matches.length > 0 && matches.every((m) => Boolean(getResult(m)));
 
 function leaderboard() {
   const rows = Object.entries(predictions).map(([uid, p]) => {
@@ -244,6 +246,15 @@ const CUSTOM_ANNOUNCEMENTS = [
       "Dodaliśmy zakładkę „Ciekawostki” (statystyki, rekordy serii, tabele wg kolejek) " +
       "i odświeżyliśmy wygląd na telefonie. Zajrzyj! ⚽",
     url: "./#stats"
+  },
+  {
+    key: "typer-zakonczony-podsumowanie-2026",
+    title: "🏆 Dzięki za wspólne typowanie!",
+    body:
+      "Typer dobiegł końca. Wbij po ranking końcowy i ciekawostki: najdłuższe serie, " +
+      "trafione remisy oraz 10 największych niespodzianek.",
+    url: "./",
+    when: tournamentIsFinished
   }
 ];
 
@@ -261,7 +272,7 @@ if (!stateDoc.exists) {
     lastChatMs,
     announcedPhases: alreadyOpen,
     // Na świeżym stanie NIE wysyłamy zaległych ogłoszeń — od razu je oznaczamy.
-    announcedCustom: CUSTOM_ANNOUNCEMENTS.map((a) => a.key),
+    announcedCustom: CUSTOM_ANNOUNCEMENTS.filter((a) => a.when !== false).map((a) => a.key),
     match24Reminders: {}
   });
   console.log("Pierwszy przebieg — zapamiętano stan, bez wysyłki.");
@@ -389,6 +400,7 @@ for (const ph of phases) {
 // --- Ręczne ogłoszenia (nowości) — raz do wszystkich subskrybentów ------------
 const announcedCustom = new Set(pstate.announcedCustom || []);
 for (const ann of CUSTOM_ANNOUNCEMENTS) {
+  if (ann.when === false) continue;
   if (announcedCustom.has(ann.key)) continue;
   announcedCustom.add(ann.key); // oznacz raz, niezależnie od wyniku wysyłki
   for (const entry of subs) {

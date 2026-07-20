@@ -18,6 +18,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  getCountFromServer,
   setDoc,
   addDoc,
   updateDoc,
@@ -85,6 +86,9 @@ const state = {
   chatOlder: [], // starsze wiadomości doczytane scrollem w górę (rosnąco)
   chatHasMore: true, // czy są jeszcze starsze wiadomości do doczytania
   chatLoadingOlder: false, // czy trwa doczytywanie starszych (blokada przed dublami)
+  chatActivityCounts: null, // uid -> liczba wiadomości w całej historii (ekran końcowy)
+  chatActivityLoading: false,
+  chatActivityError: false,
   chatDraft: "", // treść wpisywanej wiadomości
   chatImage: null, // załączone zdjęcie (data URL) do wysłania
   chatReplyTo: null, // { id, name, text, image } - wiadomość, na którą odpowiadam
@@ -1159,6 +1163,7 @@ function render() {
   // nie rusza strony pod spodem. Montujemy raz, potem tylko odświeżamy.
   mountChatWidget();
   updateChatWidget();
+  void loadFinalChatActivityCounts();
 }
 
 // Lekkie odświeżenie podczas pisania w "Moich typach" — NIE przebudowujemy pól
@@ -1564,6 +1569,32 @@ async function loadOlderChat() {
     console.error("chat older:", e);
   }
   state.chatLoadingOlder = false;
+}
+
+// Końcowy ranking aktywności musi obejmować całą historię, a nie tylko 50
+// najnowszych wiadomości trzymanych przez listener realtime.
+async function loadFinalChatActivityCounts() {
+  if (!tournamentFinished() || !state.predictionsLoaded || state.chatActivityCounts || state.chatActivityLoading) return;
+  state.chatActivityLoading = true;
+  state.chatActivityError = false;
+  try {
+    const entries = await Promise.all(
+      rankedPlayers().map(async (p) => {
+        const snap = await getCountFromServer(
+          query(collection(db, "chat"), where("uid", "==", p.uid))
+        );
+        return [p.uid, snap.data().count || 0];
+      })
+    );
+    state.chatActivityCounts = Object.fromEntries(entries);
+  } catch (e) {
+    console.error("chat activity:", e);
+    state.chatActivityCounts = {};
+    state.chatActivityError = true;
+  } finally {
+    state.chatActivityLoading = false;
+    maybeRender();
+  }
 }
 
 // Przerysowanie listy z zachowaniem pozycji scrolla względem GÓRY (po doklejeniu
@@ -2090,7 +2121,7 @@ function playerFinalStatsHtml(uid) {
   };
   const stat = statsPerPlayer().find((r) => r.uid === uid) || {
     bestHit: 0, bestExact: 0, bestDry: 0, exactTotal: 0, correctTotal: 0,
-    advTotal: 0, drawHits: 0, predicted: 0
+    advTotal: 0, drawHits: 0, bestRunPoints: 0, soloExact: 0, chatMessages: 0, predicted: 0
   };
   const prof = { name: p.name, avatar: p.avatar, photo: p.photo, champion: p.champion };
   const champTeam = teamById(p.champion);
@@ -2123,6 +2154,9 @@ function playerFinalStatsHtml(uid) {
           <div><span>${stat.drawHits}</span><b>trafionych remisów</b></div>
           <div><span>${stat.bestHit}</span><b>seria typów</b></div>
           <div><span>${stat.bestExact}</span><b>seria wyników</b></div>
+          <div><span>${stat.bestRunPoints}</span><b>pkt w najlepszej serii</b></div>
+          <div><span>${stat.soloExact}</span><b>samotnych dokładnych</b></div>
+          <div><span>${stat.chatMessages}</span><b>wiadomości na czacie</b></div>
         </div>
         <div class="pm-champ">
           👑 Mistrz: ${champTeam ? `${flagImg(champTeam)} ${escapeHtml(champTeam.name)}` : "—"}
@@ -2464,6 +2498,7 @@ function finalHomeHtml() {
       <p class="muted small" style="margin:0 .2rem">
         Serie liczone są po kolei z rozegranych meczów, które gracz obstawił — brak typu nie przerywa serii.
         Kursy przy niespodziankach to kursy 1X2 na faktyczny rezultat meczu, nie rynek dokładnego wyniku.
+        Aktywność czatu obejmuje wszystkie zachowane wiadomości.
       </p>
     </section>`;
 }
@@ -3692,11 +3727,23 @@ function finishedMatchesChrono() {
 // gracz REALNIE obstawił (brak typu nie psuje serii — po prostu pomijamy mecz).
 function statsPerPlayer() {
   const finished = finishedMatchesChrono();
-  return rankedPlayers().map((p) => {
+  const players = rankedPlayers();
+  const exactHitCounts = new Map();
+  for (const m of finished) {
+    const result = getResult(m);
+    const count = players.reduce((sum, p) => {
+      const pred = confirmedMatchPrediction(p.matches?.[m.id]);
+      return sum + (pred && result && pred.h === result.h && pred.a === result.a ? 1 : 0);
+    }, 0);
+    exactHitCounts.set(m.id, count);
+  }
+
+  return players.map((p) => {
     let curHit = 0, bestHit = 0;
     let curExact = 0, bestExact = 0;
     let curDry = 0, bestDry = 0;
-    let exactTotal = 0, correctTotal = 0, advTotal = 0, drawHits = 0, ptsTotal = 0, predicted = 0;
+    let curRunPoints = 0, bestRunPoints = 0;
+    let exactTotal = 0, correctTotal = 0, advTotal = 0, drawHits = 0, soloExact = 0, ptsTotal = 0, predicted = 0;
     for (const m of finished) {
       const r = playerMatchScore(p, m);
       if (!r.played) continue;
@@ -3705,16 +3752,24 @@ function statsPerPlayer() {
       const result = getResult(m);
       const pred = confirmedMatchPrediction(p.matches?.[m.id]);
       if (result && pred && result.h === result.a && pred.h === pred.a) drawHits++;
-      if (r.exact) exactTotal++;
+      if (r.exact) {
+        exactTotal++;
+        if (exactHitCounts.get(m.id) === 1) soloExact++;
+      }
       else if (r.correct) correctTotal++;
       if (r.adv) advTotal++;
       if (r.correct) { curHit++; if (curHit > bestHit) bestHit = curHit; } else curHit = 0;
       if (r.exact) { curExact++; if (curExact > bestExact) bestExact = curExact; } else curExact = 0;
       if (r.pts === 0) { curDry++; if (curDry > bestDry) bestDry = curDry; } else curDry = 0;
+      if (r.pts > 0) {
+        curRunPoints += r.pts;
+        if (curRunPoints > bestRunPoints) bestRunPoints = curRunPoints;
+      } else curRunPoints = 0;
     }
     return {
       uid: p.uid, name: p.name, champion: p.champion,
-      bestHit, bestExact, bestDry, exactTotal, correctTotal, advTotal, drawHits, ptsTotal, predicted
+      bestHit, bestExact, bestDry, bestRunPoints, exactTotal, correctTotal, advTotal,
+      drawHits, soloExact, chatMessages: state.chatActivityCounts?.[p.uid] || 0, ptsTotal, predicted
     };
   });
 }
@@ -3755,6 +3810,21 @@ function surpriseHits(limit = 10) {
     })
     .filter(Boolean)
     .sort((a, b) => b.odds - a.odds || a.match.kickoffAt.localeCompare(b.match.kickoffAt))
+    .slice(0, limit);
+}
+
+// Najbardziej bramkostrzelne mecze spośród tych, których wynik ktoś trafił
+// dokładnie.
+function highestScoringExactHits(limit = 10) {
+  return finishedMatchesChrono()
+    .map((m) => {
+      const result = getResult(m);
+      const holders = exactHitPlayersForMatch(m);
+      if (!result || !holders.length) return null;
+      return { match: m, result, holders, goals: result.h + result.a };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.goals - a.goals || a.match.kickoffAt.localeCompare(b.match.kickoffAt))
     .slice(0, limit);
 }
 
@@ -4002,6 +4072,59 @@ function surpriseRankingTableHtml(surprises) {
     </div>`;
 }
 
+function goalFestTableHtml(hits) {
+  const body = hits.length
+    ? hits.map((hit, i) => {
+        const pair = `${hit.match.homeTeam.name} – ${hit.match.awayTeam.name}`;
+        const holders = hit.holders
+          .map((p) => `<span class="player-inline clickable" data-player="${escapeHtml(p.uid)}" title="Zobacz statystyki">${escapeHtml(p.name)}</span>`)
+          .join(", ");
+        return `
+          <tr>
+            <td class="rank">${miniRankMark(i)}</td>
+            <td class="name surprise-match-cell">
+              <strong>${flagImg(hit.match.homeTeam)} ${escapeHtml(pair)} ${flagImg(hit.match.awayTeam)}</strong>
+              <span class="mini-sub">dokładnie trafiony wynik ${hit.result.h}:${hit.result.a}</span>
+            </td>
+            <td class="total"><strong>${hit.goals}</strong></td>
+            <td>${holders}</td>
+          </tr>`;
+      }).join("")
+    : `<tr><td colspan="4" class="muted center">Brak dokładnie trafionych wyników.</td></tr>`;
+  return `
+    <div class="card stat-table final-rank-table surprise-rank-table goal-fest-table">
+      <h3 class="card-title">Największe strzelaniny trafione dokładnie <span class="muted small">· top 10 wg liczby goli</span></h3>
+      <table class="leaderboard mini">
+        <thead><tr><th>#</th><th>Mecz</th><th>Gole</th><th>Trafili</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>
+    </div>`;
+}
+
+function chatActivityRankingHtml(stats) {
+  if (!stats.chatActivityLoaded) {
+    return `
+      <div class="card stat-table final-rank-table">
+        <h3 class="card-title">Najbardziej aktywni na czacie <span class="muted small">· cała historia</span></h3>
+        <p class="muted small center" style="margin:.4rem 0">Liczymy wiadomości…</p>
+      </div>`;
+  }
+  if (stats.chatActivityError) {
+    return `
+      <div class="card stat-table final-rank-table">
+        <h3 class="card-title">Najbardziej aktywni na czacie <span class="muted small">· cała historia</span></h3>
+        <p class="muted small center" style="margin:.4rem 0">Nie udało się policzyć historii czatu.</p>
+      </div>`;
+  }
+  return statPlayerRankingHtml(
+    "Najbardziej aktywni na czacie",
+    "liczba wysłanych wiadomości",
+    stats.per,
+    "chatMessages",
+    "Wiadomości"
+  );
+}
+
 function finalCuriosityTablesHtml(stats) {
   if (!stats) {
     return `
@@ -4014,14 +4137,19 @@ function finalCuriosityTablesHtml(stats) {
     <div class="stat-grid final-stat-grid">
       ${statPlayerRankingHtml("Najdłuższa seria typów z rzędu", "trafione 1/X/2", stats.per, "bestHit", "Seria")}
       ${statPlayerRankingHtml("Najdłuższa seria wyników z rzędu", "dokładny wynik", stats.per, "bestExact", "Seria")}
+      ${statPlayerRankingHtml("Najbardziej wartościowa seria punktowa", "suma punktów bez pudła po drodze", stats.per, "bestRunPoints", "Punkty", " pkt")}
+      ${statPlayerRankingHtml("Samotni snajperzy", "dokładny wynik trafiony jako jedyny gracz", stats.per, "soloExact", "Trafienia")}
       ${surpriseRankingTableHtml(stats.surprises)}
+      ${goalFestTableHtml(stats.goalFests)}
       ${statPlayerRankingHtml("Najwięcej trafionych remisów", "trafiony rezultat X", stats.per, "drawHits", "Remisy")}
+      ${chatActivityRankingHtml(stats)}
     </div>`;
 }
 
 function statsSummary() {
   const per = statsPerPlayer();
   const surprises = surpriseHits(10);
+  const goalFests = highestScoringExactHits();
 
   const totalExact = per.reduce((s, r) => s + r.exactTotal, 0);
   const totalCorrect = per.reduce((s, r) => s + r.correctTotal, 0);
@@ -4029,7 +4157,17 @@ function statsSummary() {
     ? Math.round((per.reduce((s, r) => s + r.ptsTotal, 0) / per.length) * 10) / 10
     : 0;
 
-  return { per, totalExact, totalCorrect, avgPts, surprises, surprise: surprises[0] || null };
+  return {
+    per,
+    totalExact,
+    totalCorrect,
+    avgPts,
+    surprises,
+    surprise: surprises[0] || null,
+    goalFests,
+    chatActivityLoaded: state.chatActivityCounts !== null,
+    chatActivityError: state.chatActivityError
+  };
 }
 
 function statsHtml() {
@@ -4064,6 +4202,7 @@ function statsHtml() {
         Serie liczone po kolei z rozegranych meczów, które obstawiłeś — brak typu nie przerywa serii.
         Rezultat = trafione 1/X/2, dokładny wynik = trafiony wynik co do gola.
         Kurs przy niespodziance to kurs 1X2 na faktyczny rezultat meczu.
+        Aktywność czatu obejmuje wszystkie zachowane wiadomości.
       </p>
     </section>`;
 }
