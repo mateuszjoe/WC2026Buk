@@ -51,6 +51,8 @@ const predictions = {};
 
 const subs = [];
 (await db.collection("pushSubs").get()).forEach((d) => subs.push({ uid: d.id, ...d.data() }));
+const subscriptionEndpoints = subs.map((entry) => entry.sub?.endpoint).filter(Boolean);
+const uniqueSubscriptionEndpoints = new Set(subscriptionEndpoints);
 
 const chatMessages = [];
 (await db.collection("chat").orderBy("createdAt", "desc").limit(20).get()).forEach((d) =>
@@ -476,4 +478,8 @@ await stateRef.set(
   },
   { merge: true }
 );
-console.log(`Wysłano ${sent}/${jobs.length} powiadomień (błędy: ${failed}, subskrypcji: ${subs.length}).`);
+console.log(
+  `Subskrypcje push: konta=${subs.length}, poprawne endpointy=${subscriptionEndpoints.length}, ` +
+    `unikalne urządzenia=${uniqueSubscriptionEndpoints.size}.`
+);
+console.log(`Wysłano ${sent}/${jobs.length} powiadomień (błędy: ${failed}).`);
